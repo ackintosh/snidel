@@ -1,0 +1,25 @@
+{
+  "name": "ackintosh/snidel",
+  "description": "A multi-process container. It looks like multi-thread-ish.",
+  "type": "library",
+  "license": "MIT",
+  "homepage": "http://ackintosh.github.io/",
+  "authors": [
+    {
+      "name": "Akihito Nakano",
+      "email": "sora.akatsuki@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.2.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*"
+  },
+  "autoload": {
+    "psr-0": {
+      "Snidel": "src/"
+    }
+  }
+}
+
