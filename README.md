@@ -1,11 +1,13 @@
 # Snidel
----
+
 A multi-process container. It looks like multi-thread-ish.
 
+[![Latest Stable Version](https://poser.pugx.org/ackintosh/snidel/v/stable)](https://packagist.org/packages/ackintosh/snidel) [![License](https://poser.pugx.org/ackintosh/snidel/license)](https://packagist.org/packages/ackintosh/snidel)
 
 ## Sample
 
-```
+```php
+<?php
 $func = function ($str) {
     sleep(3);
     return $str;
