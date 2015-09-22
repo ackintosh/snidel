@@ -18,4 +18,21 @@ class SnidelTest extends PHPUnit_Framework_TestCase
 
         $this->assertSame($snidel->get(), array('foo', 'bar'));
     }
+
+    /**
+     * @test
+     */
+    public function omitTheSecondArgumentOfFork()
+    {
+        $snidel = new Snidel();
+
+        $func = function () {
+            return 'foo';
+        };
+
+        $snidel->fork($func);
+        $snidel->join();
+
+        $this->assertSame($snidel->get(), array('foo'));
+    }
 }

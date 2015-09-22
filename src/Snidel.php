@@ -11,7 +11,7 @@ class Snidel
         $this->childPids = array();
     }
 
-    public function fork($callable, $args)
+    public function fork($callable, $args = array())
     {
         $pid = pcntl_fork();
         if (-1 === $pid) {
