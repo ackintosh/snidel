@@ -13,6 +13,10 @@ class Snidel
 
     public function fork($callable, $args = array())
     {
+        if (!is_array($args)) {
+            $args = array($args);
+        }
+
         $pid = pcntl_fork();
         if (-1 === $pid) {
             throw new RuntimeException('Failed to fork');

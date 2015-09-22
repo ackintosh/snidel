@@ -10,7 +10,9 @@ A multi-process container. It looks like multi-thread-ish.
 $ composer require ackintosh/snidel
 ```
 
-## Sample
+## Usage
+
+### Basic
 
 ```php
 <?php
@@ -21,9 +23,9 @@ $func = function ($str) {
 
 $s = time();
 $snidel = new Snidel();
-$snidel->fork($func, array('foo'));
-$snidel->fork($func, array('bar'));
-$snidel->fork($func, array('baz'));
+$snidel->fork($func, 'foo');
+$snidel->fork($func, 'bar');
+$snidel->fork($func, 'baz');
 
 $snidel->join();
 
@@ -39,6 +41,12 @@ var_dump($snidel->get());
 
 echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 // 3sec elapsed.
+```
+
+### Passing multiple arguments
+
+```php
+$snidel->fork($func, array('foo', 'bar'));
 ```
 
 ## Requirements

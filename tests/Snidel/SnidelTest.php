@@ -35,4 +35,38 @@ class SnidelTest extends PHPUnit_Framework_TestCase
 
         $this->assertSame($snidel->get(), array('foo'));
     }
+
+    /**
+     * @test
+     */
+    public function passTheValueOtherThanArray()
+    {
+        $snidel = new Snidel();
+
+        $func = function ($arg) {
+            return $arg;
+        };
+
+        $snidel->fork($func, 'foo');
+        $snidel->join();
+
+        $this->assertSame($snidel->get(), array('foo'));
+    }
+
+    /**
+     * @test
+     */
+    public function passMultipleArguments()
+    {
+        $snidel = new Snidel();
+
+        $func = function ($arg1, $arg2) {
+            return $arg1 . $arg2;
+        };
+
+        $snidel->fork($func, array('foo', 'bar'));
+        $snidel->join();
+
+        $this->assertSame($snidel->get(), array('foobar'));
+    }
 }
