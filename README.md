@@ -49,11 +49,20 @@ echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 $snidel->fork($func, array('foo', 'bar'));
 ```
 
+### maxProcs
+
+```php
+$maxProcs = 3;
+$snidel = new Snidel($maxProcs);
+
+```
+
 ## Requirements
 
 Snidel works with PHP 5.2 or above.
 
-- PCNTL functions
+- [PCNTL functions](http://php.net/manual/en/ref.pcntl.php)
+- [Semaphore functions](http://php.net/manual/en/ref.sem.php)
 
 ## Author
 

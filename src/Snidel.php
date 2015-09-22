@@ -6,9 +6,15 @@ class Snidel
      */
     private $childPids;
 
-    public function __construct()
+    /**
+     * @var Snidel_Token
+     */
+    private $token;
+
+    public function __construct($maxProcs = 5)
     {
         $this->childPids = array();
+        $this->token = new Snidel_Token(getmypid(), $maxProcs);
     }
 
     public function fork($callable, $args = array())
@@ -16,6 +22,7 @@ class Snidel
         if (!is_array($args)) {
             $args = array($args);
         }
+        $parentPid = getmypid();
 
         $pid = pcntl_fork();
         if (-1 === $pid) {
@@ -25,9 +32,13 @@ class Snidel
             $this->childPids[] = $pid;
         } else {
             // child
-            $ret = serialize(call_user_func_array($callable, $args));
-            $data = new Snidel_Data(getmypid());
-            $data->write($ret);
+            if ($this->token->accept()) {
+                $childPid = getmypid();
+                $ret = serialize(call_user_func_array($callable, $args));
+                $data = new Snidel_Data($childPid);
+                $data->write($ret);
+                $this->token->back();
+            }
             exit;
         }
     }

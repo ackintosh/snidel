@@ -69,4 +69,26 @@ class SnidelTest extends PHPUnit_Framework_TestCase
 
         $this->assertSame($snidel->get(), array('foobar'));
     }
+
+    /**
+     * @test
+     */
+    public function maxProcs()
+    {
+        $maxProcs = 3;
+        $snidel = new Snidel($maxProcs);
+
+        $func = function () {
+            sleep(2);
+        };
+
+        $start = time();
+        $snidel->fork($func);
+        $snidel->fork($func);
+        $snidel->fork($func);
+        $snidel->fork($func);
+        $snidel->join();
+
+        $this->assertSame(4, time() - $start);
+    }
 }
