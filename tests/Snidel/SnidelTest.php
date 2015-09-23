@@ -70,6 +70,7 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $snidel->join();
         $elapsed = time() - $start;
 
+        $snidel->get();
         $this->assertTrue(4 <= $elapsed && $elapsed < 6);
     }
 
