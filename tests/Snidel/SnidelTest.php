@@ -95,9 +95,14 @@ class SnidelTest extends PHPUnit_Framework_TestCase
     public function runAnonymousFunction()
     {
         $snidel = new Snidel();
-        $func = function ($arg = 'foo') {
-            return $arg;
-        };
+
+        // In order to avoid Parse error in php5.2, `eval` is used.
+        eval(<<<__EOS__
+\$func = function (\$arg = 'foo') {
+    return \$arg;
+};
+__EOS__
+);
 
         $snidel->fork($func);
         $snidel->fork($func, 'bar');
