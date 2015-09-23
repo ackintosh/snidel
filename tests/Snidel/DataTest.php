@@ -3,6 +3,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 {
     /**
      * @test
+     * @requires PHP 5.3
      */
     public function constructorSetsPid()
     {
