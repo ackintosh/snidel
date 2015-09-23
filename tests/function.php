@@ -6,7 +6,8 @@ function returnsFoo()
 
 function receivesArgumentsAndReturnsIt()
 {
-    return implode('', func_get_args());
+    $args = func_get_args();
+    return implode('', $args);
 }
 
 function sleepsTwoSeconds()
