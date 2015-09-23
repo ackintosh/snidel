@@ -3,6 +3,7 @@ if (version_compare(PHP_VERSION, '5.3', '>=')) {
     $loader = require_once __DIR__ . '/vendor/autoload.php';
 } else {
     require_once dirname(__FILE__) . '/vendor/splclassloader/SplClassLoader.php';
+    require_once dirname(__FILE__) . '/src/Snidel.php';
 
     $loader = new SplClassLoader('Snidel', dirname(__FILE__) . '/src');
     $loader->setNamespaceSeparator('_');
