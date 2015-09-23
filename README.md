@@ -46,7 +46,7 @@ echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 ### Passing multiple arguments
 
 ```php
-$snidel->fork($func, array('foo', 'bar'));
+$snidel->fork($func, ['foo', 'bar']);
 ```
 
 ### maxProcs

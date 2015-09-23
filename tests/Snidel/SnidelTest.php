@@ -8,12 +8,8 @@ class SnidelTest extends PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
 
-        $func = function ($arg) {
-            return $arg;
-        };
-
-        $snidel->fork($func, array('foo'));
-        $snidel->fork($func, array('bar'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
         $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo', 'bar'));
@@ -26,11 +22,7 @@ class SnidelTest extends PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
 
-        $func = function () {
-            return 'foo';
-        };
-
-        $snidel->fork($func);
+        $snidel->fork('returnsFoo');
         $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo'));
@@ -43,11 +35,7 @@ class SnidelTest extends PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
 
-        $func = function ($arg) {
-            return $arg;
-        };
-
-        $snidel->fork($func, 'foo');
+        $snidel->fork('receivesArgumentsAndReturnsIt', 'foo');
         $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo'));
@@ -60,11 +48,7 @@ class SnidelTest extends PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
 
-        $func = function ($arg1, $arg2) {
-            return $arg1 . $arg2;
-        };
-
-        $snidel->fork($func, array('foo', 'bar'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('foo', 'bar'));
         $snidel->join();
 
         $this->assertSame($snidel->get(), array('foobar'));
@@ -78,17 +62,47 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $maxProcs = 3;
         $snidel = new Snidel($maxProcs);
 
-        $func = function () {
-            sleep(2);
-        };
-
         $start = time();
-        $snidel->fork($func);
-        $snidel->fork($func);
-        $snidel->fork($func);
-        $snidel->fork($func);
+        $snidel->fork('sleepsTwoSeconds');
+        $snidel->fork('sleepsTwoSeconds');
+        $snidel->fork('sleepsTwoSeconds');
+        $snidel->fork('sleepsTwoSeconds');
+        $snidel->join();
+        $elapsed = time() - $start;
+
+        $this->assertTrue(4 <= $elapsed && $elapsed < 6);
+    }
+
+    /**
+     * @test
+     */
+    public function runInstanceMethod()
+    {
+        $snidel = new Snidel();
+        $test = new TestClass();
+
+        $snidel->fork(array($test, 'returnsFoo'));
+        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar');
         $snidel->join();
 
-        $this->assertSame(4, time() - $start);
+        $this->assertSame($snidel->get(), array('foo', 'bar'));
+    }
+
+    /**
+     * @test
+     * @requires PHP 5.3
+     */
+    public function runAnonymousFunction()
+    {
+        $snidel = new Snidel();
+        $func = function ($arg = 'foo') {
+            return $arg;
+        };
+
+        $snidel->fork($func);
+        $snidel->fork($func, 'bar');
+        $snidel->join();
+
+        $this->assertSame($snidel->get(), array('foo', 'bar'));
     }
 }
