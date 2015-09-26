@@ -48,7 +48,7 @@ class Snidel
         foreach (range(1, count($this->childPids)) as $i) {
             pcntl_waitpid(-1, $status);
             if (!pcntl_wifexited($status)) {
-                throw RuntimeException('error in child.');
+                throw new RuntimeException('error in child.');
             }
         }
     }
