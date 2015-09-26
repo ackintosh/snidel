@@ -11,8 +11,14 @@ class Snidel
      */
     private $token;
 
+    /**
+     * @var bool
+     */
+    private $joined = false;
+
     public function __construct($maxProcs = 5)
     {
+        $this->ownerPid = getmypid();
         $this->childPids = array();
         $this->token = new Snidel_Token(getmypid(), $maxProcs);
     }
@@ -22,7 +28,6 @@ class Snidel
         if (!is_array($args)) {
             $args = array($args);
         }
-        $parentPid = getmypid();
 
         $pid = pcntl_fork();
         if (-1 === $pid) {
@@ -51,10 +56,16 @@ class Snidel
                 throw new RuntimeException('error in child.');
             }
         }
+
+        $this->joined = true;
     }
 
     public function get()
     {
+        if ($this->joined === false) {
+            $this->join();
+        }
+
         $ret = array();
         foreach ($this->childPids as $pid) {
             $data = new Snidel_Data($pid);
@@ -62,5 +73,12 @@ class Snidel
         }
 
         return $ret;
+    }
+
+    public function __destruct()
+    {
+        if ($this->ownerPid === getmypid() && $this->joined === false) {
+            throw new RuntimeException('must be joined');
+        }
     }
 }

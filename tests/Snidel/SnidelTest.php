@@ -10,7 +10,6 @@ class SnidelTest extends PHPUnit_Framework_TestCase
 
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo', 'bar'));
     }
@@ -23,7 +22,6 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $snidel = new Snidel();
 
         $snidel->fork('returnsFoo');
-        $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo'));
     }
@@ -36,7 +34,6 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $snidel = new Snidel();
 
         $snidel->fork('receivesArgumentsAndReturnsIt', 'foo');
-        $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo'));
     }
@@ -49,7 +46,6 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $snidel = new Snidel();
 
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo', 'bar'));
-        $snidel->join();
 
         $this->assertSame($snidel->get(), array('foobar'));
     }
@@ -67,10 +63,9 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $snidel->fork('sleepsTwoSeconds');
         $snidel->fork('sleepsTwoSeconds');
         $snidel->fork('sleepsTwoSeconds');
-        $snidel->join();
+        $snidel->get();
         $elapsed = time() - $start;
 
-        $snidel->get();
         $this->assertTrue(4 <= $elapsed && $elapsed < 6);
     }
 
@@ -84,7 +79,6 @@ class SnidelTest extends PHPUnit_Framework_TestCase
 
         $snidel->fork(array($test, 'returnsFoo'));
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar');
-        $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo', 'bar'));
     }
@@ -107,7 +101,6 @@ __EOS__
 
         $snidel->fork($func);
         $snidel->fork($func, 'bar');
-        $snidel->join();
 
         $this->assertSame($snidel->get(), array('foo', 'bar'));
     }
