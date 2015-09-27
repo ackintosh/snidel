@@ -39,7 +39,7 @@ class Snidel
             // child
             if ($this->token->accept()) {
                 $childPid = getmypid();
-                $ret = serialize(call_user_func_array($callable, $args));
+                $ret = call_user_func_array($callable, $args);
                 $data = new Snidel_Data($childPid);
                 $data->write($ret);
                 $this->token->back();
@@ -48,30 +48,19 @@ class Snidel
         }
     }
 
-    public function join()
+    public function get()
     {
+        $ret = array();
         $count = count($this->childPids);
         for ($i = 0; $i < $count; $i++) {
-            pcntl_waitpid(-1, $status);
+            $childPid = pcntl_waitpid(-1, $status);
             if (!pcntl_wifexited($status)) {
                 throw new RuntimeException('error in child.');
             }
+            $data = new Snidel_Data($childPid);
+            $ret[] = $data->readAndDelete();
         }
-
         $this->joined = true;
-    }
-
-    public function get()
-    {
-        if ($this->joined === false) {
-            $this->join();
-        }
-
-        $ret = array();
-        foreach ($this->childPids as $pid) {
-            $data = new Snidel_Data($pid);
-            $ret[] = unserialize($data->readAndDelete());
-        }
 
         return $ret;
     }

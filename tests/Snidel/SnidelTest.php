@@ -11,7 +11,7 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $this->assertSame($snidel->get(), array('foo', 'bar'));
+        $this->assertTrue($this->isSame($snidel->get(), array('foo', 'bar')));
     }
 
     /**
@@ -80,7 +80,7 @@ class SnidelTest extends PHPUnit_Framework_TestCase
         $snidel->fork(array($test, 'returnsFoo'));
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar');
 
-        $this->assertSame($snidel->get(), array('foo', 'bar'));
+        $this->assertTrue($this->isSame($snidel->get(), array('foo', 'bar')));
     }
 
     /**
@@ -102,6 +102,19 @@ __EOS__
         $snidel->fork($func);
         $snidel->fork($func, 'bar');
 
-        $this->assertSame($snidel->get(), array('foo', 'bar'));
+        $this->assertTrue($this->isSame($snidel->get(), array('foo', 'bar')));
+    }
+
+    private function isSame($result, $expect)
+    {
+        foreach ($result as $r) {
+            if ($keys = array_keys($expect, $r, true)) {
+                unset($expect[$keys[0]]);
+            } else {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

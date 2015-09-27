@@ -10,7 +10,10 @@ class Snidel_Data
 
     public function write($data)
     {
-        $serializedData = serialize($data);
+        $serializedData = serialize(array(
+            'pid'   => $this->pid,
+            'data'  => $data,
+        ));
         $s = shmop_open($this->genKey(), 'n', 0666, strlen($serializedData));
         if ($s === false) {
             exit(1);
@@ -26,19 +29,6 @@ class Snidel_Data
         shmop_close($s);
     }
 
-    public function read()
-    {
-        $s = shmop_open($this->genKey(), 'a', 0, 0);
-        if ($s === false) {
-            exit(1);
-        }
-
-        $data = shmop_read($s, 0, shmop_size($s));
-        shmop_close($s);
-
-        return unserialize($data);
-    }
-
     public function readAndDelete()
     {
         $s = shmop_open($this->genKey(), 'a', 0, 0);
@@ -52,8 +42,8 @@ class Snidel_Data
         }
         shmop_close($s);
 
-        return unserialize($data);
-
+        $unserialized = unserialize($data);
+        return $unserialized['data'];
     }
 
     private function genKey()
