@@ -50,7 +50,8 @@ class Snidel
 
     public function join()
     {
-        foreach (range(1, count($this->childPids)) as $i) {
+        $count = count($this->childPids);
+        for ($i = 0; $i < $count; $i++) {
             pcntl_waitpid(-1, $status);
             if (!pcntl_wifexited($status)) {
                 throw new RuntimeException('error in child.');
