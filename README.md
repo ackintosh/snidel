@@ -28,11 +28,12 @@ $snidel->fork($func, 'bar');
 $snidel->fork($func, 'baz');
 
 var_dump($snidel->get());
+// * the order of results is not guaranteed. *
 // array(3) {
 //   [0]=>
-//   string(3) "foo"
-//   [1]=>
 //   string(3) "bar"
+//   [1]=>
+//   string(3) "foo"
 //   [2]=>
 //   string(3) "baz"
 // }
