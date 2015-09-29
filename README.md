@@ -58,7 +58,7 @@ $snidel = new Snidel($maxProcs);
 
 ## Requirements
 
-Snidel works with PHP 5.2 or above.
+Snidel works with PHP 5.2 or higher.
 
 - [PCNTL functions](http://php.net/manual/en/ref.pcntl.php)
 - [Semaphore functions](http://php.net/manual/en/ref.sem.php)
