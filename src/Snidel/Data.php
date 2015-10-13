@@ -55,6 +55,7 @@ class Snidel_Data
             die('failed to delete : ' . $s);
         }
         shmop_close($s);
+        unlink('/tmp/' . sha1($this->pid));
 
         $unserialized = unserialize($data);
         return $unserialized['data'];
