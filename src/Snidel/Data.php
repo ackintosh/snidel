@@ -3,11 +3,20 @@ class Snidel_Data
 {
     private $pid;
 
+    /**
+     * @param   int     $pid
+     */
     public function __construct($pid)
     {
         $this->pid = $pid;
     }
 
+    /**
+     * write data
+     *
+     * @param   mix     $data
+     * @return  void
+     */
     public function write($data)
     {
         $serializedData = serialize(array(
@@ -29,6 +38,11 @@ class Snidel_Data
         shmop_close($s);
     }
 
+    /**
+     * read data and delete shared memory
+     *
+     * @return  mix
+     */
     public function readAndDelete()
     {
         $s = shmop_open($this->genKey(), 'a', 0, 0);
@@ -41,11 +55,17 @@ class Snidel_Data
             die('failed to delete : ' . $s);
         }
         shmop_close($s);
+        unlink('/tmp/' . sha1($this->pid));
 
         $unserialized = unserialize($data);
         return $unserialized['data'];
     }
 
+    /**
+     * generate IPC key
+     *
+     * @return  int
+     */
     private function genKey()
     {
         $pathname = '/tmp/' . sha1($this->pid);

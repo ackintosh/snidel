@@ -23,6 +23,14 @@ class Snidel
         $this->token = new Snidel_Token(getmypid(), $maxProcs);
     }
 
+    /**
+     * fork process
+     *
+     * @param   callable    $callable
+     * @param   array       $args
+     * @return  void
+     * @throws  RuntimeException
+     */
     public function fork($callable, $args = array())
     {
         if (!is_array($args)) {
@@ -48,6 +56,12 @@ class Snidel
         }
     }
 
+    /**
+     * wait child process and get results
+     *
+     * @return  array   $ret
+     * @throws  RuntimeException
+     */
     public function get()
     {
         $ret = array();
