@@ -16,6 +16,11 @@ class Snidel
      */
     private $joined = false;
 
+    /**
+     * @var array
+     */
+    private $results = array();
+
     public function __construct($maxProcs = 5)
     {
         $this->ownerPid = getmypid();
@@ -57,14 +62,16 @@ class Snidel
     }
 
     /**
-     * wait child process and get results
+     * waits until all children are completed
      *
-     * @return  array   $ret
-     * @throws  RuntimeException
+     * @return  void
      */
-    public function get()
+    public function wait()
     {
-        $ret = array();
+        if ($this->joined) {
+            return;
+        }
+
         $count = count($this->childPids);
         for ($i = 0; $i < $count; $i++) {
             $childPid = pcntl_waitpid(-1, $status);
@@ -72,11 +79,24 @@ class Snidel
                 throw new RuntimeException('error in child.');
             }
             $data = new Snidel_Data($childPid);
-            $ret[] = $data->readAndDelete();
+            $this->results[] = $data->readAndDelete();
         }
         $this->joined = true;
+    }
 
-        return $ret;
+    /**
+     * gets results
+     *
+     * @return  array   $ret
+     * @throws  RuntimeException
+     */
+    public function get()
+    {
+        if (!$this->joined) {
+            $this->wait();
+        }
+
+        return $this->results;
     }
 
     public function __destruct()

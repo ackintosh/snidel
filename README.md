@@ -27,6 +27,8 @@ $snidel->fork($func, 'foo');
 $snidel->fork($func, 'bar');
 $snidel->fork($func, 'baz');
 
+$snidel->wait();// optional
+
 var_dump($snidel->get());
 // * the order of results is not guaranteed. *
 // array(3) {
