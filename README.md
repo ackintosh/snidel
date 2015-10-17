@@ -58,6 +58,27 @@ $snidel = new Snidel($maxProcs);
 
 ```
 
+### Get results with tags
+
+```php
+$snidel->fork($func, 'foo', 'tag1');
+$snidel->fork($func, 'bar', 'tag1');
+$snidel->fork($func, 'baz', 'tag2');
+
+var_dump($snidel->get('tag1'));
+// array(2) {
+//   [0]=>
+//   string(3) "foo"
+//   [1]=>
+//   string(3) "bar"
+// }
+
+// returns an empty array when passed unknown tags.
+var_dump($snidel->get('unknown_tags'));
+// array(0) {
+// }
+```
+
 ## Requirements
 
 Snidel works with PHP 5.2 or higher.

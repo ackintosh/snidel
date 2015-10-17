@@ -105,6 +105,35 @@ __EOS__
         $this->assertTrue($this->isSame($snidel->get(), array('foo', 'bar')));
     }
 
+    /**
+     * @test
+     */
+    public function getResultsWithTag()
+    {
+        $snidel = new Snidel();
+        $test = new TestClass();
+
+        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar1', 'tag1');
+        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar2', 'tag1');
+        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar3', 'tag2');
+        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar4', 'tag2');
+
+        $this->assertTrue($this->isSame($snidel->get('tag1'), array('bar1', 'bar2')));
+        $this->assertTrue($this->isSame($snidel->get('tag2'), array('bar3', 'bar4')));
+    }
+
+    /**
+     * @test
+     */
+    public function returnsEmptyArrayWhenPassedUnknownTag()
+    {
+        $snidel = new Snidel();
+        $test = new TestClass();
+
+        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar', 'tag');
+        $this->assertSame(array(), $snidel->get('unknown_tag'));
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
