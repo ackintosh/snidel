@@ -50,14 +50,6 @@ echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 $snidel->fork($func, ['foo', 'bar']);
 ```
 
-### maxProcs
-
-```php
-$maxProcs = 3;
-$snidel = new Snidel($maxProcs);
-
-```
-
 ### Get results with tags
 
 ```php
@@ -77,6 +69,29 @@ var_dump($snidel->get('tag1'));
 var_dump($snidel->get('unknown_tags'));
 // array(0) {
 // }
+```
+
+### maxProcs
+
+```php
+$maxProcs = 3;
+$snidel = new Snidel($maxProcs);
+
+```
+
+### Output log
+
+```php
+fp = fopen('php://stdout', 'w');
+$snidel->setLogResource($fp);
+
+// logs are output to the `php://stdout`
+$snidel->fork($func, 'foo');
+
+// [info][26304(p)] created child process. pid: 26306
+// [info][26306(c)] waiting for the token to come around.
+// ...
+
 ```
 
 ## Requirements

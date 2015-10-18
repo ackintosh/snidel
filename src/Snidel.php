@@ -22,6 +22,11 @@ class Snidel
     private $results = array();
 
     /**
+     * @var resource
+     */
+    private $logResource;
+
+    /**
      * @var array
      */
     private $tagsToPids = array();
@@ -31,6 +36,18 @@ class Snidel
         $this->ownerPid = getmypid();
         $this->childPids = array();
         $this->token = new Snidel_Token(getmypid(), $maxProcs);
+        $this->info('parent pid: ' . $this->ownerPid);
+    }
+
+    /**
+     * sets the resource for the log.
+     *
+     * @param   resource    $resource
+     * @return  void
+     */
+    public function setLogResource($resource)
+    {
+        $this->logResource = $resource;
     }
 
     /**
@@ -53,16 +70,19 @@ class Snidel
             throw new RuntimeException('Failed to fork');
         } elseif ($pid) {
             // parent
+            $this->info('created child process. pid: ' . $pid);
             $this->childPids[] = $pid;
             if ($tag) {
                 $this->tagsToPids[$tag][] = $pid;
             }
         } else {
             // child
+            $this->info('waiting for the token to come around.');
             if ($this->token->accept()) {
-                $childPid = getmypid();
+                $this->info('started the function.');
                 $ret = call_user_func_array($callable, $args);
-                $data = new Snidel_Data($childPid);
+                $this->info('completed the function.');
+                $data = new Snidel_Data(getmypid());
                 $data->write($ret);
                 $this->token->back();
             }
@@ -131,6 +151,42 @@ class Snidel
         }
 
         return $results;
+    }
+
+    /**
+     * writes log
+     *
+     * @param   string  $message
+     * @return  void
+     */
+    private function info($message)
+    {
+        $this->writeLog('info', $message);
+    }
+
+    /**
+     * writes log
+     *
+     * @param   string  $type
+     * @param   string  $message
+     * @return  void
+     */
+    private function writeLog($type, $message)
+    {
+        if ($this->logResource === null) {
+            return;
+        }
+        $pid = getmypid();
+        fputs(
+            $this->logResource,
+            sprintf(
+                '[%s][%d(%s)] %s',
+                $type,
+                $pid,
+                ($this->ownerPid === $pid) ? 'p' : 'c',
+                $message . PHP_EOL
+            )
+        );
     }
 
     public function __destruct()
