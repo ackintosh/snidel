@@ -44,10 +44,18 @@ echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 // 3sec elapsed.
 ```
 
-### Passing multiple arguments
+### Same argument as `call_user_func_array`
 
 ```php
+// multiple arguments
 $snidel->fork($func, ['foo', 'bar']);
+
+// global function
+$snidel->fork('myfunction');
+
+// instance method
+$snidel->fork([$instance, 'method']);
+
 ```
 
 ### Get results with tags
