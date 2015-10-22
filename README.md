@@ -82,8 +82,7 @@ var_dump($snidel->get('unknown_tags'));
 ### maxProcs
 
 ```php
-$maxProcs = 3;
-$snidel = new Snidel($maxProcs);
+$snidel = new Snidel($maxProcs = 3);
 
 ```
 
