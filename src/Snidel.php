@@ -4,6 +4,11 @@ declare(ticks = 1);
 class Snidel
 {
     /**
+     * @var string
+     */
+    const VERSION = '0.0.2';
+
+    /**
      * @var array
      */
     private $childPids;
