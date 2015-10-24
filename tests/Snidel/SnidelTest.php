@@ -1,4 +1,7 @@
 <?php
+/**
+ * @runTestsInSeparateProcesses
+ */
 class SnidelTest extends PHPUnit_Framework_TestCase
 {
     /**

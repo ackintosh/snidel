@@ -1,4 +1,6 @@
 <?php
+declare(ticks = 1);
+
 class Snidel
 {
     /**
@@ -31,11 +33,29 @@ class Snidel
      */
     private $tagsToPids = array();
 
+    /**
+     * @var array
+     */
+    private $signals = array(
+        SIGTERM,
+        SIGINT,
+    );
+
+    /**
+     * @var int
+     */
+    private $receivedSignal;
+
     public function __construct($maxProcs = 5)
     {
         $this->ownerPid = getmypid();
         $this->childPids = array();
         $this->token = new Snidel_Token(getmypid(), $maxProcs);
+
+        foreach ($this->signals as $sig) {
+            pcntl_signal($sig, array($this, 'signalHandler'), false);
+        }
+
         $this->info('parent pid: ' . $this->ownerPid);
     }
 
@@ -77,6 +97,9 @@ class Snidel
             }
         } else {
             // child
+            foreach ($this->signals as $sig) {
+                pcntl_signal($sig, SIG_DFL, true);
+            }
             $this->info('waiting for the token to come around.');
             if ($this->token->accept()) {
                 $this->info('started the function.');
@@ -109,6 +132,7 @@ class Snidel
             }
             $data = new Snidel_Data($childPid);
             $this->results[$childPid] = $data->readAndDelete();
+            unset($this->childPids[array_search($childPid, $this->childPids)]);
         }
         $this->joined = true;
     }
@@ -189,9 +213,34 @@ class Snidel
         );
     }
 
+    /**
+     * @param   int     $sig
+     * @return  void
+     */
+    private function signalHandler($sig)
+    {
+        $this->receivedSignal = $sig;
+        $this->sendSignalToChild($sig);
+        unset($this->token);
+        exit;
+    }
+
+    /**
+     * sends signal to child
+     *
+     * @param   int     $sig
+     * @return  void
+     */
+    private function sendSignalToChild($sig)
+    {
+        foreach ($this->childPids as $pid) {
+            posix_kill($pid, $sig);
+        }
+    }
+
     public function __destruct()
     {
-        if ($this->ownerPid === getmypid() && $this->joined === false) {
+        if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
             throw new RuntimeException('must be joined');
         }
     }
