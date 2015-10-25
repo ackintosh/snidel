@@ -49,16 +49,32 @@ class Snidel_Data
         if ($s === false) {
             exit(1);
         }
-
         $data = shmop_read($s, 0, shmop_size($s));
+        shmop_close($s);
+
+        $this->delete();
+
+        $unserialized = unserialize($data);
+        return $unserialized['data'];
+    }
+
+    /**
+     * delete shared memory
+     *
+     * @return  void
+     */
+    public function delete()
+    {
+        $s = @shmop_open($this->genKey(), 'a', 0, 0);
+        if ($s === false) {
+            return;
+        }
+
         if (!shmop_delete($s)) {
             die('failed to delete : ' . $s);
         }
         shmop_close($s);
         unlink('/tmp/' . sha1($this->pid));
-
-        $unserialized = unserialize($data);
-        return $unserialized['data'];
     }
 
     /**

@@ -243,9 +243,25 @@ class Snidel
         }
     }
 
+    /**
+     * delete shared memory
+     *
+     * @return  void
+     */
+    private function deleteAllData()
+    {
+        foreach ($this->childPids as $pid) {
+            $data = new Snidel_Data($pid);
+            $data->delete();
+        }
+    }
+
     public function __destruct()
     {
         if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
+            $this->sendSignalToChild(SIGTERM);
+            $this->deleteAllData();
+            unset($this->token);
             throw new RuntimeException('must be joined');
         }
     }
