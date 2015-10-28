@@ -102,7 +102,7 @@ class Snidel
             // parent
             $this->info('created child process. pid: ' . $pid);
             $this->childPids[] = $pid;
-            if ($tag) {
+            if ($tag !== null) {
                 $this->tagsToPids[$tag][] = $pid;
             }
         } else {
