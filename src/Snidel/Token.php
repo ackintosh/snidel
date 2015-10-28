@@ -71,7 +71,7 @@ class Snidel_Token
     private function initializeQueue()
     {
         for ($i = 0; $i < $this->maxProcs; $i++) {
-            $this->back($this->ownerPid);
+            $this->back();
         }
     }
 
