@@ -12,6 +12,11 @@ class Snidel_Token
     private $maxProcs;
 
     /**
+     * @var resource
+     */
+    private $id;
+
+    /**
      * @param   int     $ownerPid
      * @param   int     $maxProcs
      */
@@ -30,6 +35,7 @@ class Snidel_Token
      */
     public function accept()
     {
+        $msgtype = $message = null;
         $success = msg_receive($this->id, 1, $msgtype, 100, $message, true, MSG_NOERROR);
         return $success;
     }

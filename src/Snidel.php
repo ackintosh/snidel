@@ -34,6 +34,11 @@ class Snidel
     private $logResource;
 
     /**
+     * @var int
+     */
+    private $ownerPid;
+
+    /**
      * @var array
      */
     private $tagsToPids = array();
@@ -131,6 +136,7 @@ class Snidel
 
         $count = count($this->childPids);
         for ($i = 0; $i < $count; $i++) {
+            $status = null;
             $childPid = pcntl_waitpid(-1, $status);
             if (!pcntl_wifexited($status)) {
                 throw new RuntimeException('error in child.');
