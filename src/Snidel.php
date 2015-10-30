@@ -97,7 +97,9 @@ class Snidel
 
         $pid = pcntl_fork();
         if (-1 === $pid) {
-            throw new RuntimeException('Failed to fork');
+            $message = 'must be joined';
+            $this->error($message);
+            throw new RuntimeException($message);
         } elseif ($pid) {
             // parent
             $this->info('created child process. pid: ' . $pid);
@@ -139,7 +141,9 @@ class Snidel
             $status = null;
             $childPid = pcntl_waitpid(-1, $status);
             if (!pcntl_wifexited($status)) {
-                throw new RuntimeException('error in child.');
+                $message = 'error in child.';
+                $this->error($message);
+                throw new RuntimeException($message);
             }
             $data = new Snidel_Data($childPid);
             $this->results[$childPid] = $data->readAndDelete();
@@ -197,6 +201,17 @@ class Snidel
     private function info($message)
     {
         $this->writeLog('info', $message);
+    }
+
+    /**
+     * writes log
+     *
+     * @param   string  $message
+     * @return  void
+     */
+    private function error($message)
+    {
+        $this->writeLog('error', $message);
     }
 
     /**
@@ -268,7 +283,10 @@ class Snidel
             $this->sendSignalToChild(SIGTERM);
             $this->deleteAllData();
             unset($this->token);
-            throw new RuntimeException('must be joined');
+
+            $message = 'must be joined';
+            $this->error($message);
+            throw new RuntimeException($message);
         }
     }
 }
