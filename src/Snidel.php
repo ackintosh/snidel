@@ -97,7 +97,7 @@ class Snidel
 
         $pid = pcntl_fork();
         if (-1 === $pid) {
-            $message = 'must be joined';
+            $message = 'could not fork a new process';
             $this->error($message);
             throw new RuntimeException($message);
         } elseif ($pid) {
