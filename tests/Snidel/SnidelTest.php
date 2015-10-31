@@ -127,14 +127,15 @@ __EOS__
 
     /**
      * @test
+     * @expectedException InvalidArgumentException
      */
-    public function returnsEmptyArrayWhenPassedUnknownTag()
+    public function throwsExceptionWhenPassedUnknownTag()
     {
         $snidel = new Snidel();
         $test = new TestClass();
 
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar', 'tag');
-        $this->assertSame(array(), $snidel->get('unknown_tag'));
+        $snidel->get('unknown_tag');
     }
 
     private function isSame($result, $expect)

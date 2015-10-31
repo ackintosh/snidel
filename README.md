@@ -73,10 +73,9 @@ var_dump($snidel->get('tag1'));
 //   string(3) "bar"
 // }
 
-// returns an empty array when passed unknown tags.
-var_dump($snidel->get('unknown_tags'));
-// array(0) {
-// }
+// throws InvalidArgumentException when passed unknown tags.
+$snidel->get('unknown_tags');
+// InvalidArgumentException: There is no tags: unknown_tags
 ```
 
 ### maxProcs

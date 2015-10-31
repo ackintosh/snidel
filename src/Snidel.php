@@ -157,7 +157,7 @@ class Snidel
      *
      * @param   string  $tag
      * @return  array   $ret
-     * @throws  RuntimeException
+     * @throws  InvalidArgumentException
      */
     public function get($tag = null)
     {
@@ -168,7 +168,11 @@ class Snidel
         if ($tag === null) {
             return array_values($this->results);
         } else {
-            return $this->getWithTag($tag);
+            try {
+                return $this->getWithTag($tag);
+            } catch (InvalidArgumentException $e) {
+                throw $e;
+            }
         }
     }
 
@@ -177,14 +181,15 @@ class Snidel
      *
      * @param   string  $tag
      * @return  array   $results
+     * @throws  InvalidArgumentException
      */
     private function getWithTag($tag)
     {
-        $results = array();
         if (!isset($this->tagsToPids[$tag])) {
-            return $results;
+            throw new InvalidArgumentException('There is no tags: ' . $tag);
         }
 
+        $results = array();
         foreach ($this->tagsToPids[$tag] as $pid) {
             $results[] = $this->results[$pid];
         }
