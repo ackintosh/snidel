@@ -89,8 +89,9 @@ class Snidel
      * @return  void
      * @throws  RuntimeException
      */
-    public function fork($callable, $args = array(), $tag = null)
+    public function fork($callable, $args = array(), $tag = null, $token = null)
     {
+        $token = $token ? $token : $this->token;
         if (!is_array($args)) {
             $args = array($args);
         }
@@ -107,19 +108,21 @@ class Snidel
             if ($tag !== null) {
                 $this->tagsToPids[$tag][] = $pid;
             }
+
+            return $pid;
         } else {
             // child
             foreach ($this->signals as $sig) {
                 pcntl_signal($sig, SIG_DFL, true);
             }
             $this->info('waiting for the token to come around.');
-            if ($this->token->accept()) {
+            if ($token->accept()) {
                 $this->info('started the function.');
                 $ret = call_user_func_array($callable, $args);
                 $this->info('completed the function.');
                 $data = new Snidel_Data(getmypid());
                 $data->write($ret);
-                $this->token->back();
+                $token->back();
             }
             exit;
         }
@@ -235,7 +238,8 @@ class Snidel
         fputs(
             $this->logResource,
             sprintf(
-                '[%s][%d(%s)] %s',
+                '[%s][%s][%d(%s)] %s',
+                date('Y-m-d H:i:s'),
                 $type,
                 $pid,
                 ($this->ownerPid === $pid) ? 'p' : 'c',
@@ -280,6 +284,103 @@ class Snidel
             $data = new Snidel_Data($pid);
             $data->delete();
         }
+    }
+
+    /**
+     * create map object
+     *
+     * @param   array       $args
+     * @param   callable    $callable
+     * @return  void
+     */
+    public function map($args, $callable)
+    {
+        return new Snidel_MapContainer($args, $callable);
+    }
+
+    /**
+     * run map object
+     *
+     * @param   Snidel_MapContainer
+     * @return  array
+     */
+    public function run($mapContainer)
+    {
+        $this->forkTheFirstProcessing($mapContainer);
+        $this->waitsAndConnectsProcess($mapContainer);
+
+        return $this->getResultsOf($mapContainer);
+    }
+
+    /**
+     * fork the first processing of the map container
+     *
+     * @param   Snidel_MapContainer
+     * @return  void
+     */
+    private function forkTheFirstProcessing($mapContainer)
+    {
+        foreach ($mapContainer->getFirstArgs() as $args) {
+            $childPid = $this->fork($mapContainer->getFirstMap()->getCallable(), $args);
+            $mapContainer->getFirstMap()->countTheForked();
+            $mapContainer->getFirstMap()->addChildPid($childPid);
+        }
+    }
+
+    /**
+     * waits and connects the process of map container
+     *
+     * @param   Snidel_MapContainer
+     * @return  void
+     */
+    private function waitsAndConnectsProcess($mapContainer)
+    {
+        if ($this->joined) {
+            return;
+        }
+
+        while ($mapContainer->isProcessing()) {
+            $status = null;
+            $childPid = pcntl_waitpid(-1, $status);
+            if (!pcntl_wifexited($status)) {
+                $message = 'error in child.';
+                $this->error($message);
+                throw new RuntimeException($message);
+            }
+            $data = new Snidel_Data($childPid);
+            $this->results[$childPid] = $data->readAndDelete();
+            unset($this->childPids[array_search($childPid, $this->childPids)]);
+            if ($nextMap = $mapContainer->nextMap($childPid)) {
+                $nextMapPid = $this->fork(
+                    $nextMap->getCallable(),
+                    array($this->results[$childPid]),
+                    null,
+                    $nextMap->getToken()
+                );
+                $this->info('started next map ' . $childPid . ' -> ' . $nextMapPid);
+                $nextMap->countTheForked();
+                $nextMap->addChildPid($nextMapPid);
+            }
+            $mapContainer->countTheCompleted($childPid);
+        }
+
+        $this->joined = true;
+    }
+
+    /**
+     * gets results of map container
+     *
+     * @param   Snidel_MapContainer
+     * @return  array
+     */
+    private function getResultsOf($mapContainer)
+    {
+        $results = array();
+        foreach ($mapContainer->getLastMapPids() as $pid) {
+            $results[] = $this->results[$pid];
+        }
+
+        return $results;
     }
 
     public function __destruct()

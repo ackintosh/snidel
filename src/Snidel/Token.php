@@ -12,6 +12,11 @@ class Snidel_Token
     private $maxProcs;
 
     /**
+     * @var string
+     */
+    private $keyPrefix;
+
+    /**
      * @var resource
      */
     private $id;
@@ -20,8 +25,9 @@ class Snidel_Token
      * @param   int     $ownerPid
      * @param   int     $maxProcs
      */
-    public function __construct($ownerPid, $maxProcs)
+    public function __construct($ownerPid, $maxProcs, $keyPrefix = '')
     {
+        $this->keyPrefix = $keyPrefix;
         $this->ownerPid = $ownerPid;
         $this->maxProcs = $maxProcs;
         $this->id = msg_get_queue($this->genId());
@@ -55,12 +61,17 @@ class Snidel_Token
      */
     private function genId()
     {
-        $pathname = '/tmp/' . sha1($this->ownerPid);
+        $pathname = '/tmp/' . sha1($this->getKey());
         if (!file_exists($pathname)) {
             touch($pathname);
         }
 
         return ftok($pathname, 'S');
+    }
+
+    private function getKey()
+    {
+        return $this->keyPrefix . $this->ownerPid;
     }
 
     /**
@@ -77,7 +88,7 @@ class Snidel_Token
 
     public function __destruct()
     {
-        if (getmypid() === $this->ownerPid) {
+        if ($this->keyPrefix . getmypid() === $this->getKey()) {
             return msg_remove_queue($this->id);
         }
     }

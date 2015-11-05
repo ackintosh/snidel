@@ -100,6 +100,48 @@ $snidel->fork($func, 'foo');
 
 ```
 
+### Connect the functions in parallel
+
+```
+$args = [
+    'BRING ME THE HORIZON',
+    'ARCH ENEMY',
+    'BULLET FOR MY VALENTINE',
+    'RACER X',
+    'OF MICE AND MEN',
+    'AT THE GATES',
+];
+
+$snidel = new Snidel($maxProcs = 2);
+
+// each of the functions are performed in parallel.
+$camelize = $snidel->map($args, function ($arg) {
+    return explode(' ', strtolower($arg));
+})->then(function ($arg) {
+    return array_map('ucfirst', $arg);
+})->then(function ($arg) {
+    return implode('', $arg);
+});
+
+var_dump($snidel->run($camelize));
+// array(6) {
+//   [0] =>
+//   string(6) "RacerX"
+//   [1] =>
+//   string(20) "BulletForMyValentine"
+//   [2] =>
+//   string(9) "ArchEnemy"
+//   [3] =>
+//   string(17) "BringMeTheHorizon"
+//   [4] =>
+//   string(10) "AtTheGates"
+//   [5] =>
+//   string(12) "OfMiceAndMen"
+// }
+```
+
+![Connect the functions in parallel](https://dl.dropboxusercontent.com/u/22083548/github/snidel.svg)
+
 ## Requirements
 
 Snidel works with PHP 5.2 or higher.
