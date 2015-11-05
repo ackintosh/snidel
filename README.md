@@ -102,7 +102,7 @@ $snidel->fork($func, 'foo');
 
 ### Connect the functions in parallel
 
-```
+```php
 $args = [
     'BRING ME THE HORIZON',
     'ARCH ENEMY',
