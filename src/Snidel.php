@@ -73,7 +73,7 @@ class Snidel
      * @return  int         $pid        forked PID of forked child process
      * @throws  RuntimeException
      */
-    public function fork($callable, $args = array(), $tag = null, $token = null)
+    public function fork(callable $callable, $args = array(), $tag = null, Snidel_Token $token = null)
     {
         $token = $token ? $token : $this->token;
         if (!is_array($args)) {
@@ -277,7 +277,7 @@ class Snidel
      * @param   callable    $callable
      * @return  void
      */
-    public function map($args, $callable)
+    public function map(Array $args, callable $callable)
     {
         return new Snidel_MapContainer($args, $callable, $this->maxProcs);
     }
@@ -288,7 +288,7 @@ class Snidel
      * @param   Snidel_MapContainer
      * @return  array
      */
-    public function run($mapContainer)
+    public function run(Snidel_MapContainer $mapContainer)
     {
         $this->forkTheFirstProcessing($mapContainer);
         $this->waitsAndConnectsProcess($mapContainer);
@@ -302,7 +302,7 @@ class Snidel
      * @param   Snidel_MapContainer
      * @return  void
      */
-    private function forkTheFirstProcessing($mapContainer)
+    private function forkTheFirstProcessing(Snidel_MapContainer $mapContainer)
     {
         foreach ($mapContainer->getFirstArgs() as $args) {
             $childPid = $this->fork($mapContainer->getFirstMap()->getCallable(), $args);
@@ -317,7 +317,7 @@ class Snidel
      * @param   Snidel_MapContainer
      * @return  void
      */
-    private function waitsAndConnectsProcess($mapContainer)
+    private function waitsAndConnectsProcess(Snidel_MapContainer $mapContainer)
     {
         if ($this->joined) {
             return;
@@ -357,7 +357,7 @@ class Snidel
      * @param   Snidel_MapContainer
      * @return  array
      */
-    private function getResultsOf($mapContainer)
+    private function getResultsOf(Snidel_MapContainer $mapContainer)
     {
         $results = array();
         foreach ($mapContainer->getLastMapPids() as $pid) {
