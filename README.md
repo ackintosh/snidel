@@ -140,7 +140,7 @@ var_dump($snidel->run($camelize));
 // }
 ```
 
-![Connect the functions in parallel](https://dl.dropboxusercontent.com/u/22083548/github/snidel.svg)
+<iframe src="https://player.vimeo.com/video/144969743" width="500" height="301" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
 ## Requirements
 
