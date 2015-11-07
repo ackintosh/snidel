@@ -140,7 +140,7 @@ var_dump($snidel->run($camelize));
 // }
 ```
 
-<iframe src="https://player.vimeo.com/video/144969743" width="500" height="301" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+<video controls="controls" width="500" height="300" name="Video Name" src="https://dl.dropboxusercontent.com/u/22083548/github/snidel/snidel.mov"></video>
 
 ## Requirements
 
