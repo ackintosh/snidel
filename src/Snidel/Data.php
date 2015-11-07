@@ -1,6 +1,7 @@
 <?php
 class Snidel_Data
 {
+    /** @var int */
     private $pid;
 
     /**

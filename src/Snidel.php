@@ -3,57 +3,37 @@ declare(ticks = 1);
 
 class Snidel
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     const VERSION = '0.1.0';
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $childPids;
 
-    /**
-     * @var Snidel_Token
-     */
+    /** @var Snidel_Token */
     private $token;
 
-    /**
-     * @var bool
-     */
+    /** @var bool */
     private $joined = false;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $results = array();
 
-    /**
-     * @var resource
-     */
+    /** @var resource */
     private $logResource;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $ownerPid;
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $tagsToPids = array();
 
-    /**
-     * @var array
-     */
+    /** @var array */
     private $signals = array(
         SIGTERM,
         SIGINT,
     );
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $receivedSignal;
 
     public function __construct($maxProcs = 5)
@@ -108,8 +88,6 @@ class Snidel
             if ($tag !== null) {
                 $this->tagsToPids[$tag][] = $pid;
             }
-
-            return $pid;
         } else {
             // child
             foreach ($this->signals as $sig) {
@@ -126,6 +104,8 @@ class Snidel
             }
             exit;
         }
+
+        return $pid;
     }
 
     /**

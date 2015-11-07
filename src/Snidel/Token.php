@@ -1,24 +1,16 @@
 <?php
 class Snidel_Token
 {
-    /**
-     * @var int
-     */
+    /** @var int */
     private $ownerPid;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $maxProcs;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $keyPrefix;
 
-    /**
-     * @var resource
-     */
+    /** @var resource */
     private $id;
 
     /**
