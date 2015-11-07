@@ -70,7 +70,7 @@ class Snidel
      * @param   callable    $callable
      * @param   array       $args
      * @param   string      $tag
-     * @return  void
+     * @return  int         $pid        forked PID of forked child process
      * @throws  RuntimeException
      */
     public function fork($callable, $args = array(), $tag = null, $token = null)
