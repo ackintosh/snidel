@@ -9,6 +9,9 @@ class Snidel
     /** @var array */
     private $childPids;
 
+    /** @var int */
+    private $maxProcs;
+
     /** @var Snidel_Token */
     private $token;
 
@@ -38,9 +41,10 @@ class Snidel
 
     public function __construct($maxProcs = 5)
     {
-        $this->ownerPid = getmypid();
-        $this->childPids = array();
-        $this->token = new Snidel_Token(getmypid(), $maxProcs);
+        $this->ownerPid     = getmypid();
+        $this->childPids    = array();
+        $this->maxProcs     = $maxProcs;
+        $this->token        = new Snidel_Token(getmypid(), $maxProcs);
 
         foreach ($this->signals as $sig) {
             pcntl_signal($sig, array($this, 'signalHandler'), false);
@@ -275,7 +279,7 @@ class Snidel
      */
     public function map($args, $callable)
     {
-        return new Snidel_MapContainer($args, $callable);
+        return new Snidel_MapContainer($args, $callable, $this->maxProcs);
     }
 
     /**

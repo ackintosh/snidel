@@ -16,9 +16,9 @@ class Snidel_Map
     /** @var int */
     private $completedCount = 0;
 
-    public function __construct($callable)
+    public function __construct($callable, $maxProcs)
     {
-        $this->token = new Snidel_Token(getmypid(), 5, (string)mt_rand(1, 10000));
+        $this->token = new Snidel_Token(getmypid(), $maxProcs, (string)mt_rand(1, 10000));
         $this->callable = $callable;
     }
 

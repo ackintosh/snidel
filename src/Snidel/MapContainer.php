@@ -7,15 +7,19 @@ class Snidel_MapContainer
     /** @var Snidel_Map[] */
     private $maps = array();
 
-    public function __construct($args, $func)
+    /** @var int */
+    private $maxProcs;
+
+    public function __construct($args, $func, $maxProcs)
     {
         $this->args = $args;
-        $this->maps[] = new Snidel_Map($func);
+        $this->maps[] = new Snidel_Map($func, $maxProcs);
+        $this->maxProcs = $maxProcs;
     }
 
     public function then($func)
     {
-        $this->maps[] = new Snidel_Map($func);
+        $this->maps[] = new Snidel_Map($func, $this->maxProcs);
         return $this;
     }
 
