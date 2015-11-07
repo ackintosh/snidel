@@ -73,7 +73,7 @@ class Snidel
      * @return  int         $pid        forked PID of forked child process
      * @throws  RuntimeException
      */
-    public function fork(callable $callable, $args = array(), $tag = null, Snidel_Token $token = null)
+    public function fork($callable, $args = array(), $tag = null, Snidel_Token $token = null)
     {
         $token = $token ? $token : $this->token;
         if (!is_array($args)) {
@@ -277,7 +277,7 @@ class Snidel
      * @param   callable    $callable
      * @return  void
      */
-    public function map(Array $args, callable $callable)
+    public function map(Array $args, $callable)
     {
         return new Snidel_MapContainer($args, $callable, $this->maxProcs);
     }

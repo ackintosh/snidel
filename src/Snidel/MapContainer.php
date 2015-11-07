@@ -15,7 +15,7 @@ class Snidel_MapContainer
      * @param   callable    $callable
      * @param   int         $maxProcs
      */
-    public function __construct(Array $args, callable $callable, $maxProcs)
+    public function __construct(Array $args, $callable, $maxProcs)
     {
         $this->args = $args;
         $this->maps[] = new Snidel_Map($callable, $maxProcs);
@@ -28,7 +28,7 @@ class Snidel_MapContainer
      * @param   callable                $callable
      * @return  Snidel_MapContainer     $this
      */
-    public function then(callable $callable)
+    public function then($callable)
     {
         $this->maps[] = new Snidel_Map($callable, $this->maxProcs);
         return $this;
