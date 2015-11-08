@@ -22,7 +22,7 @@ class Snidel_Map
      */
     public function __construct($callable, $maxProcs)
     {
-        $this->token = new Snidel_Token(getmypid(), $maxProcs, (string)mt_rand(1, 10000));
+        $this->token = new Snidel_Token(getmypid(), $maxProcs);
         $this->callable = $callable;
     }
 

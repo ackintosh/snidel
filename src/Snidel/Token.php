@@ -17,9 +17,9 @@ class Snidel_Token
      * @param   int     $ownerPid
      * @param   int     $maxProcs
      */
-    public function __construct($ownerPid, $maxProcs, $keyPrefix = '')
+    public function __construct($ownerPid, $maxProcs)
     {
-        $this->keyPrefix = $keyPrefix;
+        $this->keyPrefix = uniqid((string) mt_rand(1, 100), true);
         $this->ownerPid = $ownerPid;
         $this->maxProcs = $maxProcs;
         $this->id = msg_get_queue($this->genId());
