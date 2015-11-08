@@ -270,12 +270,17 @@ class Snidel
      * delete shared memory
      *
      * @return  void
+     * @throws  RuntimeException
      */
     private function deleteAllData()
     {
         foreach ($this->childPids as $pid) {
             $data = new Snidel_Data($pid);
-            $data->delete();
+            try {
+                $data->delete();
+            } catch (RuntimeException $e) {
+                throw $e;
+            }
         }
     }
 
@@ -352,7 +357,11 @@ class Snidel
                 throw new RuntimeException($message);
             }
             $data = new Snidel_Data($childPid);
-            $this->results[$childPid] = $data->readAndDelete();
+            try {
+                $this->results[$childPid] = $data->readAndDelete();
+            } catch (RuntimeException $e) {
+                throw $e;
+            }
             unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {

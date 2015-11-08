@@ -55,7 +55,11 @@ class Snidel_Data
         $data = shmop_read($s, 0, shmop_size($s));
         shmop_close($s);
 
-        $this->delete();
+        try {
+            $this->delete();
+        } catch (RuntimeException $e) {
+            throw $e;
+        }
 
         $unserialized = unserialize($data);
         return $unserialized['data'];
@@ -65,6 +69,7 @@ class Snidel_Data
      * delete shared memory
      *
      * @return  void
+     * @throws  RuntimeException
      */
     public function delete()
     {
@@ -74,7 +79,7 @@ class Snidel_Data
         }
 
         if (!shmop_delete($s)) {
-            die('failed to delete : ' . $s);
+            throw new RuntimeException('could not delete shared memory');
         }
         shmop_close($s);
         unlink('/tmp/' . sha1($this->pid));
