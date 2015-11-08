@@ -43,7 +43,8 @@ class Snidel_Token
      */
     public function back()
     {
-        return msg_send($this->id, 1, getmypid());// owner(parent) or child pid
+        // argument #3 is owner(parent) pid or child pid
+        return msg_send($this->id, 1, getmypid());
     }
 
     /**
