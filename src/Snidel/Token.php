@@ -82,6 +82,7 @@ class Snidel_Token
     public function __destruct()
     {
         if ($this->keyPrefix . getmypid() === $this->getKey()) {
+            unlink('/tmp/' . sha1($this->getKey()));
             return msg_remove_queue($this->id);
         }
     }
