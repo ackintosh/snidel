@@ -103,10 +103,14 @@ class Snidel
                 $ret = call_user_func_array($callable, $args);
                 $this->info('completed the function.');
                 $data = new Snidel_Data(getmypid());
-                $data->write($ret);
+                try {
+                    $data->write($ret);
+                } catch (RuntimeException $e) {
+                    throw $e;
+                }
                 $token->back();
             }
-            exit;
+            $this->_exit();
         }
 
         return $pid;
@@ -116,6 +120,7 @@ class Snidel
      * waits until all children are completed
      *
      * @return  void
+     * @throws  RuntimeException
      */
     public function wait()
     {
@@ -133,7 +138,11 @@ class Snidel
                 throw new RuntimeException($message);
             }
             $data = new Snidel_Data($childPid);
-            $this->results[$childPid] = $data->readAndDelete();
+            try {
+                $this->results[$childPid] = $data->readAndDelete();
+            } catch (RuntimeException $e) {
+                throw $e;
+            }
             unset($this->childPids[array_search($childPid, $this->childPids)]);
         }
         $this->joined = true;
@@ -241,7 +250,7 @@ class Snidel
         $this->receivedSignal = $sig;
         $this->sendSignalToChild($sig);
         unset($this->token);
-        exit;
+        $this->_exit();
     }
 
     /**
@@ -287,11 +296,16 @@ class Snidel
      *
      * @param   Snidel_MapContainer
      * @return  array
+     * @throws  RuntimeException
      */
     public function run(Snidel_MapContainer $mapContainer)
     {
-        $this->forkTheFirstProcessing($mapContainer);
-        $this->waitsAndConnectsProcess($mapContainer);
+        try {
+            $this->forkTheFirstProcessing($mapContainer);
+            $this->waitsAndConnectsProcess($mapContainer);
+        } catch (RuntimeException $e) {
+            throw $e;
+        }
 
         return $this->getResultsOf($mapContainer);
     }
@@ -301,11 +315,16 @@ class Snidel
      *
      * @param   Snidel_MapContainer
      * @return  void
+     * @throws  RuntimeException
      */
     private function forkTheFirstProcessing(Snidel_MapContainer $mapContainer)
     {
         foreach ($mapContainer->getFirstArgs() as $args) {
-            $childPid = $this->fork($mapContainer->getFirstMap()->getCallable(), $args);
+            try {
+                $childPid = $this->fork($mapContainer->getFirstMap()->getCallable(), $args);
+            } catch (RuntimeException $e) {
+                throw $e;
+            }
             $mapContainer->getFirstMap()->countTheForked();
             $mapContainer->getFirstMap()->addChildPid($childPid);
         }
@@ -316,6 +335,7 @@ class Snidel
      *
      * @param   Snidel_MapContainer
      * @return  void
+     * @throws  RuntimeException
      */
     private function waitsAndConnectsProcess(Snidel_MapContainer $mapContainer)
     {
@@ -335,12 +355,16 @@ class Snidel
             $this->results[$childPid] = $data->readAndDelete();
             unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
-                $nextMapPid = $this->fork(
-                    $nextMap->getCallable(),
-                    array($this->results[$childPid]),
-                    null,
-                    $nextMap->getToken()
-                );
+                try {
+                    $nextMapPid = $this->fork(
+                        $nextMap->getCallable(),
+                        array($this->results[$childPid]),
+                        null,
+                        $nextMap->getToken()
+                    );
+                } catch (RuntimeException $e) {
+                    throw $e;
+                }
                 $this->info('started next map ' . $childPid . ' -> ' . $nextMapPid);
                 $nextMap->countTheForked();
                 $nextMap->addChildPid($nextMapPid);
@@ -365,6 +389,11 @@ class Snidel
         }
 
         return $results;
+    }
+
+    private function _exit($status = 0)
+    {
+        exit($status);
     }
 
     public function __destruct()

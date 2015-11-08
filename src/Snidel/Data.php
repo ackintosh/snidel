@@ -17,6 +17,7 @@ class Snidel_Data
      *
      * @param   mix     $data
      * @return  void
+     * @throws  RuntimeException
      */
     public function write($data)
     {
@@ -26,14 +27,14 @@ class Snidel_Data
         ));
         $s = shmop_open($this->genKey(), 'n', 0666, strlen($serializedData));
         if ($s === false) {
-            exit(1);
+            throw new RuntimeException('could not open shared memory');
         }
 
         $writtenSize = shmop_write($s, $serializedData, 0);
         if ($writtenSize === false) {
             shmop_delete($s);
             shmop_close($s);
-            exit(1);
+            throw new RuntimeException('could not write the data to shared memory');
         }
 
         shmop_close($s);
@@ -43,12 +44,13 @@ class Snidel_Data
      * read data and delete shared memory
      *
      * @return  mix
+     * @throws  RuntimeException
      */
     public function readAndDelete()
     {
         $s = shmop_open($this->genKey(), 'a', 0, 0);
         if ($s === false) {
-            exit(1);
+            throw new RuntimeException('could not open shared memory');
         }
         $data = shmop_read($s, 0, shmop_size($s));
         shmop_close($s);
