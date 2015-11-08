@@ -89,7 +89,7 @@ $snidel = new Snidel($maxProcs = 3);
 
 ```php
 fp = fopen('php://stdout', 'w');
-$snidel->setLogResource($fp);
+$snidel->setLoggingDestination($fp);
 
 // logs are output to the `php://stdout`
 $snidel->fork($func, 'foo');

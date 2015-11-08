@@ -22,7 +22,7 @@ class Snidel
     private $results = array();
 
     /** @var resource */
-    private $logResource;
+    private $loggingDestination;
 
     /** @var int */
     private $ownerPid;
@@ -59,9 +59,9 @@ class Snidel
      * @param   resource    $resource
      * @return  void
      */
-    public function setLogResource($resource)
+    public function setLoggingDestination($resource)
     {
-        $this->logResource = $resource;
+        $this->loggingDestination = $resource;
     }
 
     /**
@@ -224,12 +224,12 @@ class Snidel
      */
     private function writeLog($type, $message)
     {
-        if ($this->logResource === null) {
+        if ($this->loggingDestination === null) {
             return;
         }
         $pid = getmypid();
         fputs(
-            $this->logResource,
+            $this->loggingDestination,
             sprintf(
                 '[%s][%s][%d(%s)] %s',
                 date('Y-m-d H:i:s'),
