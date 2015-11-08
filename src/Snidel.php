@@ -4,7 +4,7 @@ declare(ticks = 1);
 class Snidel
 {
     /** @var string */
-    const VERSION = '0.1.0';
+    const VERSION = '0.2.0';
 
     /** @var array */
     private $childPids;
