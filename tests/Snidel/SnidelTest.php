@@ -138,6 +138,16 @@ __EOS__
         $snidel->get('unknown_tag');
     }
 
+    /**
+     * @test
+     */
+    public function mapRun()
+    {
+        $snidel = new Snidel();
+        $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
+        $this->isSame($result, array('Foo', 'Bar'));
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
