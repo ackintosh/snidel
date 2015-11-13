@@ -97,17 +97,18 @@ class Snidel
             foreach ($this->signals as $sig) {
                 pcntl_signal($sig, SIG_DFL, true);
             }
-            $this->info('waiting for the token to come around.');
+            $this->info('--> waiting for the token come around.');
             if ($token->accept()) {
-                $this->info('started the function.');
+                $this->info('----> started the function.');
                 $ret = call_user_func_array($callable, $args);
-                $this->info('completed the function.');
+                $this->info('<---- completed the function.');
                 $data = new Snidel_Data(getmypid());
                 try {
                     $data->write($ret);
                 } catch (RuntimeException $e) {
                     throw $e;
                 }
+                $this->info('<-- return token.');
                 $token->back();
             }
             $this->_exit();
@@ -133,7 +134,7 @@ class Snidel
             $status = null;
             $childPid = pcntl_waitpid(-1, $status);
             if (!pcntl_wifexited($status)) {
-                $message = 'error in child.';
+                $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->error($message);
                 throw new RuntimeException($message);
             }
@@ -182,7 +183,7 @@ class Snidel
     private function getWithTag($tag)
     {
         if (!isset($this->tagsToPids[$tag])) {
-            throw new InvalidArgumentException('There is no tags: ' . $tag);
+            throw new InvalidArgumentException('unknown tag: ' . $tag);
         }
 
         $results = array();
@@ -247,9 +248,16 @@ class Snidel
      */
     private function signalHandler($sig)
     {
+        $this->info('received signal. signo: ' . $sig);
         $this->receivedSignal = $sig;
-        $this->sendSignalToChild($sig);
+
+        $this->info('--> sending a signal to children.');
+        $this->sendSignalToChildren($sig);
+
+        $this->info('--> deleting token.');
         unset($this->token);
+
+        $this->info('<-- signal handling has been completed successfully.');
         $this->_exit();
     }
 
@@ -259,9 +267,10 @@ class Snidel
      * @param   int     $sig
      * @return  void
      */
-    private function sendSignalToChild($sig)
+    private function sendSignalToChildren($sig)
     {
         foreach ($this->childPids as $pid) {
+            $this->info('----> sending a signal to child. pid: ' . $pid);
             posix_kill($pid, $sig);
         }
     }
@@ -352,7 +361,7 @@ class Snidel
             $status = null;
             $childPid = pcntl_waitpid(-1, $status);
             if (!pcntl_wifexited($status)) {
-                $message = 'error in child.';
+                $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->error($message);
                 throw new RuntimeException($message);
             }
@@ -374,7 +383,8 @@ class Snidel
                 } catch (RuntimeException $e) {
                     throw $e;
                 }
-                $this->info('started next map ' . $childPid . ' -> ' . $nextMapPid);
+                $message = sprintf('processing is connected from [%d] to [%d]', $childPid, $nextMapPid);
+                $this->info($message);
                 $nextMap->countTheForked();
                 $nextMap->addChildPid($nextMapPid);
             }
@@ -408,13 +418,21 @@ class Snidel
     public function __destruct()
     {
         if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
-            $this->sendSignalToChild(SIGTERM);
+            $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
+            $this->error($message);
+            $this->info('destruct processes are started.');
+
+            $this->info('--> sending a signal to children.');
+            $this->sendSignalToChildren(SIGTERM);
+
+            $this->info('--> deleting all shared memory.');
             $this->deleteAllData();
+
+            $this->info('--> deleting token.');
             unset($this->token);
 
-            $message = 'must be joined';
-            $this->error($message);
-            throw new RuntimeException($message);
+            $this->info('--> destruct processes are finished successfully.');
+            throw new LogicException($message);
         }
     }
 }
