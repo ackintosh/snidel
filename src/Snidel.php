@@ -434,5 +434,9 @@ class Snidel
             $this->info('--> destruct processes are finished successfully.');
             throw new LogicException($message);
         }
+
+        if ($this->loggingDestination && get_resource_type($this->loggingDestination) !== 'Unknown') {
+            fclose($this->loggingDestination);
+        }
     }
 }
