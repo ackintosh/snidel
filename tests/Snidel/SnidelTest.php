@@ -148,6 +148,18 @@ __EOS__
         $this->isSame($result, array('Foo', 'Bar'));
     }
 
+    /**
+     * @test
+     */
+    public function setLoggingDestination()
+    {
+        $snidel = new Snidel();
+        $fp = fopen('php://stdout', 'w');
+        $snidel->setLoggingDestination($fp);
+        $this->assertObjectHasAttribute('loggingDestination', $snidel);
+        $snidel->wait();
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
