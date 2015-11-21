@@ -140,7 +140,31 @@ var_dump($snidel->run($camelize));
 // }
 ```
 
-<video controls="controls" width="500" height="300" name="Video Name" src="https://dl.dropboxusercontent.com/u/22083548/github/snidel/snidel.mov"></video>
+### Error informations of children
+
+```
+$snidel->fork(function ($arg1, $arg2) {
+    exit(1);
+}, ['foo', 'bar']);
+$snidel->wait();
+
+var_dump($snidel->getErrors());
+// array(1) {
+//   [51813] => // pid
+//   array(5) {
+//     'status' =>  int(256)
+//     'message' => string(50) "an error has occurred in child // process. pid: 51813"
+//     'callable' => string(9) "*Closure*"
+//     'args' =>
+//       array(2) {
+//         [0] => string(3) "foo"
+//         [1] => string(3) "bar"
+//       }
+//     'return' => NULL
+//     }
+//   }
+// }
+```
 
 ## Requirements
 

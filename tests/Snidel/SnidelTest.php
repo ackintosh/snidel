@@ -169,7 +169,7 @@ __EOS__
         $snidel->fork('abnormalExit');
         $snidel->wait();
 
-        $this->assertTrue(count($snidel->getErrorChildren()) === 1);
+        $this->assertTrue(count($snidel->getErrors()) === 1);
     }
 
     private function isSame($result, $expect)

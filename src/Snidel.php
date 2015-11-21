@@ -10,7 +10,7 @@ class Snidel
     private $childPids = array();
 
     /** @var array */
-    private $errorChildren;
+    private $errors;
 
     /** @var int */
     private $maxProcs;
@@ -148,7 +148,7 @@ class Snidel
             if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->error($message);
-                $this->errorChildren[$childPid] = array(
+                $this->errors[$childPid] = array(
                     'status'    => $status,
                     'message'   => $message,
                     'callable'  => $result['callable'],
@@ -163,9 +163,9 @@ class Snidel
         $this->joined = true;
     }
 
-    public function getErrorChildren()
+    public function getErrors()
     {
-        return $this->errorChildren;
+        return $this->errors;
     }
 
     /**
