@@ -42,6 +42,12 @@ class Snidel
     /** @var int */
     private $receivedSignal;
 
+    /** @var Snidel_Token */
+    private $processToken;
+
+    /** @var array */
+    private $processInformation = array();
+
     public function __construct($maxProcs = 5)
     {
         $this->ownerPid     = getmypid();
@@ -78,7 +84,7 @@ class Snidel
      */
     public function fork($callable, $args = array(), $tag = null, Snidel_Token $token = null)
     {
-        $token = $token ? $token : $this->token;
+        $this->processToken = $token ? $token : $this->token;
         if (!is_array($args)) {
             $args = array($args);
         }
@@ -97,22 +103,18 @@ class Snidel
             }
         } else {
             // child
+            register_shutdown_function(array($this, 'childShutdownFunction'));
+            $this->processInformation['callable']    = $callable instanceof Closure ? '*Closure*' : $callable;
+            $this->processInformation['args']        = $args;
+
             foreach ($this->signals as $sig) {
                 pcntl_signal($sig, SIG_DFL, true);
             }
             $this->info('--> waiting for the token come around.');
-            if ($token->accept()) {
+            if ($this->processToken->accept()) {
                 $this->info('----> started the function.');
-                $ret = call_user_func_array($callable, $args);
+                $this->processInformation['return'] = call_user_func_array($callable, $args);
                 $this->info('<---- completed the function.');
-                $data = new Snidel_Data(getmypid());
-                try {
-                    $data->write($ret);
-                } catch (RuntimeException $e) {
-                    throw $e;
-                }
-                $this->info('<-- return token.');
-                $token->back();
             }
             $this->_exit();
         }
@@ -136,17 +138,25 @@ class Snidel
         for ($i = 0; $i < $count; $i++) {
             $status = null;
             $childPid = pcntl_waitpid(-1, $status);
+            $data = new Snidel_Data($childPid);
+            try {
+                $result = $data->readAndDelete();
+            } catch (RuntimeException $e) {
+                throw $e;
+            }
+
             if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->error($message);
-                $this->errorChildren[$childPid] = $message;
+                $this->errorChildren[$childPid] = array(
+                    'status'    => $status,
+                    'message'   => $message,
+                    'callable'  => $result['callable'],
+                    'args'      => $result['args'],
+                    'return'    => isset($result['return']) ? $result['return'] : null,
+                );
             } else {
-                $data = new Snidel_Data($childPid);
-                try {
-                    $this->results[$childPid] = $data->readAndDelete();
-                } catch (RuntimeException $e) {
-                    throw $e;
-                }
+                $this->results[$childPid] = $result['return'];
             }
             unset($this->childPids[array_search($childPid, $this->childPids)]);
         }
@@ -369,16 +379,19 @@ class Snidel
         while ($mapContainer->isProcessing()) {
             $status = null;
             $childPid = pcntl_waitpid(-1, $status);
-            if (!pcntl_wifexited($status)) {
+            $data = new Snidel_Data($childPid);
+            try {
+                $result = $data->readAndDelete();
+            } catch (RuntimeException $e) {
+                throw $e;
+            }
+
+            if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->error($message);
                 throw new RuntimeException($message);
-            }
-            $data = new Snidel_Data($childPid);
-            try {
-                $this->results[$childPid] = $data->readAndDelete();
-            } catch (RuntimeException $e) {
-                throw $e;
+            } else {
+                $this->results[$childPid] = $result['return'];
             }
             unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
@@ -422,6 +435,18 @@ class Snidel
     private function _exit($status = 0)
     {
         exit($status);
+    }
+
+    public function childShutdownFunction()
+    {
+        $data = new Snidel_Data(getmypid());
+        try {
+            $data->write($this->processInformation);
+        } catch (RuntimeException $e) {
+            throw $e;
+        }
+        $this->info('<-- return token.');
+        $this->processToken->back();
     }
 
     public function __destruct()

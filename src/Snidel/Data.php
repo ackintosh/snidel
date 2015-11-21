@@ -48,18 +48,31 @@ class Snidel_Data
      */
     public function readAndDelete()
     {
-        $s = shmop_open($this->genKey(), 'a', 0, 0);
-        if ($s === false) {
-            throw new RuntimeException('could not open shared memory');
-        }
-        $data = shmop_read($s, 0, shmop_size($s));
-        shmop_close($s);
+        $data = $this->read();
 
         try {
             $this->delete();
         } catch (RuntimeException $e) {
             throw $e;
         }
+
+        return $data;
+    }
+
+    /**
+     * read data
+     *
+     * @return  array
+     * @throws  RuntimeException
+     */
+    public function read()
+    {
+        $s = shmop_open($this->genKey(), 'a', 0, 0);
+        if ($s === false) {
+            throw new RuntimeException('could not open shared memory');
+        }
+        $data = shmop_read($s, 0, shmop_size($s));
+        shmop_close($s);
 
         $unserialized = unserialize($data);
         return $unserialized['data'];
