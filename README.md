@@ -142,7 +142,7 @@ var_dump($snidel->run($camelize));
 
 ### Error informations of children
 
-```
+```php
 $snidel->fork(function ($arg1, $arg2) {
     exit(1);
 }, ['foo', 'bar']);
