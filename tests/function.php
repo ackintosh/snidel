@@ -14,3 +14,8 @@ function sleepsTwoSeconds()
 {
     sleep(2);
 }
+
+function abnormalExit()
+{
+    exit(1);
+}

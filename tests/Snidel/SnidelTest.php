@@ -160,6 +160,18 @@ __EOS__
         $snidel->wait();
     }
 
+    /**
+     * @test
+     */
+    public function abnormalExit()
+    {
+        $snidel = new Snidel();
+        $snidel->fork('abnormalExit');
+        $snidel->wait();
+
+        $this->assertTrue(count($snidel->getErrorChildren()) === 1);
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {

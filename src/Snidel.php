@@ -7,7 +7,10 @@ class Snidel
     const VERSION = '0.2.0';
 
     /** @var array */
-    private $childPids;
+    private $childPids = array();
+
+    /** @var array */
+    private $errorChildren;
 
     /** @var int */
     private $maxProcs;
@@ -133,20 +136,26 @@ class Snidel
         for ($i = 0; $i < $count; $i++) {
             $status = null;
             $childPid = pcntl_waitpid(-1, $status);
-            if (!pcntl_wifexited($status)) {
+            if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->error($message);
-                throw new RuntimeException($message);
-            }
-            $data = new Snidel_Data($childPid);
-            try {
-                $this->results[$childPid] = $data->readAndDelete();
-            } catch (RuntimeException $e) {
-                throw $e;
+                $this->errorChildren[$childPid] = $message;
+            } else {
+                $data = new Snidel_Data($childPid);
+                try {
+                    $this->results[$childPid] = $data->readAndDelete();
+                } catch (RuntimeException $e) {
+                    throw $e;
+                }
             }
             unset($this->childPids[array_search($childPid, $this->childPids)]);
         }
         $this->joined = true;
+    }
+
+    public function getErrorChildren()
+    {
+        return $this->errorChildren;
     }
 
     /**
