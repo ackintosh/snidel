@@ -18,14 +18,14 @@ class Snidel
     /** @var Snidel_Token */
     private $token;
 
+    /** @var Snidel_Log */
+    private $log;
+
     /** @var bool */
     private $joined = false;
 
     /** @var array */
     private $results = array();
-
-    /** @var resource */
-    private $loggingDestination;
 
     /** @var int */
     private $ownerPid;
@@ -54,12 +54,13 @@ class Snidel
         $this->childPids    = array();
         $this->maxProcs     = $maxProcs;
         $this->token        = new Snidel_Token(getmypid(), $maxProcs);
+        $this->log          = new Snidel_Log(getmypid());
 
         foreach ($this->signals as $sig) {
             pcntl_signal($sig, array($this, 'signalHandler'), false);
         }
 
-        $this->info('parent pid: ' . $this->ownerPid);
+        $this->log->info('parent pid: ' . $this->ownerPid);
     }
 
     /**
@@ -67,10 +68,11 @@ class Snidel
      *
      * @param   resource    $resource
      * @return  void
+     * @codeCoverageIgnore
      */
     public function setLoggingDestination($resource)
     {
-        $this->loggingDestination = $resource;
+        $this->log->setDestination($resource);
     }
 
     /**
@@ -92,11 +94,11 @@ class Snidel
         $pid = pcntl_fork();
         if (-1 === $pid) {
             $message = 'could not fork a new process';
-            $this->error($message);
+            $this->log->error($message);
             throw new RuntimeException($message);
         } elseif ($pid) {
             // parent
-            $this->info('created child process. pid: ' . $pid);
+            $this->log->info('created child process. pid: ' . $pid);
             $this->childPids[] = $pid;
             if ($tag !== null) {
                 $this->tagsToPids[$tag][] = $pid;
@@ -110,11 +112,11 @@ class Snidel
             foreach ($this->signals as $sig) {
                 pcntl_signal($sig, SIG_DFL, true);
             }
-            $this->info('--> waiting for the token come around.');
+            $this->log->info('--> waiting for the token come around.');
             if ($this->processToken->accept()) {
-                $this->info('----> started the function.');
+                $this->log->info('----> started the function.');
                 $this->processInformation['return'] = call_user_func_array($callable, $args);
-                $this->info('<---- completed the function.');
+                $this->log->info('<---- completed the function.');
             }
             $this->_exit();
         }
@@ -147,7 +149,7 @@ class Snidel
 
             if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
-                $this->error($message);
+                $this->log->error($message);
                 $this->errors[$childPid] = array(
                     'status'    => $status,
                     'message'   => $message,
@@ -214,69 +216,21 @@ class Snidel
     }
 
     /**
-     * writes log
-     *
-     * @param   string  $message
-     * @return  void
-     */
-    private function info($message)
-    {
-        $this->writeLog('info', $message);
-    }
-
-    /**
-     * writes log
-     *
-     * @param   string  $message
-     * @return  void
-     */
-    private function error($message)
-    {
-        $this->writeLog('error', $message);
-    }
-
-    /**
-     * writes log
-     *
-     * @param   string  $type
-     * @param   string  $message
-     * @return  void
-     */
-    private function writeLog($type, $message)
-    {
-        if ($this->loggingDestination === null) {
-            return;
-        }
-        $pid = getmypid();
-        fputs(
-            $this->loggingDestination,
-            sprintf(
-                '[%s][%s][%d(%s)] %s',
-                date('Y-m-d H:i:s'),
-                $type,
-                $pid,
-                ($this->ownerPid === $pid) ? 'p' : 'c',
-                $message . PHP_EOL
-            )
-        );
-    }
-
-    /**
      * @param   int     $sig
      * @return  void
      */
     private function signalHandler($sig)
     {
-        $this->info('received signal. signo: ' . $sig);
+        $this->log->info('received signal. signo: ' . $sig);
         $this->receivedSignal = $sig;
 
-        $this->info('--> sending a signal to children.');
+        $this->log->info('--> sending a signal to children.');
         $this->sendSignalToChildren($sig);
 
-        $this->info('--> deleting token.');
+        $this->log->info('--> deleting token.');
         unset($this->token);
 
-        $this->info('<-- signal handling has been completed successfully.');
+        $this->log->info('<-- signal handling has been completed successfully.');
         $this->_exit();
     }
 
@@ -289,7 +243,7 @@ class Snidel
     private function sendSignalToChildren($sig)
     {
         foreach ($this->childPids as $pid) {
-            $this->info('----> sending a signal to child. pid: ' . $pid);
+            $this->log->info('----> sending a signal to child. pid: ' . $pid);
             posix_kill($pid, $sig);
         }
     }
@@ -388,7 +342,7 @@ class Snidel
 
             if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
-                $this->error($message);
+                $this->log->error($message);
                 throw new RuntimeException($message);
             } else {
                 $this->results[$childPid] = $result['return'];
@@ -406,7 +360,7 @@ class Snidel
                     throw $e;
                 }
                 $message = sprintf('processing is connected from [%d] to [%d]', $childPid, $nextMapPid);
-                $this->info($message);
+                $this->log->info($message);
                 $nextMap->countTheForked();
                 $nextMap->addChildPid($nextMapPid);
             }
@@ -445,7 +399,7 @@ class Snidel
         } catch (RuntimeException $e) {
             throw $e;
         }
-        $this->info('<-- return token.');
+        $this->log->info('<-- return token.');
         $this->processToken->back();
     }
 
@@ -453,24 +407,20 @@ class Snidel
     {
         if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
             $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
-            $this->error($message);
-            $this->info('destruct processes are started.');
+            $this->log->error($message);
+            $this->log->info('destruct processes are started.');
 
-            $this->info('--> sending a signal to children.');
+            $this->log->info('--> sending a signal to children.');
             $this->sendSignalToChildren(SIGTERM);
 
-            $this->info('--> deleting all shared memory.');
+            $this->log->info('--> deleting all shared memory.');
             $this->deleteAllData();
 
-            $this->info('--> deleting token.');
+            $this->log->info('--> deleting token.');
             unset($this->token);
 
-            $this->info('--> destruct processes are finished successfully.');
+            $this->log->info('--> destruct processes are finished successfully.');
             throw new LogicException($message);
-        }
-
-        if ($this->loggingDestination && get_resource_type($this->loggingDestination) !== 'Unknown') {
-            fclose($this->loggingDestination);
         }
     }
 }

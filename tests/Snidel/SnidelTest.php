@@ -151,18 +151,6 @@ __EOS__
     /**
      * @test
      */
-    public function setLoggingDestination()
-    {
-        $snidel = new Snidel();
-        $fp = fopen('php://stdout', 'w');
-        $snidel->setLoggingDestination($fp);
-        $this->assertObjectHasAttribute('loggingDestination', $snidel);
-        $snidel->wait();
-    }
-
-    /**
-     * @test
-     */
     public function abnormalExit()
     {
         $snidel = new Snidel();
