@@ -88,14 +88,16 @@ $snidel = new Snidel($maxProcs = 3);
 ### Output log
 
 ```php
-fp = fopen('php://stdout', 'w');
+$fp = fopen('php://stdout', 'w');
 $snidel->setLoggingDestination($fp);
 
 // logs are output to the `php://stdout`
 $snidel->fork($func, 'foo');
 
-// [info][26304(p)] created child process. pid: 26306
-// [info][26306(c)] waiting for the token to come around.
+// [2015-12-01 00:00:00][info][26304(p)] created child process. pid: 26306
+// [2015-12-01 00:00:00][info][26306(c)] --> waiting for the token to come around.
+// [2015-12-01 00:00:00][info][26306(c)] ----> started the function.
+// [2015-12-01 00:00:00][info][26306(c)] <-- return token.
 // ...
 
 ```
