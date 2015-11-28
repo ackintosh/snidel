@@ -18,11 +18,11 @@ class Snidel_Map
 
     /**
      * @param   callable    $callable
-     * @param   int         $maxProcs
+     * @param   int         $concurrency
      */
-    public function __construct($callable, $maxProcs)
+    public function __construct($callable, $concurrency)
     {
-        $this->token = new Snidel_Token(getmypid(), $maxProcs);
+        $this->token = new Snidel_Token(getmypid(), $concurrency);
         $this->callable = $callable;
     }
 

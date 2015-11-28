@@ -5,7 +5,7 @@ class Snidel_Token
     private $ownerPid;
 
     /** @var int */
-    private $maxProcs;
+    private $concurrency;
 
     /** @var string */
     private $keyPrefix;
@@ -15,13 +15,13 @@ class Snidel_Token
 
     /**
      * @param   int     $ownerPid
-     * @param   int     $maxProcs
+     * @param   int     $concurrency
      */
-    public function __construct($ownerPid, $maxProcs)
+    public function __construct($ownerPid, $concurrency)
     {
         $this->keyPrefix = uniqid((string) mt_rand(1, 100), true);
         $this->ownerPid = $ownerPid;
-        $this->maxProcs = $maxProcs;
+        $this->concurrency = $concurrency;
         $this->id = msg_get_queue($this->genId());
         $this->initializeQueue();
     }
@@ -74,7 +74,7 @@ class Snidel_Token
      */
     private function initializeQueue()
     {
-        for ($i = 0; $i < $this->maxProcs; $i++) {
+        for ($i = 0; $i < $this->concurrency; $i++) {
             $this->back();
         }
     }

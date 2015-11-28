@@ -56,10 +56,10 @@ class SnidelTest extends PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function maxProcs()
+    public function concurrency()
     {
-        $maxProcs = 3;
-        $snidel = new Snidel($maxProcs);
+        $concurrency = 3;
+        $snidel = new Snidel($concurrency);
 
         $start = time();
         $snidel->fork('sleepsTwoSeconds');

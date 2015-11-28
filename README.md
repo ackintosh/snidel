@@ -78,10 +78,10 @@ $snidel->get('unknown_tags');
 // InvalidArgumentException: There is no tags: unknown_tags
 ```
 
-### maxProcs
+### Concurrency
 
 ```php
-$snidel = new Snidel($maxProcs = 3);
+$snidel = new Snidel($concurrency = 3);
 
 ```
 

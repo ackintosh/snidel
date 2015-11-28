@@ -8,18 +8,18 @@ class Snidel_MapContainer
     private $maps = array();
 
     /** @var int */
-    private $maxProcs;
+    private $concurrency;
 
     /**
      * @param   array       $args
      * @param   callable    $callable
-     * @param   int         $maxProcs
+     * @param   int         $concurrency
      */
-    public function __construct(Array $args, $callable, $maxProcs)
+    public function __construct(Array $args, $callable, $concurrency)
     {
         $this->args = $args;
-        $this->maps[] = new Snidel_Map($callable, $maxProcs);
-        $this->maxProcs = $maxProcs;
+        $this->maps[] = new Snidel_Map($callable, $concurrency);
+        $this->concurrency = $concurrency;
     }
 
     /**
@@ -30,7 +30,7 @@ class Snidel_MapContainer
      */
     public function then($callable)
     {
-        $this->maps[] = new Snidel_Map($callable, $this->maxProcs);
+        $this->maps[] = new Snidel_Map($callable, $this->concurrency);
         return $this;
     }
 

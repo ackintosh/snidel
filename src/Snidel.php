@@ -13,7 +13,7 @@ class Snidel
     private $errors;
 
     /** @var int */
-    private $maxProcs;
+    private $concurrency;
 
     /** @var Snidel_Token */
     private $token;
@@ -48,12 +48,12 @@ class Snidel
     /** @var array */
     private $processInformation = array();
 
-    public function __construct($maxProcs = 5)
+    public function __construct($concurrency = 5)
     {
         $this->ownerPid     = getmypid();
         $this->childPids    = array();
-        $this->maxProcs     = $maxProcs;
-        $this->token        = new Snidel_Token(getmypid(), $maxProcs);
+        $this->concurrency     = $concurrency;
+        $this->token        = new Snidel_Token(getmypid(), $concurrency);
         $this->log          = new Snidel_Log(getmypid());
 
         foreach ($this->signals as $sig) {
@@ -275,7 +275,7 @@ class Snidel
      */
     public function map(Array $args, $callable)
     {
-        return new Snidel_MapContainer($args, $callable, $this->maxProcs);
+        return new Snidel_MapContainer($args, $callable, $this->concurrency);
     }
 
     /**
