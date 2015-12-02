@@ -114,7 +114,7 @@ $args = [
     'AT THE GATES',
 ];
 
-$snidel = new Snidel($maxProcs = 2);
+$snidel = new Snidel($concurrency = 2);
 
 // each of the functions are performed in parallel.
 $camelize = $snidel->map($args, function ($arg) {
@@ -178,3 +178,8 @@ Snidel works with PHP 5.2 or higher.
 ## Author
 
 Akihito Nakano
+
+blog entries by author about snidel. (japanese)
+
+- http://ackintosh.github.io/blog/2015/09/29/snidel/
+- http://ackintosh.github.io/blog/2015/11/08/snidel_0_2_0/
