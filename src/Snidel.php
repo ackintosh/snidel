@@ -52,7 +52,7 @@ class Snidel
     {
         $this->ownerPid     = getmypid();
         $this->childPids    = array();
-        $this->concurrency     = $concurrency;
+        $this->concurrency  = $concurrency;
         $this->token        = new Snidel_Token(getmypid(), $concurrency);
         $this->log          = new Snidel_Log(getmypid());
 
@@ -271,7 +271,7 @@ class Snidel
      *
      * @param   array       $args
      * @param   callable    $callable
-     * @return  void
+     * @return  Snidel_MapContainer
      */
     public function map(Array $args, $callable)
     {
