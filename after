@@ -1,0 +1,5 @@
+#!/usr/bin/env php
+<?php
+if (version_compare(PHP_VERSION, '5.3', '>=')) {
+    system('vendor/bin/coveralls -v');
+}
