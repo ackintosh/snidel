@@ -35,4 +35,13 @@ class Snidel_MapContainerTest extends PHPUnit_Framework_TestCase
     {
         $this->assertSame(array('foo', 'bar'), $this->mapContainer->getFirstArgs());
     }
+
+    /**
+     * @test
+     * @expectedException RuntimeException
+     */
+    public function nextMapThrowsExceptionWhenChildPidNotFound()
+    {
+        $this->mapContainer->nextMap(0);
+    }
 }

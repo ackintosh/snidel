@@ -1,4 +1,7 @@
 <?php
+/**
+ * @codeCoverageIgnore
+ */
 class TestClass
 {
     public function returnsFoo()

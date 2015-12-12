@@ -1,4 +1,5 @@
 <?php
+// @codeCoverageIgnoreStart
 function returnsFoo()
 {
     return 'foo';
@@ -19,3 +20,4 @@ function abnormalExit()
 {
     exit(1);
 }
+// @codeCoverageIgnoreEnd
