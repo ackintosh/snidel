@@ -10,6 +10,7 @@ class Snidel_Data
     public function __construct($pid)
     {
         $this->pid = $pid;
+        $this->shm = new Snidel_SharedMemory($pid);
     }
 
     /**
@@ -25,19 +26,19 @@ class Snidel_Data
             'pid'   => $this->pid,
             'data'  => $data,
         ));
-        $s = shmop_open($this->genKey(), 'n', 0666, strlen($serializedData));
-        if ($s === false) {
-            throw new RuntimeException('could not open shared memory');
+        try {
+            $this->shm->open(strlen($serializedData));
+        } catch (RuntimeException $e) {
+            throw $e;
         }
 
-        $writtenSize = shmop_write($s, $serializedData, 0);
-        if ($writtenSize === false) {
-            shmop_delete($s);
-            shmop_close($s);
-            throw new RuntimeException('could not write the data to shared memory');
+        try {
+            $this->shm->write($serializedData);
+        } catch (RuntimeException $e) {
+            throw $e;
         }
 
-        shmop_close($s);
+        $this->shm->close();
     }
 
     /**
@@ -48,9 +49,8 @@ class Snidel_Data
      */
     public function readAndDelete()
     {
-        $data = $this->read();
-
         try {
+            $data = $this->read();
             $this->delete();
         } catch (RuntimeException $e) {
             throw $e;
@@ -67,14 +67,16 @@ class Snidel_Data
      */
     public function read()
     {
-        $s = shmop_open($this->genKey(), 'a', 0, 0);
-        if ($s === false) {
-            throw new RuntimeException('could not open shared memory');
+        try {
+            $this->shm->open();
+            $data = $this->shm->read();
+        } catch (RuntimeException $e) {
+            throw $e;
         }
-        $data = shmop_read($s, 0, shmop_size($s));
-        shmop_close($s);
 
+        $this->shm->close();
         $unserialized = unserialize($data);
+
         return $unserialized['data'];
     }
 
@@ -86,30 +88,18 @@ class Snidel_Data
      */
     public function delete()
     {
-        $s = @shmop_open($this->genKey(), 'a', 0, 0);
-        if ($s === false) {
+        try {
+            $this->shm->open();
+        } catch (RuntimeException $e) {
             return;
         }
 
-        if (!shmop_delete($s)) {
-            throw new RuntimeException('could not delete shared memory');
-        }
-        shmop_close($s);
-        unlink('/tmp/' . sha1($this->pid));
-    }
-
-    /**
-     * generate IPC key
-     *
-     * @return  int
-     */
-    private function genKey()
-    {
-        $pathname = '/tmp/' . sha1($this->pid);
-        if (!file_exists($pathname)) {
-            touch($pathname);
+        try {
+            $this->shm->delete();
+        } catch (RuntimeException $e) {
+            throw $e;
         }
 
-        return ftok($pathname, 'S');
+        $this->shm->close($removeTmpFile = true);
     }
 }
