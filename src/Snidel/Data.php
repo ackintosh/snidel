@@ -4,6 +4,9 @@ class Snidel_Data
     /** @var int */
     private $pid;
 
+    /** @var Snidel_SharedMemory */
+    private $shm;
+
     /**
      * @param   int     $pid
      */
