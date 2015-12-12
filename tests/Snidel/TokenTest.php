@@ -23,4 +23,18 @@ class Snidel_TokenTest extends PHPUnit_Framework_TestCase
         $snidel->get();
         $this->assertSame(4, time() - $time);
     }
+
+    /**
+     * @test
+     * @requires PHP 5.3
+     */
+    public function destructorRemovesTmpFile()
+    {
+        $token = new Snidel_Token(getmypid(), 1);
+        $method = new ReflectionMethod($token, 'getKey');
+        $method->setAccessible(true);
+        $key = $method->invoke($token);
+        unset($token);
+        $this->assertFalse(file_exists('/tmp/' . sha1($key)));
+    }
 }

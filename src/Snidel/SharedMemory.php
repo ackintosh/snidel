@@ -29,7 +29,7 @@ class Snidel_SharedMemory
     {
         $flags  = ($length === 0) ? 'a' : 'n';
         $mode   = ($length === 0) ? 0 : 0666;
-        $this->segmentId = shmop_open($this->key, $flags, $mode, $length);
+        $this->segmentId = @shmop_open($this->key, $flags, $mode, $length);
         if ($this->segmentId === false) {
             throw new RuntimeException('could not open shared memory');
         }
@@ -43,10 +43,8 @@ class Snidel_SharedMemory
      */
     public function write($data)
     {
-        $writtenSize = shmop_write($this->segmentId, $data, 0);
+        $writtenSize = @shmop_write($this->segmentId, $data, 0);
         if ($writtenSize === false) {
-            $this->delete();
-            $this->close();
             throw new RuntimeException('could not write the data to shared memory');
         }
     }
@@ -59,7 +57,7 @@ class Snidel_SharedMemory
      */
     public function read()
     {
-        $data = shmop_read($this->segmentId, 0, shmop_size($this->segmentId));
+        $data = @shmop_read($this->segmentId, 0, shmop_size($this->segmentId));
         if ($data === false) {
             throw new RuntimeException('could not read the data to shared memory');
         }
@@ -74,7 +72,7 @@ class Snidel_SharedMemory
      */
     public function delete()
     {
-        if (!shmop_delete($this->segmentId)) {
+        if ($this->segmentId && !@shmop_delete($this->segmentId)) {
             throw new RuntimeException('could not delete the data to shared memory');
         }
     }
@@ -86,7 +84,9 @@ class Snidel_SharedMemory
      */
     public function close($removeTmpFile = false)
     {
-        shmop_close($this->segmentId);
+        if ($this->segmentId) {
+            shmop_close($this->segmentId);
+        }
         if ($removeTmpFile) {
             unlink('/tmp/' . sha1($this->pid));
         }

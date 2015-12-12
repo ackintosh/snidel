@@ -85,5 +85,5 @@ class Snidel_Token
             unlink('/tmp/' . sha1($this->getKey()));
             return msg_remove_queue($this->id);
         }
-    }
+    }// @codeCoverageIgnore
 }
