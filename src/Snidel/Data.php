@@ -94,7 +94,7 @@ class Snidel_Data
         try {
             $this->shm->open();
         } catch (RuntimeException $e) {
-            return;
+            throw $e;
         }
 
         try {
