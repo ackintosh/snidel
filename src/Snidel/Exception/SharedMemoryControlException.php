@@ -1,0 +1,4 @@
+<?php
+class Snidel_Exception_SharedMemoryControlException extends RuntimeException implements Snidel_Exception_ExceptionInterface
+{
+}

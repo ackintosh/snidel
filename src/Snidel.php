@@ -128,7 +128,7 @@ class Snidel
      * waits until all children are completed
      *
      * @return  void
-     * @throws  RuntimeException
+     * @throws  Snidel_Exception_SharedMemoryControlException
      */
     public function wait()
     {
@@ -143,7 +143,7 @@ class Snidel
             $data = new Snidel_Data($childPid);
             try {
                 $result = $data->readAndDelete();
-            } catch (RuntimeException $e) {
+            } catch (Snidel_Exception_SharedMemoryControlException $e) {
                 throw $e;
             }
 
@@ -252,7 +252,7 @@ class Snidel
      * delete shared memory
      *
      * @return  void
-     * @throws  RuntimeException
+     * @throws  Snidel_Exception_SharedMemoryControlException
      */
     private function deleteAllData()
     {
@@ -260,7 +260,7 @@ class Snidel
             $data = new Snidel_Data($pid);
             try {
                 $data->delete();
-            } catch (RuntimeException $e) {
+            } catch (Snidel_Exception_SharedMemoryControlException $e) {
                 throw $e;
             }
         }
@@ -336,7 +336,7 @@ class Snidel
             $data = new Snidel_Data($childPid);
             try {
                 $result = $data->readAndDelete();
-            } catch (RuntimeException $e) {
+            } catch (Snidel_Exception_SharedMemoryControlException $e) {
                 throw $e;
             }
 
@@ -391,12 +391,16 @@ class Snidel
         exit($status);
     }
 
+    /**
+     * @return void
+     * @throws Snidel_Exception_SharedMemoryControlException
+     */
     public function childShutdownFunction()
     {
         $data = new Snidel_Data(getmypid());
         try {
             $data->write($this->processInformation);
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             throw $e;
         }
         $this->log->info('<-- return token.');

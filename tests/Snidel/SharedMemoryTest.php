@@ -8,7 +8,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function openThrowsExceptionWhenFailed()
@@ -20,7 +20,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
         try {
             $this->shm->open();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $ref->setValue($this->shm, $originalSegmentId);
             $this->shm->delete();
             $this->shm->close($removeTmpFile = true);
@@ -30,7 +30,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function writeThrowsExceptionWhenFailed()
@@ -43,7 +43,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
         try {
             $this->shm->write('foo');
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $ref->setValue($this->shm, $originalSegmentId);
             $this->shm->delete();
             $this->shm->close($removeTmpFile = true);
@@ -53,7 +53,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function readThrowsExceptionWhenFailed()
@@ -67,7 +67,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
         try {
             $this->shm->read();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $ref->setValue($this->shm, $originalSegmentId);
             $this->shm->delete();
             $this->shm->close($removeTmpFile = true);
@@ -77,7 +77,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailed()
@@ -90,7 +90,7 @@ class Snidel_SharedMemoryTest extends PHPUnit_Framework_TestCase
 
         try {
             $this->shm->delete();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $ref->setValue($this->shm, $originalSegmentId);
             $this->shm->delete();
             $this->shm->close($removeTmpFile = true);

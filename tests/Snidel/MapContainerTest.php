@@ -38,7 +38,7 @@ class Snidel_MapContainerTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_MapContainerException
      */
     public function nextMapThrowsExceptionWhenChildPidNotFound()
     {

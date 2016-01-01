@@ -25,7 +25,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function readAndDeleteThrowsExceptionWhenFailed()
@@ -37,7 +37,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
         $shm->expects($this->once())
             ->method('read')
-            ->will($this->throwException(new RuntimeException));
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
 
         $data = new Snidel_Data(getmypid());
         $ref = new ReflectionProperty($data, 'shm');
@@ -46,7 +46,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
         try {
             $data->write('foo');
             $data->readAndDelete();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -54,7 +54,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function writeThrowsRuntimeExceptionWhenFailedToOpenShm()
@@ -65,7 +65,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
             ->getMock();
 
         $shm->method('open')
-            ->will($this->throwException(new RuntimeException));
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
 
         $data = new Snidel_Data(getmypid());
         $ref = new ReflectionProperty($data, 'shm');
@@ -73,7 +73,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
         $ref->setValue($data, $shm);
         try {
             $data->write('foo');
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -81,7 +81,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function writeThrowsRuntimeExceptionWhenFailedToWriteData()
@@ -93,7 +93,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
         $shm->expects($this->once())
             ->method('write')
-            ->will($this->throwException(new RuntimeException));
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
 
         $data = new Snidel_Data(getmypid());
         $ref = new ReflectionProperty($data, 'shm');
@@ -101,7 +101,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
         $ref->setValue($data, $shm);
         try {
             $data->write('foo');
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -109,7 +109,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function readThrowsRuntimeException()
@@ -121,7 +121,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
         $shm->expects($this->once())
             ->method('read')
-            ->will($this->throwException(new RuntimeException));
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
 
         $data = new Snidel_Data(getmypid());
         $data->write('foo');
@@ -130,7 +130,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
         $ref->setValue($data, $shm);
         try {
             $data->read();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -138,7 +138,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailedToOpenShm()
@@ -150,7 +150,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
         $shm->expects($this->once())
             ->method('open')
-            ->will($this->throwException(new RuntimeException));
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
 
         $data = new Snidel_Data(getmypid());
         $data->write('foo');
@@ -161,7 +161,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
         $ref->setValue($data, $shm);
         try {
             $data->delete();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $ref->setValue($data, $originalShm);
             $data->delete();
             throw $e;
@@ -170,7 +170,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException Snidel_Exception_SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailedToDeleteShm()
@@ -182,7 +182,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
         $shm->expects($this->once())
             ->method('delete')
-            ->will($this->throwException(new RuntimeException));
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
 
         $data = new Snidel_Data(getmypid());
         $data->write('foo');
@@ -193,7 +193,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
         $ref->setValue($data, $shm);
         try {
             $data->delete();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             $ref->setValue($data, $originalShm);
             $data->delete();
             throw $e;

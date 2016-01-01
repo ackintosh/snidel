@@ -21,7 +21,7 @@ class Snidel_Data
      *
      * @param   mixed     $data
      * @return  void
-     * @throws  RuntimeException
+     * @throws  Snidel_Exception_SharedMemoryControlException
      */
     public function write($data)
     {
@@ -31,13 +31,13 @@ class Snidel_Data
         ));
         try {
             $this->shm->open(strlen($serializedData));
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             throw $e;
         }
 
         try {
             $this->shm->write($serializedData);
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             throw $e;
         }
 
@@ -48,14 +48,14 @@ class Snidel_Data
      * read data and delete shared memory
      *
      * @return  mixed
-     * @throws  RuntimeException
+     * @throws  Snidel_Exception_SharedMemoryControlException
      */
     public function readAndDelete()
     {
         try {
             $data = $this->read();
             $this->delete();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             throw $e;
         }
 
@@ -66,14 +66,14 @@ class Snidel_Data
      * read data
      *
      * @return  array
-     * @throws  RuntimeException
+     * @throws  Snidel_Exception_SharedMemoryControlException
      */
     public function read()
     {
         try {
             $this->shm->open();
             $data = $this->shm->read();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             throw $e;
         }
 
@@ -87,19 +87,19 @@ class Snidel_Data
      * delete shared memory
      *
      * @return  void
-     * @throws  RuntimeException
+     * @throws  Snidel_Exception_SharedMemoryControlException
      */
     public function delete()
     {
         try {
             $this->shm->open();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             throw $e;
         }
 
         try {
             $this->shm->delete();
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
             throw $e;
         }
 

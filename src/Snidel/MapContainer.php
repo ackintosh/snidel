@@ -106,7 +106,7 @@ class Snidel_MapContainer
     {
         try {
             $currentIndex = $this->getMapIndex($childPid);
-        } catch (RuntimeException $e) {
+        } catch (Snidel_Exception_MapContainerException $e) {
             throw $e;
         }
         if (isset($this->maps[$currentIndex + 1])) {
@@ -132,6 +132,6 @@ class Snidel_MapContainer
             return $index;
         }
 
-        throw new RuntimeException('childPid not found. pid: ' . $childPid);
+        throw new Snidel_Exception_MapContainerException('childPid not found. pid: ' . $childPid);
     }
 }
