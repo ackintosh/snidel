@@ -13,6 +13,9 @@ class Snidel_Token
     /** @var resource */
     private $id;
 
+    /** @const string **/
+    const TMP_FILE_PREFIX = 'snidel_token_';
+
     /**
      * @param   int     $ownerPid
      * @param   int     $concurrency
@@ -54,7 +57,7 @@ class Snidel_Token
      */
     private function genId()
     {
-        $pathname = '/tmp/' . sha1($this->getKey());
+        $pathname = '/tmp/' . self::TMP_FILE_PREFIX . sha1($this->getKey());
         if (!file_exists($pathname)) {
             touch($pathname);
         }
@@ -82,7 +85,7 @@ class Snidel_Token
     public function __destruct()
     {
         if ($this->keyPrefix . getmypid() === $this->getKey()) {
-            unlink('/tmp/' . sha1($this->getKey()));
+            unlink('/tmp/' . self::TMP_FILE_PREFIX . sha1($this->getKey()));
             return msg_remove_queue($this->id);
         }
     }// @codeCoverageIgnore

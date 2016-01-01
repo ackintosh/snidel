@@ -10,6 +10,9 @@ class Snidel_SharedMemory
     /** @int **/
     private $segmentId;
 
+    /** @const string **/
+    const TMP_FILE_PREFIX = 'snidel_shm_';
+
     /**
      * @param   int     $pid
      */
@@ -88,7 +91,7 @@ class Snidel_SharedMemory
             shmop_close($this->segmentId);
         }
         if ($removeTmpFile) {
-            unlink('/tmp/' . sha1($this->pid));
+            unlink('/tmp/' . self::TMP_FILE_PREFIX . sha1($this->pid));
         }
     }
 
@@ -99,7 +102,7 @@ class Snidel_SharedMemory
      */
     private function generateKey($pid)
     {
-        $pathname = '/tmp/' . sha1($pid);
+        $pathname = '/tmp/' . self::TMP_FILE_PREFIX . sha1($pid);
         if (!file_exists($pathname)) {
             touch($pathname);
         }
