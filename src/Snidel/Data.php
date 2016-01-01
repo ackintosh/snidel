@@ -47,7 +47,7 @@ class Snidel_Data
     /**
      * read data and delete shared memory
      *
-     * @return  mix
+     * @return  mixed
      * @throws  RuntimeException
      */
     public function readAndDelete()
