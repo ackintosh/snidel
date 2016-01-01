@@ -19,7 +19,7 @@ class Snidel_Data
     /**
      * write data
      *
-     * @param   mix     $data
+     * @param   mixed     $data
      * @return  void
      * @throws  RuntimeException
      */
