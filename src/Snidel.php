@@ -9,8 +9,8 @@ class Snidel
     /** @var array */
     private $childPids = array();
 
-    /** @var array */
-    private $errors;
+    /** @var Snidel_Error */
+    private $error;
 
     /** @var int */
     private $concurrency;
@@ -55,6 +55,7 @@ class Snidel
         $this->concurrency  = $concurrency;
         $this->token        = new Snidel_Token(getmypid(), $concurrency);
         $this->log          = new Snidel_Log(getmypid());
+        $this->error        = new Snidel_Error();
 
         foreach ($this->signals as $sig) {
             pcntl_signal($sig, array($this, 'signalHandler'), false);
@@ -150,7 +151,7 @@ class Snidel
             if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
-                $this->errors[$childPid] = array(
+                $this->error[$childPid] = array(
                     'status'    => $status,
                     'message'   => $message,
                     'callable'  => $result['callable'],
@@ -165,9 +166,20 @@ class Snidel
         $this->joined = true;
     }
 
-    public function getErrors()
+    /**
+     * @return  bool
+     */
+    public function hasError()
     {
-        return $this->errors;
+        return $this->error->exists();
+    }
+
+    /**
+     * @return  Snidel_Error
+     */
+    public function getError()
+    {
+        return $this->error;
     }
 
     /**

@@ -150,20 +150,25 @@ $snidel->fork(function ($arg1, $arg2) {
 }, ['foo', 'bar']);
 $snidel->wait();
 
-var_dump($snidel->getErrors());
-// array(1) {
-//   [51813] => // pid
-//   array(5) {
-//     'status' =>  int(256)
-//     'message' => string(50) "an error has occurred in child // process. pid: 51813"
-//     'callable' => string(9) "*Closure*"
-//     'args' =>
-//       array(2) {
-//         [0] => string(3) "foo"
-//         [1] => string(3) "bar"
-//       }
-//     'return' => NULL
+var_dump($snidel->getError());
+// class Snidel_Error#4244 (1) {
+// ...
+// }
+
+foreach ($snidel->getError() as $pid => $e) {
+    var_dump($pid, $e);
+}
+// int(51813)
+// array(5) {
+//   'status' =>  int(256)
+//   'message' => string(50) "an error has occurred in child process.
+//   'callable' => string(9) "*Closure*"
+//   'args' =>
+//     array(2) {
+//       [0] => string(3) "foo"
+//       [1] => string(3) "bar"
 //     }
+//   'return' => NULL
 //   }
 // }
 ```
