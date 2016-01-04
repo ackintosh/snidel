@@ -1,13 +1,13 @@
 <?php
 class Snidel_SharedMemory
 {
-    /** @int **/
+    /** @var int **/
     private $pid;
 
-    /** @int **/
+    /** @var int **/
     private $key;
 
-    /** @int **/
+    /** @var int **/
     private $segmentId;
 
     /** @const string **/
