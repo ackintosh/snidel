@@ -12,6 +12,9 @@ class Snidel
     /** @var Snidel_Error */
     private $error;
 
+    /** @var Snidel_Pcntl */
+    private $pcntl;
+
     /** @var int */
     private $concurrency;
 
@@ -56,9 +59,10 @@ class Snidel
         $this->token        = new Snidel_Token(getmypid(), $concurrency);
         $this->log          = new Snidel_Log(getmypid());
         $this->error        = new Snidel_Error();
+        $this->pcntl        = new Snidel_Pcntl();
 
         foreach ($this->signals as $sig) {
-            pcntl_signal($sig, array($this, 'signalHandler'), false);
+            $this->pcntl->signal($sig, array($this, 'signalHandler'), false);
         }
 
         $this->log->info('parent pid: ' . $this->ownerPid);
@@ -92,7 +96,7 @@ class Snidel
             $args = array($args);
         }
 
-        $pid = pcntl_fork();
+        $pid = $this->pcntl->fork();
         if (-1 === $pid) {
             $message = 'could not fork a new process';
             $this->log->error($message);
@@ -111,7 +115,7 @@ class Snidel
             $this->processInformation['args']        = $args;
 
             foreach ($this->signals as $sig) {
-                pcntl_signal($sig, SIG_DFL, true);
+                $this->pcntl->signal($sig, SIG_DFL, true);
             }
             $this->log->info('--> waiting for the token come around.');
             if ($this->processToken->accept()) {
@@ -140,7 +144,7 @@ class Snidel
         $count = count($this->childPids);
         for ($i = 0; $i < $count; $i++) {
             $status = null;
-            $childPid = pcntl_waitpid(-1, $status);
+            $childPid = $this->pcntl->waitpid(-1, $status);
             $data = new Snidel_Data($childPid);
             try {
                 $result = $data->readAndDelete();
@@ -148,7 +152,7 @@ class Snidel
                 throw $e;
             }
 
-            if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
+            if (!$this->pcntl->wifexited($status) || $this->pcntl->wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 $this->error[$childPid] = array(
@@ -231,7 +235,7 @@ class Snidel
      * @param   int     $sig
      * @return  void
      */
-    private function signalHandler($sig)
+    public function signalHandler($sig)
     {
         $this->log->info('received signal. signo: ' . $sig);
         $this->receivedSignal = $sig;
@@ -344,7 +348,7 @@ class Snidel
 
         while ($mapContainer->isProcessing()) {
             $status = null;
-            $childPid = pcntl_waitpid(-1, $status);
+            $childPid = $this->pcntl->waitpid(-1, $status);
             $data = new Snidel_Data($childPid);
             try {
                 $result = $data->readAndDelete();
@@ -352,7 +356,7 @@ class Snidel
                 throw $e;
             }
 
-            if (!pcntl_wifexited($status) || pcntl_wexitstatus($status) !== 0) {
+            if (!$this->pcntl->wifexited($status) || $this->pcntl->wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 throw new RuntimeException($message);
