@@ -19,6 +19,32 @@ class SnidelTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @expectedException RuntimeException
+     * @requires PHP 5.3
+     */
+    public function throwsExceptionWhenFailedToFork()
+    {
+        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+            ->setMethods(array('fork'))
+            ->getMock();
+        $pcntl->method('fork')
+            ->willReturn(-1);
+
+        $snidel = new Snidel();
+        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref->setAccessible(true);
+        $ref->setValue($snidel, $pcntl);
+
+        try {
+            $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        } catch (RuntimeException $e) {
+            $snidel->wait();
+            throw $e;
+        }
+    }
+
+    /**
+     * @test
      */
     public function omitTheSecondArgumentOfFork()
     {

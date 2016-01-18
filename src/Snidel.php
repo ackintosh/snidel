@@ -109,6 +109,7 @@ class Snidel
                 $this->tagsToPids[$tag][] = $pid;
             }
         } else {
+            // @codeCoverageIgnoreStart
             // child
             register_shutdown_function(array($this, 'childShutdownFunction'));
             $this->processInformation['callable']    = $callable instanceof Closure ? '*Closure*' : $callable;
@@ -124,6 +125,7 @@ class Snidel
                 $this->log->info('<---- completed the function.');
             }
             $this->_exit();
+            // @codeCoverageIgnoreEnd
         }
 
         return $pid;
