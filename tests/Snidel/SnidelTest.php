@@ -186,6 +186,44 @@ __EOS__
         $this->assertTrue($snidel->hasError());
     }
 
+    /**
+     * @test
+     */
+    public function waitSetsErrorWhenChildTerminatesAbnormally()
+    {
+        // wifexited
+        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+            ->setMethods(array('wifexited'))
+            ->getMock();
+        $pcntl->method('wifexited')
+            ->willReturn(false);
+
+        $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref->setAccessible(true);
+        $ref->setValue($snidel, $pcntl);
+        $snidel->wait();
+
+        $this->assertTrue($snidel->hasError());
+
+        // wexitstatus
+        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+            ->setMethods(array('wexitstatus'))
+            ->getMock();
+        $pcntl->method('wexitstatus')
+            ->willReturn(1);
+
+        $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref->setAccessible(true);
+        $ref->setValue($snidel, $pcntl);
+        $snidel->wait();
+
+        $this->assertTrue($snidel->hasError());
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
