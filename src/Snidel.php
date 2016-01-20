@@ -24,6 +24,9 @@ class Snidel
     /** @var Snidel_Log */
     private $log;
 
+    /** @var Snidel_DataRepository */
+    private $dataRepository;
+
     /** @var bool */
     private $joined = false;
 
@@ -53,13 +56,14 @@ class Snidel
 
     public function __construct($concurrency = 5)
     {
-        $this->ownerPid     = getmypid();
-        $this->childPids    = array();
-        $this->concurrency  = $concurrency;
-        $this->token        = new Snidel_Token(getmypid(), $concurrency);
-        $this->log          = new Snidel_Log(getmypid());
-        $this->error        = new Snidel_Error();
-        $this->pcntl        = new Snidel_Pcntl();
+        $this->ownerPid         = getmypid();
+        $this->childPids        = array();
+        $this->concurrency      = $concurrency;
+        $this->token            = new Snidel_Token(getmypid(), $concurrency);
+        $this->log              = new Snidel_Log(getmypid());
+        $this->error            = new Snidel_Error();
+        $this->pcntl            = new Snidel_Pcntl();
+        $this->dataRepository   = new Snidel_DataRepository();
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal($sig, array($this, 'signalHandler'), false);
@@ -147,7 +151,7 @@ class Snidel
         for ($i = 0; $i < $count; $i++) {
             $status = null;
             $childPid = $this->pcntl->waitpid(-1, $status);
-            $data = new Snidel_Data($childPid);
+            $data = $this->dataRepository->load($childPid);
             try {
                 $result = $data->readAndDelete();
             } catch (Snidel_Exception_SharedMemoryControlException $e) {
@@ -275,7 +279,7 @@ class Snidel
     private function deleteAllData()
     {
         foreach ($this->childPids as $pid) {
-            $data = new Snidel_Data($pid);
+            $data = $this->dataRepository->load($pid);
             try {
                 $data->delete();
             } catch (Snidel_Exception_SharedMemoryControlException $e) {
@@ -351,7 +355,7 @@ class Snidel
         while ($mapContainer->isProcessing()) {
             $status = null;
             $childPid = $this->pcntl->waitpid(-1, $status);
-            $data = new Snidel_Data($childPid);
+            $data = $this->dataRepository->load($childPid);
             try {
                 $result = $data->readAndDelete();
             } catch (Snidel_Exception_SharedMemoryControlException $e) {
@@ -415,7 +419,7 @@ class Snidel
      */
     public function childShutdownFunction()
     {
-        $data = new Snidel_Data(getmypid());
+        $data = $this->dataRepository->load(getmypid());
         try {
             $data->write($this->processInformation);
         } catch (Snidel_Exception_SharedMemoryControlException $e) {
