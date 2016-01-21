@@ -54,6 +54,9 @@ class Snidel
     /** @var array */
     private $processInformation = array();
 
+    /** @var bool */
+    private $exceptionHasOccured = false;
+
     public function __construct($concurrency = 5)
     {
         $this->ownerPid         = getmypid();
@@ -155,6 +158,7 @@ class Snidel
             try {
                 $result = $data->readAndDelete();
             } catch (Snidel_Exception_SharedMemoryControlException $e) {
+                $this->exceptionHasOccured = true;
                 throw $e;
             }
 
@@ -431,7 +435,9 @@ class Snidel
 
     public function __destruct()
     {
-        if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
+        if ($this->exceptionHasOccured) {
+            // nop
+        } elseif ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
             $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
             $this->log->error($message);
             $this->log->info('destruct processes are started.');

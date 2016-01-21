@@ -224,6 +224,41 @@ __EOS__
         $this->assertTrue($snidel->hasError());
     }
 
+    /**
+     * @test
+     * @expectedException Snidel_Exception_SharedMemoryControlException
+     */
+    public function waitThrowsException()
+    {
+        $data = $this->getMockBuilder('Snidel_Data')
+            ->setConstructorArgs(array(getmypid()))
+            ->setMethods(array('readAndDelete'))
+            ->getMock();
+        $data->method('readAndDelete')
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+
+        $dataRepository = $this->getMockBuilder('Snidel_DataRepository')
+            ->setMethods(array('load'))
+            ->getMock();
+        $dataRepository->expects($this->any())
+            ->method('load')
+            ->willReturn($data);
+
+        $snidel = new Snidel();
+        $ref = new ReflectionProperty($snidel, 'dataRepository');
+        $ref->setAccessible(true);
+        $ref->setValue($snidel, $dataRepository);
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+
+        try {
+            $snidel->wait();
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+            // clean up
+            $data->delete();
+            throw $e;
+        }
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
