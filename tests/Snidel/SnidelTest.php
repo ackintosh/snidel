@@ -188,6 +188,7 @@ __EOS__
 
     /**
      * @test
+     * @require PHP 5.3
      */
     public function waitSetsErrorWhenChildTerminatesAbnormally()
     {
@@ -227,6 +228,7 @@ __EOS__
     /**
      * @test
      * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @requires PHP 5.3
      */
     public function waitThrowsException()
     {
