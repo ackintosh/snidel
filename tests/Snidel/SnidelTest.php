@@ -188,7 +188,7 @@ __EOS__
 
     /**
      * @test
-     * @require PHP 5.3
+     * @requires PHP 5.3
      */
     public function waitSetsErrorWhenChildTerminatesAbnormally()
     {
