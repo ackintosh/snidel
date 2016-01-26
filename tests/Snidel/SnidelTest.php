@@ -261,6 +261,18 @@ __EOS__
         }
     }
 
+    /**
+     * @test
+     */
+    public function waitDoNothingIfAlreadyJoined()
+    {
+        $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $snidel->wait();
+        $ret =  $snidel->wait();
+        $this->assertNull($ret);
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
