@@ -273,6 +273,16 @@ __EOS__
         $this->assertNull($ret);
     }
 
+    /**
+     * @test
+     */
+    public function getErrorReturnsInstanceOfSnidelError()
+    {
+        $snidel = new Snidel();
+        $snidel->wait();
+        $this->assertInstanceOf('Snidel_Error', $snidel->getError());
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
