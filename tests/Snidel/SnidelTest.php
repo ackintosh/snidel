@@ -283,6 +283,30 @@ __EOS__
         $this->assertInstanceOf('Snidel_Error', $snidel->getError());
     }
 
+    /**
+     * @test
+     * @expectedException RuntimeException
+     */
+    public function runThrowsExceptionWhenFailedToFork()
+    {
+        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+            ->setMethods(array('fork'))
+            ->getMock();
+        $pcntl->method('fork')
+            ->willReturn(-1);
+
+        $snidel = new Snidel();
+        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref->setAccessible(true);
+        $ref->setValue($snidel, $pcntl);
+        try {
+            $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
+        } catch (RuntimeException $e) {
+            $snidel->wait();
+            throw $e;
+        }
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
