@@ -307,6 +307,69 @@ __EOS__
         }
     }
 
+    /**
+     * @test
+     */
+    public function childShutdownFunctionOutputsLog()
+    {
+        $log = $this->getMockBuilder('Snidel_Log')
+            ->setConstructorArgs(array(getmypid()))
+            ->setMethods(array('info'))
+            ->getMock();
+        $log->expects($this->once())
+            ->method('info');
+
+        $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
+
+        $ref = new ReflectionProperty($snidel, 'log');
+        $ref->setAccessible(true);
+        $originalLog = $ref->getValue($snidel);
+
+        $ref->setValue($snidel, $log);
+        $snidel->childShutdownFunction();
+        $ref->setValue($snidel, $originalLog);
+
+        $snidel->wait();
+    }
+
+    /**
+     * @test
+     * @expectedException Snidel_Exception_SharedMemoryControlException
+     */
+    public function childShutdownFunctionThrowsExceptionWhenFailedToWriteData()
+    {
+        $data = $this->getMockBuilder('Snidel_Data')
+            ->setConstructorArgs(array(getmypid()))
+            ->setMethods(array('write'))
+            ->getMock();
+        $data->method('write')
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+
+        $dataRepository = $this->getMockBuilder('Snidel_DataRepository')
+            ->setMethods(array('load'))
+            ->getMock();
+        $dataRepository->expects($this->any())
+            ->method('load')
+            ->willReturn($data);
+
+        $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+
+        $ref = new ReflectionProperty($snidel, 'dataRepository');
+        $ref->setAccessible(true);
+        $originalDataRepository = $ref->getValue($snidel);
+        $ref->setValue($snidel, $dataRepository);
+
+        try {
+            $snidel->childShutdownFunction();
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+            $ref->setValue($snidel, $originalDataRepository);
+            $snidel->wait();
+            throw $e;
+        }
+    }
+
     private function isSame($result, $expect)
     {
         foreach ($result as $r) {
