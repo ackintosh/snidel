@@ -330,6 +330,10 @@ __EOS__
         $snidel->childShutdownFunction();
         $ref->setValue($snidel, $originalLog);
 
+        // delete the shared memory which opened in childShutdownFunction.
+        $dataRepository = new Snidel_DataRepository();
+        $dataRepository->load(getmypid())->delete();
+
         $snidel->wait();
     }
 
