@@ -286,6 +286,7 @@ __EOS__
     /**
      * @test
      * @expectedException RuntimeException
+     * @requires PHP 5.3
      */
     public function runThrowsExceptionWhenFailedToFork()
     {
