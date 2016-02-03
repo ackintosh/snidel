@@ -309,6 +309,7 @@ __EOS__
 
     /**
      * @test
+     * @requires PHP 5.3
      */
     public function childShutdownFunctionOutputsLog()
     {
@@ -340,6 +341,7 @@ __EOS__
     /**
      * @test
      * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @requires PHP 5.3
      */
     public function childShutdownFunctionThrowsExceptionWhenFailedToWriteData()
     {
