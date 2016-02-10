@@ -105,4 +105,23 @@ class Snidel_Data
 
         $this->shm->close($removeTmpFile = true);
     }
+
+    /**
+     * delete shared memory if exists
+     *
+     * @return  void
+     * @throws  Snidel_Exception_SharedMemoryControlException
+     */
+    public function deleteIfExists()
+    {
+        if (!$this->shm->exists()) {
+            return;
+        }
+
+        try {
+            $this->delete();
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+            throw $e;
+        }
+    }
 }

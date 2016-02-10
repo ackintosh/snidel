@@ -249,6 +249,7 @@ __EOS__
         $snidel = new Snidel();
         $ref = new ReflectionProperty($snidel, 'dataRepository');
         $ref->setAccessible(true);
+        $originalDataRepository = $ref->getValue($snidel);
         $ref->setValue($snidel, $dataRepository);
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
@@ -257,6 +258,8 @@ __EOS__
         } catch (Snidel_Exception_SharedMemoryControlException $e) {
             // clean up
             $data->delete();
+            // set original Snidel_DataRepository
+            $ref->setValue($snidel, $originalDataRepository);
             throw $e;
         }
     }
@@ -304,6 +307,24 @@ __EOS__
             $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
         } catch (RuntimeException $e) {
             $snidel->wait();
+            throw $e;
+        }
+    }
+
+    /**
+     * @test
+     * @requires PHP 5.3
+     * @expectedException RuntimeException
+     */
+    public function runThrowsExceptionWhenErrorOccurredInChildProcess()
+    {
+        $snidel = new Snidel();
+        try {
+            $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then(function () {
+                exit(1);
+            }));
+        } catch (RuntimeException $e) {
+            unset($snidel);
             throw $e;
         }
     }

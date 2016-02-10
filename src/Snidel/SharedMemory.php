@@ -95,6 +95,12 @@ class Snidel_SharedMemory
         }
     }
 
+    public function exists()
+    {
+        $ret = @shmop_open($this->key, 'a', 0, 0);
+        return $ret !== false;
+    }
+
     /**
      * generate IPC key
      *

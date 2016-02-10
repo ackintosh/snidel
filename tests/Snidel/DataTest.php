@@ -199,4 +199,48 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
             throw $e;
         }
     }
+
+    /**
+     * @test
+     */
+    public function deleteIfExistsReturnsNull()
+    {
+        $data = new Snidel_Data(getmypid());
+        $this->assertNull($data->deleteIfExists());
+
+        $data->write('foo');
+        $this->assertNull($data->deleteIfExists());
+    }
+
+    /**
+     * @test
+     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @requires PHP 5.3
+     */
+    public function deleteIfExistsThrowsExceptionWhenFailedToDeleteShm()
+    {
+        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+            ->setConstructorArgs(array(getmypid()))
+            ->setMethods(array('delete'))
+            ->getMock();
+
+        $shm->expects($this->once())
+            ->method('delete')
+            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+
+        $data = new Snidel_Data(getmypid());
+        $data->write('foo');
+        $ref = new ReflectionProperty($data, 'shm');
+        $ref->setAccessible(true);
+        $originalShm = $ref->getValue($data);
+
+        $ref->setValue($data, $shm);
+        try {
+            $data->deleteIfExists();
+        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+            $ref->setValue($data, $originalShm);
+            $data->delete();
+            throw $e;
+        }
+    }
 }

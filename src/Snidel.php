@@ -285,7 +285,7 @@ class Snidel
         foreach ($this->childPids as $pid) {
             $data = $this->dataRepository->load($pid);
             try {
-                $data->delete();
+                $data->deleteIfExists();
             } catch (Snidel_Exception_SharedMemoryControlException $e) {
                 throw $e;
             }
@@ -317,6 +317,7 @@ class Snidel
             $this->forkTheFirstProcessing($mapContainer);
             $this->waitsAndConnectsProcess($mapContainer);
         } catch (RuntimeException $e) {
+            $this->exceptionHasOccured = true;
             throw $e;
         }
 
@@ -436,7 +437,9 @@ class Snidel
     public function __destruct()
     {
         if ($this->exceptionHasOccured) {
-            // nop
+            $this->log->info('destruct processes are started.(exception has occured)');
+            $this->log->info('--> deleting all shared memory.');
+            $this->deleteAllData();
         } elseif ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
             $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
             $this->log->error($message);
