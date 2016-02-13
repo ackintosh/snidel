@@ -175,7 +175,7 @@ foreach ($snidel->getError() as $pid => $e) {
 
 ## Requirements
 
-Snidel works with PHP 5.2 or higher.
+Snidel works with PHP 5.3 or higher.
 
 - [PCNTL functions](http://php.net/manual/en/ref.pcntl.php)
 - [Semaphore functions](http://php.net/manual/en/ref.sem.php)

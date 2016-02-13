@@ -1,7 +1,6 @@
 language: php
 
 php:
-  - 5.2
   - 5.3
   - 5.4
   - 5.5
@@ -14,10 +13,10 @@ matrix:
     - php: nightly
 
 before_script:
-  - ./setup
+  - composer install --dev
 
 script:
-  - phpunit
+  - vendor/bin/phpunit
 
 after_script:
-  - ./after
+  - vendor/bin/coveralls -v
