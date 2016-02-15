@@ -188,3 +188,7 @@ blog entries by author about snidel. (japanese)
 
 - http://ackintosh.github.io/blog/2015/09/29/snidel/
 - http://ackintosh.github.io/blog/2015/11/08/snidel_0_2_0/
+
+## License
+
+[The MIT License](http://opensource.org/licenses/MIT)
