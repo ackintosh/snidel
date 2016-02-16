@@ -16,6 +16,8 @@ $ composer require ackintosh/snidel
 
 ```php
 <?php
+use Ackintosh\Snidel;
+
 $func = function ($str) {
     sleep(3);
     return $str;
@@ -151,7 +153,7 @@ $snidel->fork(function ($arg1, $arg2) {
 $snidel->wait();
 
 var_dump($snidel->getError());
-// class Snidel_Error#4244 (1) {
+// class Ackintosh\Snidel\Error#4244 (1) {
 // ...
 // }
 

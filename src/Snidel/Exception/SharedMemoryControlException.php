@@ -1,4 +1,8 @@
 <?php
-class Snidel_Exception_SharedMemoryControlException extends RuntimeException implements Snidel_Exception_ExceptionInterface
+namespace Ackintosh\Snidel\Exception;
+
+use Ackintosh\Snidel\Exception\ExceptionInterface;
+
+class SharedMemoryControlException extends \RuntimeException implements ExceptionInterface
 {
 }

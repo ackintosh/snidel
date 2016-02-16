@@ -1,5 +1,7 @@
 <?php
-class Snidel_Log
+namespace Ackintosh\Snidel;
+
+class Log
 {
     /** @var int */
     private $ownerPid;

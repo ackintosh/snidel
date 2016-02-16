@@ -1,5 +1,10 @@
 <?php
-class Snidel_DataTest extends PHPUnit_Framework_TestCase
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\Data;
+use Ackintosh\Snidel\Exception\SharedMemoryControlException;
+
+class DataTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
@@ -7,8 +12,8 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
      */
     public function constructorSetsPid()
     {
-        $data = new Snidel_Data(1234);
-        $ref = new ReflectionProperty($data, 'pid');
+        $data = new Data(1234);
+        $ref = new \ReflectionProperty($data, 'pid');
         $ref->setAccessible(true);
         $this->assertSame($ref->getValue($data), 1234);
     }
@@ -18,35 +23,35 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
      */
     public function writeAndRead()
     {
-        $data = new Snidel_Data(getmypid());
+        $data = new Data(getmypid());
         $data->write('foo');
         $this->assertSame($data->readAndDelete(), 'foo');
     }
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function readAndDeleteThrowsExceptionWhenFailed()
     {
-        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+        $shm = $this->getMockBuilder('Ackintosh\\Snidel\\SharedMemory')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('read'))
             ->getMock();
 
         $shm->expects($this->once())
             ->method('read')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $data = new Snidel_Data(getmypid());
-        $ref = new ReflectionProperty($data, 'shm');
+        $data = new Data(getmypid());
+        $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
         try {
             $data->write('foo');
             $data->readAndDelete();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -54,26 +59,26 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function writeThrowsRuntimeExceptionWhenFailedToOpenShm()
     {
-        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+        $shm = $this->getMockBuilder('Ackintosh\\Snidel\\SharedMemory')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('open'))
             ->getMock();
 
         $shm->method('open')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $data = new Snidel_Data(getmypid());
-        $ref = new ReflectionProperty($data, 'shm');
+        $data = new Data(getmypid());
+        $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
         try {
             $data->write('foo');
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -81,27 +86,27 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function writeThrowsRuntimeExceptionWhenFailedToWriteData()
     {
-        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+        $shm = $this->getMockBuilder('Ackintosh\\Snidel\\SharedMemory')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('write'))
             ->getMock();
 
         $shm->expects($this->once())
             ->method('write')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $data = new Snidel_Data(getmypid());
-        $ref = new ReflectionProperty($data, 'shm');
+        $data = new Data(getmypid());
+        $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
         try {
             $data->write('foo');
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -109,28 +114,28 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function readThrowsRuntimeException()
     {
-        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+        $shm = $this->getMockBuilder('Ackintosh\\Snidel\\SharedMemory')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('read'))
             ->getMock();
 
         $shm->expects($this->once())
             ->method('read')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $data = new Snidel_Data(getmypid());
+        $data = new Data(getmypid());
         $data->write('foo');
-        $ref = new ReflectionProperty($data, 'shm');
+        $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
         try {
             $data->read();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
         }
@@ -138,30 +143,30 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailedToOpenShm()
     {
-        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+        $shm = $this->getMockBuilder('Ackintosh\\Snidel\\SharedMemory')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('open'))
             ->getMock();
 
         $shm->expects($this->once())
             ->method('open')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $data = new Snidel_Data(getmypid());
+        $data = new Data(getmypid());
         $data->write('foo');
-        $ref = new ReflectionProperty($data, 'shm');
+        $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $originalShm = $ref->getValue($data);
 
         $ref->setValue($data, $shm);
         try {
             $data->delete();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $ref->setValue($data, $originalShm);
             $data->delete();
             throw $e;
@@ -170,30 +175,30 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailedToDeleteShm()
     {
-        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+        $shm = $this->getMockBuilder('Ackintosh\\Snidel\\SharedMemory')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('delete'))
             ->getMock();
 
         $shm->expects($this->once())
             ->method('delete')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $data = new Snidel_Data(getmypid());
+        $data = new Data(getmypid());
         $data->write('foo');
-        $ref = new ReflectionProperty($data, 'shm');
+        $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $originalShm = $ref->getValue($data);
 
         $ref->setValue($data, $shm);
         try {
             $data->delete();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $ref->setValue($data, $originalShm);
             $data->delete();
             throw $e;
@@ -205,7 +210,7 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
      */
     public function deleteIfExistsReturnsNull()
     {
-        $data = new Snidel_Data(getmypid());
+        $data = new Data(getmypid());
         $this->assertNull($data->deleteIfExists());
 
         $data->write('foo');
@@ -214,30 +219,30 @@ class Snidel_DataTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function deleteIfExistsThrowsExceptionWhenFailedToDeleteShm()
     {
-        $shm = $this->getMockBuilder('Snidel_SharedMemory')
+        $shm = $this->getMockBuilder('Ackintosh\Snidel\SharedMemory')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('delete'))
             ->getMock();
 
         $shm->expects($this->once())
             ->method('delete')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $data = new Snidel_Data(getmypid());
+        $data = new Data(getmypid());
         $data->write('foo');
-        $ref = new ReflectionProperty($data, 'shm');
+        $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $originalShm = $ref->getValue($data);
 
         $ref->setValue($data, $shm);
         try {
             $data->deleteIfExists();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $ref->setValue($data, $originalShm);
             $data->delete();
             throw $e;

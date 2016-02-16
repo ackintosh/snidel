@@ -1,4 +1,6 @@
 <?php
-interface Snidel_Exception_ExceptionInterface
+namespace Ackintosh\Snidel\Exception;
+
+interface ExceptionInterface
 {
 }

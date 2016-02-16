@@ -1,9 +1,13 @@
 <?php
-class Snidel_ErrorTest extends PHPUnit_Framework_TestCase
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\Error;
+
+class ErrorTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->err = new Snidel_Error();
+        $this->err = new Error();
     }
 
     /**

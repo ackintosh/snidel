@@ -1,10 +1,15 @@
 <?php
-class Snidel_Data
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\SharedMemory;
+use Ackintosh\Snidel\Exception\SharedMemoryControlException;
+
+class Data
 {
     /** @var int */
     private $pid;
 
-    /** @var Snidel_SharedMemory */
+    /** @var Snidel\SharedMemory */
     private $shm;
 
     /**
@@ -13,7 +18,7 @@ class Snidel_Data
     public function __construct($pid)
     {
         $this->pid = $pid;
-        $this->shm = new Snidel_SharedMemory($pid);
+        $this->shm = new SharedMemory($pid);
     }
 
     /**
@@ -21,7 +26,7 @@ class Snidel_Data
      *
      * @param   mixed     $data
      * @return  void
-     * @throws  Snidel_Exception_SharedMemoryControlException
+     * @throws  Snidel\Exception\SharedMemoryControlException
      */
     public function write($data)
     {
@@ -31,13 +36,13 @@ class Snidel_Data
         ));
         try {
             $this->shm->open(strlen($serializedData));
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
         try {
             $this->shm->write($serializedData);
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
@@ -48,14 +53,14 @@ class Snidel_Data
      * read data and delete shared memory
      *
      * @return  mixed
-     * @throws  Snidel_Exception_SharedMemoryControlException
+     * @throws  Snidel\Exception\SharedMemoryControlException
      */
     public function readAndDelete()
     {
         try {
             $data = $this->read();
             $this->delete();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
@@ -66,14 +71,14 @@ class Snidel_Data
      * read data
      *
      * @return  array
-     * @throws  Snidel_Exception_SharedMemoryControlException
+     * @throws  Snidel\Exception\SharedMemoryControlException
      */
     public function read()
     {
         try {
             $this->shm->open();
             $data = $this->shm->read();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
@@ -87,19 +92,19 @@ class Snidel_Data
      * delete shared memory
      *
      * @return  void
-     * @throws  Snidel_Exception_SharedMemoryControlException
+     * @throws  Snidel\Exception\SharedMemoryControlException
      */
     public function delete()
     {
         try {
             $this->shm->open();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
         try {
             $this->shm->delete();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
@@ -110,7 +115,7 @@ class Snidel_Data
      * delete shared memory if exists
      *
      * @return  void
-     * @throws  Snidel_Exception_SharedMemoryControlException
+     * @throws  Snidel\Exception\SharedMemoryControlException
      */
     public function deleteIfExists()
     {
@@ -120,7 +125,7 @@ class Snidel_Data
 
         try {
             $this->delete();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
     }

@@ -1,10 +1,15 @@
 <?php
-class Snidel_MapContainer
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\Map;
+use Ackintosh\Snidel\Exception\MapContainerException;
+
+class MapContainer
 {
     /** @var array */
     private $args;
 
-    /** @var Snidel_Map[] */
+    /** @var Snidel\Map[] */
     private $maps = array();
 
     /** @var int */
@@ -18,7 +23,7 @@ class Snidel_MapContainer
     public function __construct(Array $args, $callable, $concurrency)
     {
         $this->args = $args;
-        $this->maps[] = new Snidel_Map($callable, $concurrency);
+        $this->maps[] = new Map($callable, $concurrency);
         $this->concurrency = $concurrency;
     }
 
@@ -26,18 +31,18 @@ class Snidel_MapContainer
      * stacks map object
      *
      * @param   callable                $callable
-     * @return  Snidel_MapContainer     $this
+     * @return  Snidel\MapContainer     $this
      */
     public function then($callable)
     {
-        $this->maps[] = new Snidel_Map($callable, $this->concurrency);
+        $this->maps[] = new Map($callable, $this->concurrency);
         return $this;
     }
 
     /**
      * returns first map
      *
-     * @return Snidel_Map
+     * @return Snidel\Map
      */
     public function getFirstMap()
     {
@@ -100,13 +105,13 @@ class Snidel_MapContainer
      * returns next map
      *
      * @param   int     $childPid
-     * @return  Snidel_Map
+     * @return  Snidel\Map
      */
     public function nextMap($childPid)
     {
         try {
             $currentIndex = $this->getMapIndex($childPid);
-        } catch (Snidel_Exception_MapContainerException $e) {
+        } catch (MapContainerException $e) {
             throw $e;
         }
         if (isset($this->maps[$currentIndex + 1])) {
@@ -132,6 +137,6 @@ class Snidel_MapContainer
             return $index;
         }
 
-        throw new Snidel_Exception_MapContainerException('childPid not found. pid: ' . $childPid);
+        throw new MapContainerException('childPid not found. pid: ' . $childPid);
     }
 }

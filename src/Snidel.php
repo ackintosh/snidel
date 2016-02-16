@@ -1,6 +1,16 @@
 <?php
 declare(ticks = 1);
 
+namespace Ackintosh;
+
+use Ackintosh\Snidel\Token;
+use Ackintosh\Snidel\Log;
+use Ackintosh\Snidel\Error;
+use Ackintosh\Snidel\Pcntl;
+use Ackintosh\Snidel\DataRepository;
+use Ackintosh\Snidel\MapContainer;
+use Ackintosh\Snidel\Exception\SharedMemoryControlException;
+
 class Snidel
 {
     /** @var string */
@@ -9,22 +19,22 @@ class Snidel
     /** @var array */
     private $childPids = array();
 
-    /** @var Snidel_Error */
+    /** @var Snidel\Error */
     private $error;
 
-    /** @var Snidel_Pcntl */
+    /** @var Snidel\Pcntl */
     private $pcntl;
 
     /** @var int */
     private $concurrency;
 
-    /** @var Snidel_Token */
+    /** @var Snidel\Token */
     private $token;
 
-    /** @var Snidel_Log */
+    /** @var Snidel\Log */
     private $log;
 
-    /** @var Snidel_DataRepository */
+    /** @var Snidel\DataRepository */
     private $dataRepository;
 
     /** @var bool */
@@ -48,7 +58,7 @@ class Snidel
     /** @var int */
     private $receivedSignal;
 
-    /** @var Snidel_Token */
+    /** @var Snidel\Token */
     private $processToken;
 
     /** @var array */
@@ -62,11 +72,11 @@ class Snidel
         $this->ownerPid         = getmypid();
         $this->childPids        = array();
         $this->concurrency      = $concurrency;
-        $this->token            = new Snidel_Token(getmypid(), $concurrency);
-        $this->log              = new Snidel_Log(getmypid());
-        $this->error            = new Snidel_Error();
-        $this->pcntl            = new Snidel_Pcntl();
-        $this->dataRepository   = new Snidel_DataRepository();
+        $this->token            = new Token(getmypid(), $concurrency);
+        $this->log              = new Log(getmypid());
+        $this->error            = new Error();
+        $this->pcntl            = new Pcntl();
+        $this->dataRepository   = new DataRepository();
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal($sig, array($this, 'signalHandler'), false);
@@ -94,9 +104,9 @@ class Snidel
      * @param   array       $args
      * @param   string      $tag
      * @return  int         $pid        forked PID of forked child process
-     * @throws  RuntimeException
+     * @throws  \RuntimeException
      */
-    public function fork($callable, $args = array(), $tag = null, Snidel_Token $token = null)
+    public function fork($callable, $args = array(), $tag = null, Token $token = null)
     {
         $this->processToken = $token ? $token : $this->token;
         if (!is_array($args)) {
@@ -107,7 +117,7 @@ class Snidel
         if (-1 === $pid) {
             $message = 'could not fork a new process';
             $this->log->error($message);
-            throw new RuntimeException($message);
+            throw new \RuntimeException($message);
         } elseif ($pid) {
             // parent
             $this->log->info('created child process. pid: ' . $pid);
@@ -119,7 +129,7 @@ class Snidel
             // @codeCoverageIgnoreStart
             // child
             register_shutdown_function(array($this, 'childShutdownFunction'));
-            $this->processInformation['callable']    = $callable instanceof Closure ? '*Closure*' : $callable;
+            $this->processInformation['callable']    = $callable instanceof \Closure ? '*Closure*' : $callable;
             $this->processInformation['args']        = $args;
 
             foreach ($this->signals as $sig) {
@@ -142,7 +152,7 @@ class Snidel
      * waits until all children are completed
      *
      * @return  void
-     * @throws  Snidel_Exception_SharedMemoryControlException
+     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function wait()
     {
@@ -157,7 +167,7 @@ class Snidel
             $data = $this->dataRepository->load($childPid);
             try {
                 $result = $data->readAndDelete();
-            } catch (Snidel_Exception_SharedMemoryControlException $e) {
+            } catch (SharedMemoryControlException $e) {
                 $this->exceptionHasOccured = true;
                 throw $e;
             }
@@ -189,7 +199,7 @@ class Snidel
     }
 
     /**
-     * @return  Snidel_Error
+     * @return  Snidel\Error
      */
     public function getError()
     {
@@ -201,7 +211,7 @@ class Snidel
      *
      * @param   string  $tag
      * @return  array   $ret
-     * @throws  InvalidArgumentException
+     * @throws  \InvalidArgumentException
      */
     public function get($tag = null)
     {
@@ -214,7 +224,7 @@ class Snidel
         } else {
             try {
                 return $this->getWithTag($tag);
-            } catch (InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException $e) {
                 throw $e;
             }
         }
@@ -225,12 +235,12 @@ class Snidel
      *
      * @param   string  $tag
      * @return  array   $results
-     * @throws  InvalidArgumentException
+     * @throws  \InvalidArgumentException
      */
     private function getWithTag($tag)
     {
         if (!isset($this->tagsToPids[$tag])) {
-            throw new InvalidArgumentException('unknown tag: ' . $tag);
+            throw new \InvalidArgumentException('unknown tag: ' . $tag);
         }
 
         $results = array();
@@ -278,7 +288,7 @@ class Snidel
      * delete shared memory
      *
      * @return  void
-     * @throws  Snidel_Exception_SharedMemoryControlException
+     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     private function deleteAllData()
     {
@@ -286,7 +296,7 @@ class Snidel
             $data = $this->dataRepository->load($pid);
             try {
                 $data->deleteIfExists();
-            } catch (Snidel_Exception_SharedMemoryControlException $e) {
+            } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
         }
@@ -297,26 +307,26 @@ class Snidel
      *
      * @param   array       $args
      * @param   callable    $callable
-     * @return  Snidel_MapContainer
+     * @return  Ackintosh\Snidel\MapContainer
      */
     public function map(Array $args, $callable)
     {
-        return new Snidel_MapContainer($args, $callable, $this->concurrency);
+        return new MapContainer($args, $callable, $this->concurrency);
     }
 
     /**
      * run map object
      *
-     * @param   Snidel_MapContainer
+     * @param   Snidel\MapContainer
      * @return  array
-     * @throws  RuntimeException
+     * @throws  \RuntimeException
      */
-    public function run(Snidel_MapContainer $mapContainer)
+    public function run(MapContainer $mapContainer)
     {
         try {
             $this->forkTheFirstProcessing($mapContainer);
             $this->waitsAndConnectsProcess($mapContainer);
-        } catch (RuntimeException $e) {
+        } catch (\RuntimeException $e) {
             $this->exceptionHasOccured = true;
             throw $e;
         }
@@ -327,16 +337,16 @@ class Snidel
     /**
      * fork the first processing of the map container
      *
-     * @param   Snidel_MapContainer
+     * @param   Snidel\MapContainer
      * @return  void
-     * @throws  RuntimeException
+     * @throws  \RuntimeException
      */
-    private function forkTheFirstProcessing(Snidel_MapContainer $mapContainer)
+    private function forkTheFirstProcessing(MapContainer $mapContainer)
     {
         foreach ($mapContainer->getFirstArgs() as $args) {
             try {
                 $childPid = $this->fork($mapContainer->getFirstMap()->getCallable(), $args);
-            } catch (RuntimeException $e) {
+            } catch (\RuntimeException $e) {
                 throw $e;
             }
             $mapContainer->getFirstMap()->countTheForked();
@@ -347,11 +357,11 @@ class Snidel
     /**
      * waits and connects the process of map container
      *
-     * @param   Snidel_MapContainer
+     * @param   Snidel\MapContainer
      * @return  void
-     * @throws  RuntimeException
+     * @throws  \RuntimeException
      */
-    private function waitsAndConnectsProcess(Snidel_MapContainer $mapContainer)
+    private function waitsAndConnectsProcess(MapContainer $mapContainer)
     {
         if ($this->joined) {
             return;
@@ -363,14 +373,14 @@ class Snidel
             $data = $this->dataRepository->load($childPid);
             try {
                 $result = $data->readAndDelete();
-            } catch (Snidel_Exception_SharedMemoryControlException $e) {
+            } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
 
             if (!$this->pcntl->wifexited($status) || $this->pcntl->wexitstatus($status) !== 0) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
-                throw new RuntimeException($message);
+                throw new \RuntimeException($message);
             } else {
                 $this->results[$childPid] = $result['return'];
             }
@@ -383,7 +393,7 @@ class Snidel
                         null,
                         $nextMap->getToken()
                     );
-                } catch (RuntimeException $e) {
+                } catch (\RuntimeException $e) {
                     throw $e;
                 }
                 $message = sprintf('processing is connected from [%d] to [%d]', $childPid, $nextMapPid);
@@ -400,10 +410,10 @@ class Snidel
     /**
      * gets results of map container
      *
-     * @param   Snidel_MapContainer
+     * @param   Ackintosh\Snidel\MapContainer
      * @return  array
      */
-    private function getResultsOf(Snidel_MapContainer $mapContainer)
+    private function getResultsOf(MapContainer $mapContainer)
     {
         $results = array();
         foreach ($mapContainer->getLastMapPids() as $pid) {
@@ -420,14 +430,14 @@ class Snidel
 
     /**
      * @return void
-     * @throws Snidel_Exception_SharedMemoryControlException
+     * @throws Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function childShutdownFunction()
     {
         $data = $this->dataRepository->load(getmypid());
         try {
             $data->write($this->processInformation);
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             throw $e;
         }
         $this->log->info('<-- return token.');
@@ -455,7 +465,7 @@ class Snidel
             unset($this->token);
 
             $this->log->info('--> destruct processes are finished successfully.');
-            throw new LogicException($message);
+            throw new \LogicException($message);
         }
     }
 }

@@ -1,12 +1,16 @@
 <?php
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\MapContainer;
+
 /**
  * @runTestsInSeparateProcesses
  */
-class Snidel_MapContainerTest extends PHPUnit_Framework_TestCase
+class MapContainerTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->mapContainer = new Snidel_MapContainer(array('foo', 'bar'), 'echo', 5);
+        $this->mapContainer = new MapContainer(array('foo', 'bar'), 'echo', 5);
     }
 
     /**
@@ -24,7 +28,7 @@ class Snidel_MapContainerTest extends PHPUnit_Framework_TestCase
     public function getFirstMap()
     {
         $this->mapContainer->then('var_dump');
-        $this->assertInstanceOf('Snidel_Map', $this->mapContainer->getFirstMap());
+        $this->assertInstanceOf('Ackintosh\Snidel\Map', $this->mapContainer->getFirstMap());
         $this->assertSame('echo', $this->mapContainer->getFirstMap()->getCallable());
     }
 
@@ -38,7 +42,7 @@ class Snidel_MapContainerTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException Snidel_Exception_MapContainerException
+     * @expectedException Ackintosh\Snidel\Exception\MapContainerException
      */
     public function nextMapThrowsExceptionWhenChildPidNotFound()
     {

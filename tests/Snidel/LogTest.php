@@ -1,12 +1,16 @@
 <?php
-class Snidel_LogTest extends PHPUnit_Framework_TestCase
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\Log;
+
+class LogTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
      */
     public function setdestination()
     {
-        $log = new Snidel_Log(getmypid());
+        $log = new Log(getmypid());
         $fp = fopen('php://stdout', 'w');
         $log->setdestination($fp);
         $this->assertObjectHasAttribute('destination', $log);
@@ -18,7 +22,7 @@ class Snidel_LogTest extends PHPUnit_Framework_TestCase
      */
     public function info()
     {
-        $log = new Snidel_Log(getmypid());
+        $log = new Log(getmypid());
         $fp = fopen('php://temp', 'w');
         $log->setdestination($fp);
         $log->info('test');
@@ -31,7 +35,7 @@ class Snidel_LogTest extends PHPUnit_Framework_TestCase
      */
     public function error()
     {
-        $log = new Snidel_Log(getmypid());
+        $log = new Log(getmypid());
         $fp = fopen('php://temp', 'w');
         $log->setdestination($fp);
         $log->error('test');

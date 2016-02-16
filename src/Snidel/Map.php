@@ -1,7 +1,12 @@
 <?php
-class Snidel_Map
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\Token;
+
+
+class Map
 {
-    /** @var Snidel_Token */
+    /** @var Snidel\Token */
     private $token;
 
     /** @var callable */
@@ -22,7 +27,7 @@ class Snidel_Map
      */
     public function __construct($callable, $concurrency)
     {
-        $this->token = new Snidel_Token(getmypid(), $concurrency);
+        $this->token = new Token(getmypid(), $concurrency);
         $this->callable = $callable;
     }
 
@@ -39,7 +44,7 @@ class Snidel_Map
     /**
      * returns token
      *
-     * @return  Snidel_Token
+     * @return  Snidel\Token
      */
     public function getToken()
     {

@@ -1,5 +1,7 @@
 <?php
-class Snidel_Pcntl
+namespace Ackintosh\Snidel;
+
+class Pcntl
 {
     /**
      * @see pcntl_fork

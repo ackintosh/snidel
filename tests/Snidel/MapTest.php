@@ -1,9 +1,13 @@
 <?php
-class Snidel_MapTest extends PHPUnit_Framework_TestCase
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\Map;
+
+class MapTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->map = new Snidel_Map('echo', 5);
+        $this->map = new Map('echo', 5);
     }
 
     /**
@@ -12,7 +16,7 @@ class Snidel_MapTest extends PHPUnit_Framework_TestCase
     public function getCallable()
     {
         // $map = new Snidel_Map('echo', 5);
-        $this->map = new Snidel_Map('echo', 5);
+        $this->map = new Map('echo', 5);
         $this->assertSame('echo', $this->map->getCallable());
     }
 
@@ -22,7 +26,7 @@ class Snidel_MapTest extends PHPUnit_Framework_TestCase
     public function getToken()
     {
         // $map = new Snidel_Map('echo', 5);
-        $this->assertInstanceOf('Snidel_Token', $this->map->getToken());
+        $this->assertInstanceOf('Ackintosh\\Snidel\\Token', $this->map->getToken());
     }
 
     /**

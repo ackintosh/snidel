@@ -1,15 +1,20 @@
 <?php
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel;
+use Ackintosh\Snidel\Token;
+
 /**
  * @runTestsInSeparateProcesses
  */
-class Snidel_TokenTest extends PHPUnit_Framework_TestCase
+class TokenTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
      */
     public function accept()
     {
-        $token = new Snidel_Token(getmypid(), 1);
+        $token = new Token(getmypid(), 1);
         $time = time();
         $token->accept();
         // no waiting time
@@ -30,8 +35,8 @@ class Snidel_TokenTest extends PHPUnit_Framework_TestCase
      */
     public function destructorRemovesTmpFile()
     {
-        $token = new Snidel_Token(getmypid(), 1);
-        $method = new ReflectionMethod($token, 'getKey');
+        $token = new Token(getmypid(), 1);
+        $method = new \ReflectionMethod($token, 'getKey');
         $method->setAccessible(true);
         $key = $method->invoke($token);
         unset($token);

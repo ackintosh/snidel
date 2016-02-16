@@ -1,14 +1,18 @@
 <?php
-class Snidel_DataRepository
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel\Data;
+
+class DataRepository
 {
     /**
      * load data
      *
      * @param   int             $pid
-     * @return  Snidel_Data
+     * @return  Snidel\Data
      */
     public function load($pid)
     {
-        return new Snidel_Data($pid);
+        return new Data($pid);
     }
 }

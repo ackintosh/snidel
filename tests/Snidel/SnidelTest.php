@@ -1,8 +1,14 @@
 <?php
+namespace Ackintosh\Snidel;
+
+use Ackintosh\Snidel;
+use Ackintosh\Snidel\DataRepository;
+use Ackintosh\Snidel\Exception\SharedMemoryControlException;
+
 /**
  * @runTestsInSeparateProcesses
  */
-class SnidelTest extends PHPUnit_Framework_TestCase
+class SnidelTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
@@ -19,25 +25,25 @@ class SnidelTest extends PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException \RuntimeException
      * @requires PHP 5.3
      */
     public function throwsExceptionWhenFailedToFork()
     {
-        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+        $pcntl = $this->getMockBuilder('Ackintosh\Snidel\Pcntl')
             ->setMethods(array('fork'))
             ->getMock();
         $pcntl->method('fork')
             ->willReturn(-1);
 
         $snidel = new Snidel();
-        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref = new \ReflectionProperty($snidel, 'pcntl');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $pcntl);
 
         try {
             $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        } catch (RuntimeException $e) {
+        } catch (\RuntimeException $e) {
             $snidel->wait();
             throw $e;
         }
@@ -104,7 +110,7 @@ class SnidelTest extends PHPUnit_Framework_TestCase
     public function runInstanceMethod()
     {
         $snidel = new Snidel();
-        $test = new TestClass();
+        $test = new \TestClass();
 
         $snidel->fork(array($test, 'returnsFoo'));
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar');
@@ -140,7 +146,7 @@ __EOS__
     public function getResultsWithTag()
     {
         $snidel = new Snidel();
-        $test = new TestClass();
+        $test = new \TestClass();
 
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar1', 'tag1');
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar2', 'tag1');
@@ -153,12 +159,12 @@ __EOS__
 
     /**
      * @test
-     * @expectedException InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function throwsExceptionWhenPassedUnknownTag()
     {
         $snidel = new Snidel();
-        $test = new TestClass();
+        $test = new \TestClass();
 
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar', 'tag');
         $snidel->get('unknown_tag');
@@ -193,7 +199,7 @@ __EOS__
     public function waitSetsErrorWhenChildTerminatesAbnormally()
     {
         // wifexited
-        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+        $pcntl = $this->getMockBuilder('Ackintosh\Snidel\Pcntl')
             ->setMethods(array('wifexited'))
             ->getMock();
         $pcntl->method('wifexited')
@@ -201,7 +207,7 @@ __EOS__
 
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref = new \ReflectionProperty($snidel, 'pcntl');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $pcntl);
         $snidel->wait();
@@ -209,7 +215,7 @@ __EOS__
         $this->assertTrue($snidel->hasError());
 
         // wexitstatus
-        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+        $pcntl = $this->getMockBuilder('Ackintosh\Snidel\Pcntl')
             ->setMethods(array('wexitstatus'))
             ->getMock();
         $pcntl->method('wexitstatus')
@@ -217,7 +223,7 @@ __EOS__
 
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref = new \ReflectionProperty($snidel, 'pcntl');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $pcntl);
         $snidel->wait();
@@ -227,19 +233,19 @@ __EOS__
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function waitThrowsException()
     {
-        $data = $this->getMockBuilder('Snidel_Data')
+        $data = $this->getMockBuilder('Ackintosh\Snidel\Data')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('readAndDelete'))
             ->getMock();
         $data->method('readAndDelete')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $dataRepository = $this->getMockBuilder('Snidel_DataRepository')
+        $dataRepository = $this->getMockBuilder('Ackintosh\Snidel\DataRepository')
             ->setMethods(array('load'))
             ->getMock();
         $dataRepository->expects($this->any())
@@ -247,7 +253,7 @@ __EOS__
             ->willReturn($data);
 
         $snidel = new Snidel();
-        $ref = new ReflectionProperty($snidel, 'dataRepository');
+        $ref = new \ReflectionProperty($snidel, 'dataRepository');
         $ref->setAccessible(true);
         $originalDataRepository = $ref->getValue($snidel);
         $ref->setValue($snidel, $dataRepository);
@@ -255,10 +261,10 @@ __EOS__
 
         try {
             $snidel->wait();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             // clean up
             $data->delete();
-            // set original Snidel_DataRepository
+            // set original DataRepository
             $ref->setValue($snidel, $originalDataRepository);
             throw $e;
         }
@@ -283,29 +289,29 @@ __EOS__
     {
         $snidel = new Snidel();
         $snidel->wait();
-        $this->assertInstanceOf('Snidel_Error', $snidel->getError());
+        $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }
 
     /**
      * @test
-     * @expectedException RuntimeException
+     * @expectedException \RuntimeException
      * @requires PHP 5.3
      */
     public function runThrowsExceptionWhenFailedToFork()
     {
-        $pcntl = $this->getMockBuilder('Snidel_Pcntl')
+        $pcntl = $this->getMockBuilder('Ackintosh\\Snidel\\Pcntl')
             ->setMethods(array('fork'))
             ->getMock();
         $pcntl->method('fork')
             ->willReturn(-1);
 
         $snidel = new Snidel();
-        $ref = new ReflectionProperty($snidel, 'pcntl');
+        $ref = new \ReflectionProperty($snidel, 'pcntl');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $pcntl);
         try {
             $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
-        } catch (RuntimeException $e) {
+        } catch (\RuntimeException $e) {
             $snidel->wait();
             throw $e;
         }
@@ -314,7 +320,7 @@ __EOS__
     /**
      * @test
      * @requires PHP 5.3
-     * @expectedException RuntimeException
+     * @expectedException \RuntimeException
      */
     public function runThrowsExceptionWhenErrorOccurredInChildProcess()
     {
@@ -323,7 +329,7 @@ __EOS__
             $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then(function () {
                 exit(1);
             }));
-        } catch (RuntimeException $e) {
+        } catch (\RuntimeException $e) {
             unset($snidel);
             throw $e;
         }
@@ -335,7 +341,7 @@ __EOS__
      */
     public function childShutdownFunctionOutputsLog()
     {
-        $log = $this->getMockBuilder('Snidel_Log')
+        $log = $this->getMockBuilder('Ackintosh\Snidel\Log')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('info'))
             ->getMock();
@@ -345,7 +351,7 @@ __EOS__
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
 
-        $ref = new ReflectionProperty($snidel, 'log');
+        $ref = new \ReflectionProperty($snidel, 'log');
         $ref->setAccessible(true);
         $originalLog = $ref->getValue($snidel);
 
@@ -354,7 +360,7 @@ __EOS__
         $ref->setValue($snidel, $originalLog);
 
         // delete the shared memory which opened in childShutdownFunction.
-        $dataRepository = new Snidel_DataRepository();
+        $dataRepository = new DataRepository();
         $dataRepository->load(getmypid())->delete();
 
         $snidel->wait();
@@ -362,19 +368,19 @@ __EOS__
 
     /**
      * @test
-     * @expectedException Snidel_Exception_SharedMemoryControlException
+     * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
      * @requires PHP 5.3
      */
     public function childShutdownFunctionThrowsExceptionWhenFailedToWriteData()
     {
-        $data = $this->getMockBuilder('Snidel_Data')
+        $data = $this->getMockBuilder('Ackintosh\Snidel\Data')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('write'))
             ->getMock();
         $data->method('write')
-            ->will($this->throwException(new Snidel_Exception_SharedMemoryControlException));
+            ->will($this->throwException(new SharedMemoryControlException));
 
-        $dataRepository = $this->getMockBuilder('Snidel_DataRepository')
+        $dataRepository = $this->getMockBuilder('Ackintosh\Snidel\DataRepository')
             ->setMethods(array('load'))
             ->getMock();
         $dataRepository->expects($this->any())
@@ -384,14 +390,14 @@ __EOS__
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $ref = new ReflectionProperty($snidel, 'dataRepository');
+        $ref = new \ReflectionProperty($snidel, 'dataRepository');
         $ref->setAccessible(true);
         $originalDataRepository = $ref->getValue($snidel);
         $ref->setValue($snidel, $dataRepository);
 
         try {
             $snidel->childShutdownFunction();
-        } catch (Snidel_Exception_SharedMemoryControlException $e) {
+        } catch (SharedMemoryControlException $e) {
             $ref->setValue($snidel, $originalDataRepository);
             $snidel->wait();
             throw $e;

@@ -18,8 +18,8 @@
     "satooshi/php-coveralls": "*"
   },
   "autoload": {
-    "psr-0": {
-      "Snidel": "src/"
+    "psr-4": {
+      "Ackintosh\\": "src/"
     }
   }
 }

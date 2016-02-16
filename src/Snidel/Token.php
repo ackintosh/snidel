@@ -1,5 +1,7 @@
 <?php
-class Snidel_Token
+namespace Ackintosh\Snidel;
+
+class Token
 {
     /** @var int */
     private $ownerPid;
