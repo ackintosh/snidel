@@ -9,7 +9,7 @@ class MapContainer
     /** @var array */
     private $args;
 
-    /** @var Snidel\Map[] */
+    /** @var \Ackintosh\Snidel\Map[] */
     private $maps = array();
 
     /** @var int */
@@ -31,7 +31,7 @@ class MapContainer
      * stacks map object
      *
      * @param   callable                $callable
-     * @return  Snidel\MapContainer     $this
+     * @return  \Ackintosh\Snidel\MapContainer     $this
      */
     public function then($callable)
     {
@@ -42,7 +42,7 @@ class MapContainer
     /**
      * returns first map
      *
-     * @return Snidel\Map
+     * @return \Ackintosh\Snidel\Map
      */
     public function getFirstMap()
     {
@@ -105,7 +105,7 @@ class MapContainer
      * returns next map
      *
      * @param   int     $childPid
-     * @return  Snidel\Map
+     * @return  \Ackintosh\Snidel\Map
      */
     public function nextMap($childPid)
     {

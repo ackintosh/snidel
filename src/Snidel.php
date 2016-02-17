@@ -19,22 +19,22 @@ class Snidel
     /** @var array */
     private $childPids = array();
 
-    /** @var Snidel\Error */
+    /** @var \Ackintosh\Snidel\Error */
     private $error;
 
-    /** @var Snidel\Pcntl */
+    /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
 
     /** @var int */
     private $concurrency;
 
-    /** @var Snidel\Token */
+    /** @var \Ackintosh\Snidel\Token */
     private $token;
 
-    /** @var Snidel\Log */
+    /** @var \Ackintosh\Snidel\Log */
     private $log;
 
-    /** @var Snidel\DataRepository */
+    /** @var \Ackintosh\Snidel\DataRepository */
     private $dataRepository;
 
     /** @var bool */
@@ -58,7 +58,7 @@ class Snidel
     /** @var int */
     private $receivedSignal;
 
-    /** @var Snidel\Token */
+    /** @var \Ackintosh\Snidel\Token */
     private $processToken;
 
     /** @var array */
@@ -152,7 +152,7 @@ class Snidel
      * waits until all children are completed
      *
      * @return  void
-     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function wait()
     {
@@ -199,7 +199,7 @@ class Snidel
     }
 
     /**
-     * @return  Snidel\Error
+     * @return  \Ackintosh\Snidel\Error
      */
     public function getError()
     {
@@ -288,7 +288,7 @@ class Snidel
      * delete shared memory
      *
      * @return  void
-     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     private function deleteAllData()
     {
@@ -307,7 +307,7 @@ class Snidel
      *
      * @param   array       $args
      * @param   callable    $callable
-     * @return  Ackintosh\Snidel\MapContainer
+     * @return  \Ackintosh\Snidel\MapContainer
      */
     public function map(Array $args, $callable)
     {
@@ -317,7 +317,7 @@ class Snidel
     /**
      * run map object
      *
-     * @param   Snidel\MapContainer
+     * @param   \Ackintosh\Snidel\MapContainer
      * @return  array
      * @throws  \RuntimeException
      */
@@ -337,7 +337,7 @@ class Snidel
     /**
      * fork the first processing of the map container
      *
-     * @param   Snidel\MapContainer
+     * @param   \Ackintosh\Snidel\MapContainer
      * @return  void
      * @throws  \RuntimeException
      */
@@ -357,7 +357,7 @@ class Snidel
     /**
      * waits and connects the process of map container
      *
-     * @param   Snidel\MapContainer
+     * @param   \Ackintosh\Snidel\MapContainer
      * @return  void
      * @throws  \RuntimeException
      */
@@ -410,7 +410,7 @@ class Snidel
     /**
      * gets results of map container
      *
-     * @param   Ackintosh\Snidel\MapContainer
+     * @param   \Ackintosh\Snidel\MapContainer
      * @return  array
      */
     private function getResultsOf(MapContainer $mapContainer)
@@ -430,7 +430,7 @@ class Snidel
 
     /**
      * @return void
-     * @throws Ackintosh\Snidel\Exception\SharedMemoryControlException
+     * @throws \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function childShutdownFunction()
     {

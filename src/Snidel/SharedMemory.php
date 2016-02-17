@@ -30,7 +30,7 @@ class SharedMemory
      * create or open shared memory block
      *
      * @param   int     $length
-     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function open($length = 0)
     {
@@ -46,7 +46,7 @@ class SharedMemory
      * write data into shared memory block
      *
      * @param   string  $data
-     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function write($data)
     {
@@ -60,7 +60,7 @@ class SharedMemory
      * read data from shared memory block
      *
      * @return string
-     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function read()
     {
@@ -75,7 +75,7 @@ class SharedMemory
     /**
      * delete shared memory block
      *
-     * @throws  Ackintosh\Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function delete()
     {

@@ -9,7 +9,7 @@ class Data
     /** @var int */
     private $pid;
 
-    /** @var Snidel\SharedMemory */
+    /** @var \Ackintosh\Snidel\SharedMemory */
     private $shm;
 
     /**
@@ -26,7 +26,7 @@ class Data
      *
      * @param   mixed     $data
      * @return  void
-     * @throws  Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function write($data)
     {
@@ -53,7 +53,7 @@ class Data
      * read data and delete shared memory
      *
      * @return  mixed
-     * @throws  Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function readAndDelete()
     {
@@ -71,7 +71,7 @@ class Data
      * read data
      *
      * @return  array
-     * @throws  Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function read()
     {
@@ -92,7 +92,7 @@ class Data
      * delete shared memory
      *
      * @return  void
-     * @throws  Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function delete()
     {
@@ -115,7 +115,7 @@ class Data
      * delete shared memory if exists
      *
      * @return  void
-     * @throws  Snidel\Exception\SharedMemoryControlException
+     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function deleteIfExists()
     {

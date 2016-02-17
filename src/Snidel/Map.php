@@ -6,7 +6,7 @@ use Ackintosh\Snidel\Token;
 
 class Map
 {
-    /** @var Snidel\Token */
+    /** @var \Ackintosh\Snidel\Token */
     private $token;
 
     /** @var callable */
@@ -44,7 +44,7 @@ class Map
     /**
      * returns token
      *
-     * @return  Snidel\Token
+     * @return  \Ackintosh\Snidel\Token
      */
     public function getToken()
     {

@@ -9,7 +9,7 @@ class DataRepository
      * load data
      *
      * @param   int             $pid
-     * @return  Snidel\Data
+     * @return  \Ackintosh\Snidel\Data
      */
     public function load($pid)
     {
