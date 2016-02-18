@@ -26,7 +26,6 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException \RuntimeException
-     * @requires PHP 5.3
      */
     public function throwsExceptionWhenFailedToFork()
     {
@@ -120,7 +119,6 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @requires PHP 5.3
      */
     public function runAnonymousFunction()
     {
@@ -194,7 +192,6 @@ __EOS__
 
     /**
      * @test
-     * @requires PHP 5.3
      */
     public function waitSetsErrorWhenChildTerminatesAbnormally()
     {
@@ -234,7 +231,6 @@ __EOS__
     /**
      * @test
      * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function waitThrowsException()
     {
@@ -295,7 +291,6 @@ __EOS__
     /**
      * @test
      * @expectedException \RuntimeException
-     * @requires PHP 5.3
      */
     public function runThrowsExceptionWhenFailedToFork()
     {
@@ -319,7 +314,6 @@ __EOS__
 
     /**
      * @test
-     * @requires PHP 5.3
      * @expectedException \RuntimeException
      */
     public function runThrowsExceptionWhenErrorOccurredInChildProcess()
@@ -337,7 +331,6 @@ __EOS__
 
     /**
      * @test
-     * @requires PHP 5.3
      */
     public function childShutdownFunctionOutputsLog()
     {
@@ -369,7 +362,6 @@ __EOS__
     /**
      * @test
      * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function childShutdownFunctionThrowsExceptionWhenFailedToWriteData()
     {

@@ -8,7 +8,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
-     * @requires PHP 5.3
      */
     public function constructorSetsPid()
     {
@@ -31,7 +30,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function readAndDeleteThrowsExceptionWhenFailed()
     {
@@ -60,7 +58,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function writeThrowsRuntimeExceptionWhenFailedToOpenShm()
     {
@@ -87,7 +84,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function writeThrowsRuntimeExceptionWhenFailedToWriteData()
     {
@@ -115,7 +111,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function readThrowsRuntimeException()
     {
@@ -144,7 +139,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailedToOpenShm()
     {
@@ -176,7 +170,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailedToDeleteShm()
     {
@@ -220,7 +213,6 @@ class DataTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function deleteIfExistsThrowsExceptionWhenFailedToDeleteShm()
     {

@@ -14,7 +14,6 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function openThrowsExceptionWhenFailed()
     {
@@ -36,7 +35,6 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function writeThrowsExceptionWhenFailed()
     {
@@ -59,7 +57,6 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function readThrowsExceptionWhenFailed()
     {
@@ -83,7 +80,6 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      * @expectedException Ackintosh\Snidel\Exception\SharedMemoryControlException
-     * @requires PHP 5.3
      */
     public function deleteThrowsExceptionWhenFailed()
     {
