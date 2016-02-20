@@ -15,7 +15,6 @@ class MapTest extends \PHPUnit_Framework_TestCase
      */
     public function getCallable()
     {
-        // $map = new Snidel_Map('echo', 5);
         $this->map = new Map('echo', 5);
         $this->assertSame('echo', $this->map->getCallable());
     }
@@ -25,7 +24,6 @@ class MapTest extends \PHPUnit_Framework_TestCase
      */
     public function getToken()
     {
-        // $map = new Snidel_Map('echo', 5);
         $this->assertInstanceOf('Ackintosh\\Snidel\\Token', $this->map->getToken());
     }
 
