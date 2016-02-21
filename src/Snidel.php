@@ -128,19 +128,32 @@ class Snidel
         } else {
             // @codeCoverageIgnoreStart
             // child
-            register_shutdown_function(array($this, 'childShutdownFunction'));
-            $this->processInformation['callable']    = $callable instanceof \Closure ? '*Closure*' : $callable;
-            $this->processInformation['args']        = $args;
-
             foreach ($this->signals as $sig) {
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
+
+            $return = null;
+            register_shutdown_function(function () use ($callable, $args, &$return) {
+                $processInformation['callable'] = $callable instanceof \Closure ? '*Closure*' : $callable;
+                $processInformation['args'] = $args;
+                $processInformation['return'] = $return;
+                $data = $this->dataRepository->load(getmypid());
+                try {
+                    $data->write($processInformation);
+                } catch (SharedMemoryControlException $e) {
+                    throw $e;
+                }
+                $this->log->info('<-- return token.');
+                $this->processToken->back();
+            });
+
             $this->log->info('--> waiting for the token come around.');
             if ($this->processToken->accept()) {
                 $this->log->info('----> started the function.');
-                $this->processInformation['return'] = call_user_func_array($callable, $args);
+                $return = call_user_func_array($callable, $args);
                 $this->log->info('<---- completed the function.');
             }
+
             $this->_exit();
             // @codeCoverageIgnoreEnd
         }
@@ -426,22 +439,6 @@ class Snidel
     private function _exit($status = 0)
     {
         exit($status);
-    }
-
-    /**
-     * @return void
-     * @throws \Ackintosh\Snidel\Exception\SharedMemoryControlException
-     */
-    public function childShutdownFunction()
-    {
-        $data = $this->dataRepository->load(getmypid());
-        try {
-            $data->write($this->processInformation);
-        } catch (SharedMemoryControlException $e) {
-            throw $e;
-        }
-        $this->log->info('<-- return token.');
-        $this->processToken->back();
     }
 
     public function __destruct()
