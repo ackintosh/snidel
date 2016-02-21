@@ -118,15 +118,40 @@ $args = [
 
 $snidel = new Snidel($concurrency = 2);
 
-// each of the functions are performed in parallel.
+// * Snidel::map() is available as array_map().
+//   and use Snidel::then(), you can connect the result.
+// * $camelize is instance of Snidel\MapContainer which has the functions you defined.
+// * the functions are not yet executed.
 $camelize = $snidel->map($args, function ($arg) {
     return explode(' ', strtolower($arg));
+    // array(4) {
+    //   [0] =>
+    //   string(5) "bring"
+    //   [1] =>
+    //   string(2) "me"
+    //   [2] =>
+    //   string(3) "the"
+    //   [3] =>
+    //   string(7) "horizon"
+    // }
 })->then(function ($arg) {
     return array_map('ucfirst', $arg);
+    // array(4) {
+    //   [0] =>
+    //   string(5) "Bring"
+    //   [1] =>
+    //   string(2) "Me"
+    //   [2] =>
+    //   string(3) "The"
+    //   [3] =>
+    //   string(7) "Horizon"
+    // }
 })->then(function ($arg) {
     return implode('', $arg);
+    // string(17) "BringMeTheHorizon"
 });
 
+// * each of the functions are performed in parallel.
 var_dump($snidel->run($camelize));
 // array(6) {
 //   [0] =>
