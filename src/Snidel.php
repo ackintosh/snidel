@@ -3,6 +3,7 @@ declare(ticks = 1);
 
 namespace Ackintosh;
 
+use Ackintosh\Snidel\ForkContainer;
 use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Error;
@@ -18,6 +19,9 @@ class Snidel
 
     /** @var array */
     private $childPids = array();
+
+    /** @var \Ackintosh\Snidel\ForkContainer */
+    private $forkConatiner;
 
     /** @var \Ackintosh\Snidel\Error */
     private $error;
@@ -77,6 +81,7 @@ class Snidel
         $this->error            = new Error();
         $this->pcntl            = new Pcntl();
         $this->dataRepository   = new DataRepository();
+        $this->forkContainer    = new ForkContainer();
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal($sig, array($this, 'signalHandler'), false);
@@ -122,6 +127,7 @@ class Snidel
             // parent
             $this->log->info('created child process. pid: ' . $pid);
             $this->childPids[] = $pid;
+            $this->forkContainer->add($pid);
             if ($tag !== null) {
                 $this->tagsToPids[$tag][] = $pid;
             }
@@ -175,21 +181,19 @@ class Snidel
 
         $count = count($this->childPids);
         for ($i = 0; $i < $count; $i++) {
-            $status = null;
-            $childPid = $this->pcntl->waitpid(-1, $status);
-            $data = $this->dataRepository->load($childPid);
+            $fork       = $this->forkContainer->wait();
+            $childPid   = $fork->getPid();
             try {
-                $result = $data->readAndDelete();
+                $result = $fork->getResult();
             } catch (SharedMemoryControlException $e) {
                 $this->exceptionHasOccured = true;
                 throw $e;
             }
-
-            if (!$this->pcntl->wifexited($status) || $this->pcntl->wexitstatus($status) !== 0) {
+            if (!$fork->isSuccessful()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 $this->error[$childPid] = array(
-                    'status'    => $status,
+                    'status'    => $fork->getStatus(),
                     'message'   => $message,
                     'callable'  => $result['callable'],
                     'args'      => $result['args'],
@@ -381,16 +385,15 @@ class Snidel
         }
 
         while ($mapContainer->isProcessing()) {
-            $status = null;
-            $childPid = $this->pcntl->waitpid(-1, $status);
-            $data = $this->dataRepository->load($childPid);
+            $fork       = $this->forkContainer->wait();
+            $childPid   = $fork->getPid();
             try {
-                $result = $data->readAndDelete();
+                $result = $fork->getResult();
             } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
 
-            if (!$this->pcntl->wifexited($status) || $this->pcntl->wexitstatus($status) !== 0) {
+            if (!$fork->isSuccessful()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 throw new \RuntimeException($message);

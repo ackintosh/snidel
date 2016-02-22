@@ -189,36 +189,26 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      */
     public function waitSetsErrorWhenChildTerminatesAbnormally()
     {
-        // wifexited
-        $pcntl = $this->getMockBuilder('Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('wifexited'))
+        $snidel = new Snidel();
+        $childPid = $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+
+        $fork = $this->getMockBuilder('Ackintosh\Snidel\Fork')
+            ->setConstructorArgs(array($childPid))
+            ->setMethods(array('isSuccessful'))
             ->getMock();
-        $pcntl->method('wifexited')
+        $fork->method('isSuccessful')
             ->willReturn(false);
 
-        $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $ref = new \ReflectionProperty($snidel, 'pcntl');
-        $ref->setAccessible(true);
-        $ref->setValue($snidel, $pcntl);
-        $snidel->wait();
-
-        $this->assertTrue($snidel->hasError());
-
-        // wexitstatus
-        $pcntl = $this->getMockBuilder('Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('wexitstatus'))
+        $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
+            ->setMethods(array('wait'))
             ->getMock();
-        $pcntl->method('wexitstatus')
-            ->willReturn(1);
-
-        $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $ref = new \ReflectionProperty($snidel, 'pcntl');
+        $forkContainer->method('wait')
+            ->willReturn($fork);
+        $ref = new \ReflectionProperty($snidel, 'forkContainer');
         $ref->setAccessible(true);
-        $ref->setValue($snidel, $pcntl);
-        $snidel->wait();
+        $ref->setValue($snidel, $forkContainer);
 
+        $snidel->wait();
         $this->assertTrue($snidel->hasError());
     }
 
@@ -228,36 +218,26 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      */
     public function waitThrowsException()
     {
-        $data = $this->getMockBuilder('Ackintosh\Snidel\Data')
+        $fork = $this->getMockBuilder('Ackintosh\Snidel\Fork')
             ->setConstructorArgs(array(getmypid()))
-            ->setMethods(array('readAndDelete'))
+            ->setMethods(array('getResult'))
             ->getMock();
-        $data->method('readAndDelete')
+        $fork->method('getResult')
             ->will($this->throwException(new SharedMemoryControlException));
 
-        $dataRepository = $this->getMockBuilder('Ackintosh\Snidel\DataRepository')
-            ->setMethods(array('load'))
+        $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
+            ->setMethods(array('wait'))
             ->getMock();
-        $dataRepository->expects($this->any())
-            ->method('load')
-            ->willReturn($data);
+        $forkContainer->method('wait')
+            ->willReturn($fork);
 
         $snidel = new Snidel();
-        $ref = new \ReflectionProperty($snidel, 'dataRepository');
+        $ref = new \ReflectionProperty($snidel, 'forkContainer');
         $ref->setAccessible(true);
-        $originalDataRepository = $ref->getValue($snidel);
-        $ref->setValue($snidel, $dataRepository);
+        $ref->setValue($snidel, $forkContainer);
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        try {
-            $snidel->wait();
-        } catch (SharedMemoryControlException $e) {
-            // clean up
-            $data->delete();
-            // set original DataRepository
-            $ref->setValue($snidel, $originalDataRepository);
-            throw $e;
-        }
+        $snidel->wait();
     }
 
     /**
