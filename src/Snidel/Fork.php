@@ -10,12 +10,18 @@ class Fork
     /** @var int */
     private $pid;
 
+    /** @var \Ackintosh\Snidel\Pcntl */
+    private $pcntl;
+
     /** @var \Ackintosh\Snidel\DataRepository */
     private $dataRepository;
 
     /** @var int */
     private $status;
 
+    /**
+     * @param   int     $pid
+     */
     public function __construct($pid)
     {
         $this->pid              = $pid;
