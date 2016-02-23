@@ -21,7 +21,7 @@ class Snidel
     private $childPids = array();
 
     /** @var \Ackintosh\Snidel\ForkContainer */
-    private $forkConatiner;
+    private $forkContainer;
 
     /** @var \Ackintosh\Snidel\Error */
     private $error;
