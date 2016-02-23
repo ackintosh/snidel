@@ -18,14 +18,21 @@ class ForkContainer implements \ArrayAccess
     }
 
     /**
-     * add fork
+     * fork process
      *
-     * @param   int     $pid
-     * @return  void
+     * @return \Ackintosh\Snidel\Fork;
+     * @throws \RuntimeException
      */
-    public function add($pid)
+    public function fork()
     {
+        $pid = $this->pcntl->fork();
+        if ($pid === -1) {
+            throw new \RuntimeException('could not fork a new process');
+        }
+
         $this->forks[$pid] = new Fork($pid);
+
+        return $this->forks[$pid];
     }
 
     /**

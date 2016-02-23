@@ -3,6 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel;
 use Ackintosh\Snidel\DataRepository;
+use Ackintosh\Snidel\ForkContainer;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 /**
@@ -35,10 +36,15 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $pcntl->method('fork')
             ->willReturn(-1);
 
-        $snidel = new Snidel();
-        $ref = new \ReflectionProperty($snidel, 'pcntl');
+        $forkContainer = new ForkContainer();
+        $ref = new \ReflectionProperty($forkContainer, 'pcntl');
         $ref->setAccessible(true);
-        $ref->setValue($snidel, $pcntl);
+        $ref->setValue($forkContainer, $pcntl);
+
+        $snidel = new Snidel();
+        $ref = new \ReflectionProperty($snidel, 'forkContainer');
+        $ref->setAccessible(true);
+        $ref->setValue($snidel, $forkContainer);
 
         try {
             $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
@@ -274,10 +280,15 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $pcntl->method('fork')
             ->willReturn(-1);
 
-        $snidel = new Snidel();
-        $ref = new \ReflectionProperty($snidel, 'pcntl');
+        $forkContainer = new ForkContainer();
+        $ref = new \ReflectionProperty($forkContainer, 'pcntl');
         $ref->setAccessible(true);
-        $ref->setValue($snidel, $pcntl);
+        $ref->setValue($forkContainer, $pcntl);
+
+        $snidel = new Snidel();
+        $ref = new \ReflectionProperty($snidel, 'forkContainer');
+        $ref->setAccessible(true);
+        $ref->setValue($snidel, $forkContainer);
         try {
             $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
         } catch (\RuntimeException $e) {

@@ -118,16 +118,17 @@ class Snidel
             $args = array($args);
         }
 
-        $pid = $this->pcntl->fork();
-        if (-1 === $pid) {
-            $message = 'could not fork a new process';
-            $this->log->error($message);
-            throw new \RuntimeException($message);
-        } elseif ($pid) {
+        try {
+            $fork = $this->forkContainer->fork();
+        } catch (\RuntimeException $e) {
+            $this->log->error($e->getMessage());
+            throw $e;
+        }
+
+        if ($pid = $fork->getPid()) {
             // parent
             $this->log->info('created child process. pid: ' . $pid);
             $this->childPids[] = $pid;
-            $this->forkContainer->add($pid);
             if ($tag !== null) {
                 $this->tagsToPids[$tag][] = $pid;
             }
