@@ -45,6 +45,7 @@ class ForkContainer implements \ArrayAccess
         $status = null;
         $childPid = $this->pcntl->waitpid(-1, $status);
         $this[$childPid]->setStatus($status);
+        $this[$childPid]->loadResult();
 
         return $this[$childPid];
     }

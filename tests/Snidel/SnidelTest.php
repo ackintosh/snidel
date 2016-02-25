@@ -196,23 +196,9 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     public function waitSetsErrorWhenChildTerminatesAbnormally()
     {
         $snidel = new Snidel();
-        $childPid = $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-
-        $fork = $this->getMockBuilder('Ackintosh\Snidel\Fork')
-            ->setConstructorArgs(array($childPid))
-            ->setMethods(array('isSuccessful'))
-            ->getMock();
-        $fork->method('isSuccessful')
-            ->willReturn(false);
-
-        $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
-            ->setMethods(array('wait'))
-            ->getMock();
-        $forkContainer->method('wait')
-            ->willReturn($fork);
-        $ref = new \ReflectionProperty($snidel, 'forkContainer');
-        $ref->setAccessible(true);
-        $ref->setValue($snidel, $forkContainer);
+        $snidel->fork(function () {
+            exit(1);
+        });
 
         $snidel->wait();
         $this->assertTrue($snidel->hasError());
@@ -224,18 +210,11 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      */
     public function waitThrowsException()
     {
-        $fork = $this->getMockBuilder('Ackintosh\Snidel\Fork')
-            ->setConstructorArgs(array(getmypid()))
-            ->setMethods(array('getResult'))
-            ->getMock();
-        $fork->method('getResult')
-            ->will($this->throwException(new SharedMemoryControlException));
-
         $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
             ->setMethods(array('wait'))
             ->getMock();
         $forkContainer->method('wait')
-            ->willReturn($fork);
+            ->will($this->throwException(new SharedMemoryControlException));
 
         $snidel = new Snidel();
         $ref = new \ReflectionProperty($snidel, 'forkContainer');

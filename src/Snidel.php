@@ -4,6 +4,7 @@ declare(ticks = 1);
 namespace Ackintosh;
 
 use Ackintosh\Snidel\ForkContainer;
+use Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Error;
@@ -125,6 +126,9 @@ class Snidel
             throw $e;
         }
 
+        $fork->setCallable($callable);
+        $fork->setArgs($args);
+
         if ($pid = $fork->getPid()) {
             // parent
             $this->log->info('created child process. pid: ' . $pid);
@@ -139,14 +143,11 @@ class Snidel
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
 
-            $return = null;
-            register_shutdown_function(function () use ($callable, $args, &$return) {
-                $processInformation['callable'] = $callable instanceof \Closure ? '*Closure*' : $callable;
-                $processInformation['args'] = $args;
-                $processInformation['return'] = $return;
+            $result = new Result();
+            register_shutdown_function(function () use ($result) {
                 $data = $this->dataRepository->load(getmypid());
                 try {
-                    $data->write($processInformation);
+                    $data->write($result);
                 } catch (SharedMemoryControlException $e) {
                     throw $e;
                 }
@@ -157,7 +158,7 @@ class Snidel
             $this->log->info('--> waiting for the token come around.');
             if ($this->processToken->accept()) {
                 $this->log->info('----> started the function.');
-                $return = call_user_func_array($callable, $args);
+                $result->setReturn(call_user_func_array($callable, $args));
                 $this->log->info('<---- completed the function.');
             }
 
@@ -182,26 +183,27 @@ class Snidel
 
         $count = count($this->childPids);
         for ($i = 0; $i < $count; $i++) {
-            $fork       = $this->forkContainer->wait();
-            $childPid   = $fork->getPid();
             try {
-                $result = $fork->getResult();
+                $fork = $this->forkContainer->wait();
             } catch (SharedMemoryControlException $e) {
                 $this->exceptionHasOccured = true;
                 throw $e;
             }
+
+            $childPid   = $fork->getPid();
+            $result     = $fork->getResult();
             if (!$fork->isSuccessful()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 $this->error[$childPid] = array(
                     'status'    => $fork->getStatus(),
                     'message'   => $message,
-                    'callable'  => $result['callable'],
-                    'args'      => $result['args'],
-                    'return'    => isset($result['return']) ? $result['return'] : null,
+                    'callable'  => $fork->getCallable(),
+                    'args'      => $fork->getArgs(),
+                    'return'    => $result->getReturn(),
                 );
             } else {
-                $this->results[$childPid] = $result['return'];
+                $this->results[$childPid] = $result->getReturn();
             }
             unset($this->childPids[array_search($childPid, $this->childPids)]);
         }
@@ -386,21 +388,21 @@ class Snidel
         }
 
         while ($mapContainer->isProcessing()) {
-            $fork       = $this->forkContainer->wait();
-            $childPid   = $fork->getPid();
             try {
-                $result = $fork->getResult();
+                $fork = $this->forkContainer->wait();
             } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
 
+            $childPid = $fork->getPid();
             if (!$fork->isSuccessful()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 throw new \RuntimeException($message);
-            } else {
-                $this->results[$childPid] = $result['return'];
             }
+
+            $result = $fork->getResult();
+            $this->results[$childPid] = $result->getReturn();
             unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {

@@ -7,7 +7,7 @@ class ForkTest extends \PHPUnit_Framework_TestCase
      * @test
      * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
-    public function getResultThrowsExceptionWhenFailedControlShm()
+    public function loadResultThrowsExceptionWhenFailedControlShm()
     {
         $fork = new Fork(getmypid());
 
@@ -15,6 +15,6 @@ class ForkTest extends \PHPUnit_Framework_TestCase
         $ref->setAccessible(true);
         $ref->setValue($fork, 0);
 
-        $fork->getResult();
+        $fork->loadResult();
     }
 }

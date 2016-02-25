@@ -24,24 +24,21 @@ class Data
     /**
      * write data
      *
-     * @param   mixed     $data
+     * @param   \Ackintosh\Snidel\Result     $result
      * @return  void
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
-    public function write($data)
+    public function write($result)
     {
-        $serializedData = serialize(array(
-            'pid'   => $this->pid,
-            'data'  => $data,
-        ));
+        $serialized = serialize($result);
         try {
-            $this->shm->open(strlen($serializedData));
+            $this->shm->open(strlen($serialized));
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
         try {
-            $this->shm->write($serializedData);
+            $this->shm->write($serialized);
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
@@ -70,7 +67,7 @@ class Data
     /**
      * read data
      *
-     * @return  array
+     * @return  \Ackintosh\Snidel\Result
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function read()
@@ -83,9 +80,8 @@ class Data
         }
 
         $this->shm->close();
-        $unserialized = unserialize($data);
 
-        return $unserialized['data'];
+        return unserialize($data);
     }
 
     /**

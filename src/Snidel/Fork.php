@@ -19,6 +19,15 @@ class Fork
     /** @var int */
     private $status;
 
+    /** @var callable */
+    private $callable;
+
+    /** @var array */
+    private $args;
+
+    /** @var \Ackintosh\Snidel\Result */
+    private $result;
+
     /**
      * @param   int     $pid
      */
@@ -61,6 +70,37 @@ class Fork
     }
 
     /**
+     * set callable
+     *
+     * @param   callable    $callable
+     * @return  void
+     */
+    public function setCallable($callable)
+    {
+        $this->callable = $callable instanceof \Closure ? '*Closure*' : $callable;
+    }
+
+    public function getCallable()
+    {
+        return $this->callable;
+    }
+
+    /**
+     * set arguments
+     *
+     * @param   array   $args
+     * @return  void
+     */
+    public function setArgs($args)
+    {
+        $this->args = $args;
+    }
+
+    public function getArgs()
+    {
+        return $this->args;
+    }
+    /**
      * @return bool
      */
     public function isSuccessful()
@@ -69,18 +109,27 @@ class Fork
     }
 
     /**
-     * return result
+     * load result
      *
-     * @return array
+     * @return void
      * @throws \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
-    public function getResult()
+    public function loadResult()
     {
         try {
-            $data = $this->dataRepository->load($this->pid);
-            return $data->readAndDelete();
+            $this->result = $this->dataRepository->load($this->pid)->readAndDelete();
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
+    }
+
+    /**
+     * return result
+     *
+     * @return \Ackintosh\Snidel\Result
+     */
+    public function getResult()
+    {
+        return $this->result;
     }
 }
