@@ -174,7 +174,10 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     public function mapRun()
     {
         $snidel = new Snidel();
-        $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
+        $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')
+            ->then(function (\Ackintosh\Snidel\Fork $fork) {
+                return ucfirst($fork->getResult()->getReturn());
+            }));
         $this->isSame($result, array('Foo', 'Bar'));
     }
 

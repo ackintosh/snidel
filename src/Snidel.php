@@ -408,7 +408,7 @@ class Snidel
                 try {
                     $nextMapPid = $this->fork(
                         $nextMap->getCallable(),
-                        array($this->results[$childPid]),
+                        $fork,
                         null,
                         $nextMap->getToken()
                     );

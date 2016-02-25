@@ -122,7 +122,7 @@ $snidel = new Snidel($concurrency = 2);
 //   and use Snidel::then(), you can connect the result.
 // * $camelize is instance of Snidel\MapContainer which has the functions you defined.
 // * the functions are not yet executed.
-$camelize = $snidel->map($args, function ($arg) {
+$camelize = $snidel->map($args, function (Array $arg) {
     return explode(' ', strtolower($arg));
     // array(4) {
     //   [0] =>
@@ -134,8 +134,11 @@ $camelize = $snidel->map($args, function ($arg) {
     //   [3] =>
     //   string(7) "horizon"
     // }
-})->then(function ($arg) {
-    return array_map('ucfirst', $arg);
+})->then(function (\Ackintosh\Snidel\Fork $fork) {
+    // $fork has informations about previous process.
+    echo $fork->getPid();
+
+    return array_map('ucfirst', $fork->getResult()->getReturn());
     // array(4) {
     //   [0] =>
     //   string(5) "Bring"
@@ -146,8 +149,8 @@ $camelize = $snidel->map($args, function ($arg) {
     //   [3] =>
     //   string(7) "Horizon"
     // }
-})->then(function ($arg) {
-    return implode('', $arg);
+})->then(function (\Ackintosh\Snidel\Fork $fork) {
+    return implode('', $fork->getResult()->getReturn());
     // string(17) "BringMeTheHorizon"
 });
 
