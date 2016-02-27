@@ -20,7 +20,7 @@ class ForkContainer implements \ArrayAccess
     /**
      * fork process
      *
-     * @return \Ackintosh\Snidel\Fork;
+     * @return \Ackintosh\Snidel\Fork
      * @throws \RuntimeException
      */
     public function fork()

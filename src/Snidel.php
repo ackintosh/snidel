@@ -66,9 +66,6 @@ class Snidel
     /** @var \Ackintosh\Snidel\Token */
     private $processToken;
 
-    /** @var array */
-    private $processInformation = array();
-
     /** @var bool */
     private $exceptionHasOccured = false;
 
@@ -107,7 +104,7 @@ class Snidel
      * fork process
      *
      * @param   callable    $callable
-     * @param   array       $args
+     * @param   mixed       $args
      * @param   string      $tag
      * @return  int         $pid        forked PID of forked child process
      * @throws  \RuntimeException
