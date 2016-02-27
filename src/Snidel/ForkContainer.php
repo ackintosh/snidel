@@ -12,6 +12,9 @@ class ForkContainer implements \ArrayAccess
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
 
+    /** @var array */
+    private $tagsToPids = array();
+
     public function __construct()
     {
         $this->pcntl = new Pcntl();
@@ -23,7 +26,7 @@ class ForkContainer implements \ArrayAccess
      * @return \Ackintosh\Snidel\Fork
      * @throws \RuntimeException
      */
-    public function fork()
+    public function fork($tag = null)
     {
         $pid = $this->pcntl->fork();
         if ($pid === -1) {
@@ -31,8 +34,21 @@ class ForkContainer implements \ArrayAccess
         }
 
         $this->forks[$pid] = new Fork($pid);
+        if ($tag !== null) {
+            $this->tagsToPids[$pid] = $tag;
+        }
 
         return $this->forks[$pid];
+    }
+
+    /**
+     *
+     * @param   string  $tag
+     * @return  bool
+     */
+    public function hasTag($tag)
+    {
+        return in_array($tag, $this->tagsToPids, true);
     }
 
     /**
@@ -48,6 +64,28 @@ class ForkContainer implements \ArrayAccess
         $this[$childPid]->loadResult();
 
         return $this[$childPid];
+    }
+
+    public function get($tag = null)
+    {
+        if ($tag === null) {
+            return $this->forks;
+        }
+
+        return $this->getWithTag($tag);
+    }
+
+    /**
+     * return forks
+     *
+     * @param   string  $tag
+     * @return  \Ackintosh\Snidel\Fork[]
+     */
+    private function getWithTag($tag)
+    {
+        return array_filter($this->forks, function ($fork) use ($tag) {
+            return $this->tagsToPids[$fork->getPid()] === $tag;
+        });
     }
 
     /**

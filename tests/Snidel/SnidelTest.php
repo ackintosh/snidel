@@ -60,10 +60,10 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     public function omitTheSecondArgumentOfFork()
     {
         $snidel = new Snidel();
-
         $snidel->fork('returnsFoo');
+        $result = $snidel->get();
 
-        $this->assertSame($snidel->get(), array('foo'));
+        $this->assertSame(array_shift($result), 'foo');
     }
 
     /**
@@ -72,10 +72,10 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     public function passTheValueOtherThanArray()
     {
         $snidel = new Snidel();
-
         $snidel->fork('receivesArgumentsAndReturnsIt', 'foo');
+        $result = $snidel->get();
 
-        $this->assertSame($snidel->get(), array('foo'));
+        $this->assertSame(array_shift($result), 'foo');
     }
 
     /**
@@ -84,10 +84,10 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     public function passMultipleArguments()
     {
         $snidel = new Snidel();
-
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo', 'bar'));
+        $result = $snidel->get();
 
-        $this->assertSame($snidel->get(), array('foobar'));
+        $this->assertSame(array_shift($result), 'foobar');
     }
 
     /**

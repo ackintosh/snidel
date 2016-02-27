@@ -52,9 +52,6 @@ class Snidel
     private $ownerPid;
 
     /** @var array */
-    private $tagsToPids = array();
-
-    /** @var array */
     private $signals = array(
         SIGTERM,
         SIGINT,
@@ -117,7 +114,7 @@ class Snidel
         }
 
         try {
-            $fork = $this->forkContainer->fork();
+            $fork = $this->forkContainer->fork($tag);
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
@@ -130,9 +127,6 @@ class Snidel
             // parent
             $this->log->info('created child process. pid: ' . $pid);
             $this->childPids[] = $pid;
-            if ($tag !== null) {
-                $this->tagsToPids[$tag][] = $pid;
-            }
         } else {
             // @codeCoverageIgnoreStart
             // child
@@ -199,8 +193,6 @@ class Snidel
                     'args'      => $fork->getArgs(),
                     'return'    => $result->getReturn(),
                 );
-            } else {
-                $this->results[$childPid] = $result->getReturn();
             }
             unset($this->childPids[array_search($childPid, $this->childPids)]);
         }
@@ -237,7 +229,12 @@ class Snidel
         }
 
         if ($tag === null) {
-            return array_values($this->results);
+            return array_map(
+                function ($fork) {
+                    return $fork->getResult()->getReturn();
+                },
+                $this->forkContainer->get()
+            );
         } else {
             try {
                 return $this->getWithTag($tag);
@@ -256,16 +253,16 @@ class Snidel
      */
     private function getWithTag($tag)
     {
-        if (!isset($this->tagsToPids[$tag])) {
+        if (!$this->forkContainer->hasTag($tag)) {
             throw new \InvalidArgumentException('unknown tag: ' . $tag);
         }
 
-        $results = array();
-        foreach ($this->tagsToPids[$tag] as $pid) {
-            $results[] = $this->results[$pid];
-        }
-
-        return $results;
+        return array_map(
+            function ($fork) {
+                return $fork->getResult()->getReturn();
+            },
+            $this->forkContainer->get($tag)
+        );
     }
 
     /**
@@ -398,8 +395,6 @@ class Snidel
                 throw new \RuntimeException($message);
             }
 
-            $result = $fork->getResult();
-            $this->results[$childPid] = $result->getReturn();
             unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {
@@ -433,7 +428,7 @@ class Snidel
     {
         $results = array();
         foreach ($mapContainer->getLastMapPids() as $pid) {
-            $results[] = $this->results[$pid];
+            $results[] = $this->forkContainer[$pid]->getResult()->getReturn();
         }
 
         return $results;
