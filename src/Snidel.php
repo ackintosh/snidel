@@ -79,7 +79,23 @@ class Snidel
         $this->forkContainer    = new ForkContainer();
 
         foreach ($this->signals as $sig) {
-            $this->pcntl->signal($sig, array($this, 'signalHandler'), false);
+            $this->pcntl->signal(
+                $sig,
+                function ($sig) {
+                    $this->log->info('received signal. signo: ' . $sig);
+                    $this->receivedSignal = $sig;
+
+                    $this->log->info('--> sending a signal to children.');
+                    $this->sendSignalToChildren($sig);
+
+                    $this->log->info('--> deleting token.');
+                    unset($this->token);
+
+                    $this->log->info('<-- signal handling has been completed successfully.');
+                    $this->_exit();
+                },
+                false
+            );
         }
 
         $this->log->info('parent pid: ' . $this->ownerPid);
@@ -263,25 +279,6 @@ class Snidel
             },
             $this->forkContainer->get($tag)
         );
-    }
-
-    /**
-     * @param   int     $sig
-     * @return  void
-     */
-    public function signalHandler($sig)
-    {
-        $this->log->info('received signal. signo: ' . $sig);
-        $this->receivedSignal = $sig;
-
-        $this->log->info('--> sending a signal to children.');
-        $this->sendSignalToChildren($sig);
-
-        $this->log->info('--> deleting token.');
-        unset($this->token);
-
-        $this->log->info('<-- signal handling has been completed successfully.');
-        $this->_exit();
     }
 
     /**
