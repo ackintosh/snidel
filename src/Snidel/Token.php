@@ -1,6 +1,8 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\IpcKey;
+
 class Token
 {
     /** @var int */
@@ -15,8 +17,8 @@ class Token
     /** @var resource */
     private $id;
 
-    /** @const string **/
-    const TMP_FILE_PREFIX = 'snidel_token_';
+    /** @var \Ackintosh\Snidel\IpcKey */
+    private $ipcKey;
 
     /**
      * @param   int     $ownerPid
@@ -24,10 +26,10 @@ class Token
      */
     public function __construct($ownerPid, $concurrency)
     {
-        $this->keyPrefix = uniqid((string) mt_rand(1, 100), true);
         $this->ownerPid = $ownerPid;
         $this->concurrency = $concurrency;
-        $this->id = msg_get_queue($this->genId());
+        $this->ipcKey = new IpcKey($ownerPid, 'snidel_token_' . uniqid((string) mt_rand(1, 100), true));
+        $this->id = msg_get_queue($this->ipcKey->generate());
         $this->initializeQueue();
     }
 
@@ -53,26 +55,6 @@ class Token
     }
 
     /**
-     * generate IPC key
-     *
-     * @return  int
-     */
-    private function genId()
-    {
-        $pathname = '/tmp/' . self::TMP_FILE_PREFIX . sha1($this->getKey());
-        if (!file_exists($pathname)) {
-            touch($pathname);
-        }
-
-        return ftok($pathname, 'S');
-    }
-
-    private function getKey()
-    {
-        return $this->keyPrefix . $this->ownerPid;
-    }
-
-    /**
      * initialize the queue of token
      *
      * @return void
@@ -86,8 +68,8 @@ class Token
 
     public function __destruct()
     {
-        if ($this->keyPrefix . getmypid() === $this->getKey()) {
-            unlink('/tmp/' . self::TMP_FILE_PREFIX . sha1($this->getKey()));
+        if ($this->ipcKey->isOwner(getmypid())) {
+            $this->ipcKey->delete();
             return msg_remove_queue($this->id);
         }
     }// @codeCoverageIgnore

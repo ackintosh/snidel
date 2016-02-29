@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\IpcKey;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class SharedMemory
@@ -14,8 +15,8 @@ class SharedMemory
     /** @var int **/
     private $segmentId;
 
-    /** @const string **/
-    const TMP_FILE_PREFIX = 'snidel_shm_';
+    /** @var \Ackintosh\Snidel\IpcKey */
+    private $ipcKey;
 
     /**
      * @param   int     $pid
@@ -23,7 +24,8 @@ class SharedMemory
     public function __construct($pid)
     {
         $this->pid = $pid;
-        $this->key = $this->generateKey($pid);
+        $this->ipcKey = new IpcKey($pid, 'snidel_shm_');
+        $this->key = $this->ipcKey->generate();
     }
 
     /**
@@ -87,15 +89,15 @@ class SharedMemory
     /**
      * cloase shared memory block
      *
-     * @param   bool    $removeTmpFile
+     * @param   bool    $deleteIpcKey
      */
-    public function close($removeTmpFile = false)
+    public function close($deleteIpcKey = false)
     {
         if ($this->segmentId) {
             shmop_close($this->segmentId);
         }
-        if ($removeTmpFile) {
-            unlink('/tmp/' . self::TMP_FILE_PREFIX . sha1($this->pid));
+        if ($deleteIpcKey) {
+            $this->ipcKey->delete();
         }
     }
 
@@ -103,20 +105,5 @@ class SharedMemory
     {
         $ret = @shmop_open($this->key, 'a', 0, 0);
         return $ret !== false;
-    }
-
-    /**
-     * generate IPC key
-     *
-     * @return  int
-     */
-    private function generateKey($pid)
-    {
-        $pathname = '/tmp/' . self::TMP_FILE_PREFIX . sha1($pid);
-        if (!file_exists($pathname)) {
-            touch($pathname);
-        }
-
-        return ftok($pathname, 'S');
     }
 }
