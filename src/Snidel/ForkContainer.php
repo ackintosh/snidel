@@ -2,6 +2,7 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Pcntl;
 
 class ForkContainer implements \ArrayAccess
@@ -66,13 +67,13 @@ class ForkContainer implements \ArrayAccess
         return $this[$childPid];
     }
 
-    public function get($tag = null)
+    public function getCollection($tag = null)
     {
         if ($tag === null) {
-            return $this->forks;
+            return new ForkCollection($this->forks);
         }
 
-        return $this->getWithTag($tag);
+        return $this->getCollectionWithTag($tag);
     }
 
     /**
@@ -81,11 +82,13 @@ class ForkContainer implements \ArrayAccess
      * @param   string  $tag
      * @return  \Ackintosh\Snidel\Fork[]
      */
-    private function getWithTag($tag)
+    private function getCollectionWithTag($tag)
     {
-        return array_filter($this->forks, function ($fork) use ($tag) {
-            return $this->tagsToPids[$fork->getPid()] === $tag;
-        });
+        return new ForkCollection(
+            array_filter($this->forks, function ($fork) use ($tag) {
+                return $this->tagsToPids[$fork->getPid()] === $tag;
+            })
+        );
     }
 
     /**

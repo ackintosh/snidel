@@ -245,40 +245,14 @@ class Snidel
         }
 
         if ($tag === null) {
-            return array_map(
-                function ($fork) {
-                    return $fork->getResult()->getReturn();
-                },
-                $this->forkContainer->get()
-            );
-        } else {
-            try {
-                return $this->getWithTag($tag);
-            } catch (\InvalidArgumentException $e) {
-                throw $e;
-            }
+            return $this->forkContainer->getCollection();
         }
-    }
 
-    /**
-     * gets results with tag
-     *
-     * @param   string  $tag
-     * @return  array   $results
-     * @throws  \InvalidArgumentException
-     */
-    private function getWithTag($tag)
-    {
         if (!$this->forkContainer->hasTag($tag)) {
             throw new \InvalidArgumentException('unknown tag: ' . $tag);
         }
 
-        return array_map(
-            function ($fork) {
-                return $fork->getResult()->getReturn();
-            },
-            $this->forkContainer->get($tag)
-        );
+        return $this->forkContainer->getCollection($tag);
     }
 
     /**

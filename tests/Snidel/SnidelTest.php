@@ -21,7 +21,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $this->assertTrue($this->isSame($snidel->get(), array('foo', 'bar')));
+        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
     }
 
     /**
@@ -61,7 +61,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('returnsFoo');
-        $result = $snidel->get();
+        $result = $snidel->get()->toArray();
 
         $this->assertSame(array_shift($result), 'foo');
     }
@@ -73,7 +73,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', 'foo');
-        $result = $snidel->get();
+        $result = $snidel->get()->toArray();
 
         $this->assertSame(array_shift($result), 'foo');
     }
@@ -85,7 +85,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo', 'bar'));
-        $result = $snidel->get();
+        $result = $snidel->get()->toArray();
 
         $this->assertSame(array_shift($result), 'foobar');
     }
@@ -120,7 +120,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->fork(array($test, 'returnsFoo'));
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar');
 
-        $this->assertTrue($this->isSame($snidel->get(), array('foo', 'bar')));
+        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
     }
 
     /**
@@ -135,7 +135,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->fork($func);
         $snidel->fork($func, 'bar');
 
-        $this->assertTrue($this->isSame($snidel->get(), array('foo', 'bar')));
+        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
     }
 
     /**
@@ -151,8 +151,8 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar3', 'tag2');
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar4', 'tag2');
 
-        $this->assertTrue($this->isSame($snidel->get('tag1'), array('bar1', 'bar2')));
-        $this->assertTrue($this->isSame($snidel->get('tag2'), array('bar3', 'bar4')));
+        $this->assertTrue($this->isSame($snidel->get('tag1')->toArray(), array('bar1', 'bar2')));
+        $this->assertTrue($this->isSame($snidel->get('tag2')->toArray(), array('bar3', 'bar4')));
     }
 
     /**
@@ -298,6 +298,10 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
 
     private function isSame($result, $expect)
     {
+        if (!is_array($result)) {
+            return false;
+        }
+
         foreach ($result as $r) {
             if ($keys = array_keys($expect, $r, true)) {
                 unset($expect[$keys[0]]);

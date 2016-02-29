@@ -31,7 +31,7 @@ $snidel->fork($func, 'baz');
 
 $snidel->wait();// optional
 
-var_dump($snidel->get());
+var_dump($snidel->get()->toArray());
 // * the order of results is not guaranteed. *
 // array(3) {
 //   [0]=>
@@ -67,7 +67,7 @@ $snidel->fork($func, 'foo', 'tag1');
 $snidel->fork($func, 'bar', 'tag1');
 $snidel->fork($func, 'baz', 'tag2');
 
-var_dump($snidel->get('tag1'));
+var_dump($snidel->get('tag1')->toArray());
 // array(2) {
 //   [0]=>
 //   string(3) "foo"
