@@ -5,7 +5,7 @@ use Ackintosh\Snidel\Fork;
 use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Pcntl;
 
-class ForkContainer implements \ArrayAccess
+class ForkContainer
 {
     /** @var \Ackintosh\Snidel\Fork[] */
     private $forks = array();
@@ -61,10 +61,21 @@ class ForkContainer implements \ArrayAccess
     {
         $status = null;
         $childPid = $this->pcntl->waitpid(-1, $status);
-        $this[$childPid]->setStatus($status);
-        $this[$childPid]->loadResult();
+        $this->get($childPid)->setStatus($status);
+        $this->get($childPid)->loadResult();
 
-        return $this[$childPid];
+        return $this->get($childPid);
+    }
+
+    /**
+     * return fork
+     *
+     * @param   int     $pid
+     * @return  \Ackintosh\Snidel\Fork
+     */
+    public function get($pid)
+    {
+        return $this->forks[$pid];
     }
 
     public function getCollection($tag = null)
@@ -89,49 +100,5 @@ class ForkContainer implements \ArrayAccess
                 return $this->tagsToPids[$fork->getPid()] === $tag;
             })
         );
-    }
-
-    /**
-     * @param   mixed   $offset
-     * @return  bool
-     */
-    public function offsetExists($offset)
-    {
-        if (isset($this->forks[$offset]) && $this->forks[$offset] !== '') {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param   mixed   $offset
-     * @return  mixed
-     */
-    public function offsetGet($offset)
-    {
-        if (!$this->offsetExists($offset)) {
-            return null;
-        }
-
-        return $this->forks[$offset];
-    }
-
-    /**
-     * @param   mixed   $offset
-     * @return  void
-     */
-    public function offsetSet($offset, $value)
-    {
-        $this->forks[$offset] = $value;
-    }
-
-    /**
-     * @param   mixed   $offset
-     * @return  void
-     */
-    public function offsetUnset($offset)
-    {
-        unset($this->forks[$offset]);
     }
 }

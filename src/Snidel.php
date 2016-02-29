@@ -399,7 +399,7 @@ class Snidel
     {
         $results = array();
         foreach ($mapContainer->getLastMapPids() as $pid) {
-            $results[] = $this->forkContainer[$pid]->getResult()->getReturn();
+            $results[] = $this->forkContainer->get($pid)->getResult()->getReturn();
         }
 
         return $results;
