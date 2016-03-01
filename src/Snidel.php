@@ -165,7 +165,9 @@ class Snidel
             $this->log->info('--> waiting for the token come around.');
             if ($this->processToken->accept()) {
                 $this->log->info('----> started the function.');
+                ob_start();
                 $result->setReturn(call_user_func_array($callable, $args));
+                $result->setOutput(ob_get_clean());
                 $this->log->info('<---- completed the function.');
             }
 

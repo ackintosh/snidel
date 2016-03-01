@@ -157,6 +157,20 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     */
+    public function getOutput()
+    {
+        $snidel = new Snidel();
+        $snidel->fork(function () {
+            echo 'foobar';
+        });
+        $forks = $snidel->get();
+
+        $this->assertSame('foobar', $forks[0]->getResult()->getOutput());
+    }
+
+    /**
+     * @test
      * @expectedException \InvalidArgumentException
      */
     public function throwsExceptionWhenPassedUnknownTag()
