@@ -20,4 +20,20 @@ class ForkCollectionTest extends \PHPUnit_Framework_TestCase
         unset($forkCollection[0]);
         $this->assertNull($forkCollection[0]);
     }
+
+    /**
+     * @test
+     */
+    public function implementsIteratorInterface()
+    {
+        $forks = array(
+            new Fork($dummyPid = 100),
+            new Fork($dummyPid = 200),
+        );
+        $forkCollection = new ForkCollection($forks);
+
+        foreach ($forkCollection as $position => $fork) {
+            $this->assertSame(($position + 1) * 100, $fork->getPid());
+        }
+    }
 }

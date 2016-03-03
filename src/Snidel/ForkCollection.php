@@ -1,10 +1,13 @@
 <?php
 namespace Ackintosh\Snidel;
 
-class ForkCollection implements \ArrayAccess
+class ForkCollection implements \ArrayAccess, \Iterator
 {
     /** @var \Ackintosh\Snidel\Fork[] */
     private $forks = array();
+
+    /** @var int */
+    private $position;
 
     /**
      * @param   \Ackintosh\Snidel\Fork[]
@@ -14,6 +17,8 @@ class ForkCollection implements \ArrayAccess
         array_map(function ($fork) {
             $this->forks[] = $fork;
         }, $forks);
+
+        $this->position = 0;
     }
 
     /**
@@ -71,5 +76,55 @@ class ForkCollection implements \ArrayAccess
     public function offsetUnset($offset)
     {
         unset($this->forks[$offset]);
+    }
+
+    /**
+     * Iterator interface
+     *
+     * @return  \Ackintosh\Snidel\Fork
+     */
+    public function current()
+    {
+        return $this->forks[$this->position];
+    }
+
+    /**
+     * Iterator interface
+     *
+     * @return  int
+     */
+    public function key()
+    {
+        return $this->position;
+    }
+
+    /**
+     * Iterator interface
+     *
+     * @return  void
+     */
+    public function next()
+    {
+        ++$this->position;
+    }
+
+    /**
+     * Iterator interface
+     *
+     * @return  void
+     */
+    public function rewind()
+    {
+        $this->position = 0;
+    }
+
+    /**
+     * Iterator interface
+     *
+     * @return  bool
+     */
+    public function valid()
+    {
+        return isset($this->forks[$this->position]);
     }
 }
