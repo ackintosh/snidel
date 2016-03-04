@@ -3,7 +3,7 @@ namespace Ackintosh\Snidel;
 
 class Error implements \ArrayAccess
 {
-    /** #var array */
+    /** @var array */
     private $errors = array();
 
     /**
