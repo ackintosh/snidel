@@ -35,6 +35,8 @@ class ForkCollection implements \ArrayAccess, \Iterator
     }
 
     /**
+     * ArrayAccess interface
+     *
      * @param   mixed   $offset
      * @return  bool
      */
@@ -48,6 +50,8 @@ class ForkCollection implements \ArrayAccess, \Iterator
     }
 
     /**
+     * ArrayAccess interface
+     *
      * @param   mixed   $offset
      * @return  mixed
      */
@@ -61,6 +65,8 @@ class ForkCollection implements \ArrayAccess, \Iterator
     }
 
     /**
+     * ArrayAccess interface
+     *
      * @param   mixed   $offset
      * @return  void
      */
@@ -70,6 +76,8 @@ class ForkCollection implements \ArrayAccess, \Iterator
     }
 
     /**
+     * ArrayAccess interface
+     *
      * @param   mixed   $offset
      * @return  void
      */
