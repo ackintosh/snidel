@@ -151,24 +151,30 @@ class Snidel
             }
 
             $result = new Result();
-            register_shutdown_function(function () use ($result) {
-                $data = $this->dataRepository->load(getmypid());
+            /**
+             * in php5.3, $this can not use in anonymous functions
+             */
+            $dataRepository     = $this->dataRepository;
+            $log                = $this->log;
+            $processToken       = $this->processToken;
+            register_shutdown_function(function () use ($result, $dataRepository, $log, $processToken) {
+                $data = $dataRepository->load(getmypid());
                 try {
                     $data->write($result);
                 } catch (SharedMemoryControlException $e) {
                     throw $e;
                 }
-                $this->log->info('<-- return token.');
-                $this->processToken->back();
+                $log->info('<-- return token.');
+                $processToken->back();
             });
 
-            $this->log->info('--> waiting for the token come around.');
-            if ($this->processToken->accept()) {
-                $this->log->info('----> started the function.');
+            $log->info('--> waiting for the token come around.');
+            if ($processToken->accept()) {
+                $log->info('----> started the function.');
                 ob_start();
                 $result->setReturn(call_user_func_array($callable, $args));
                 $result->setOutput(ob_get_clean());
-                $this->log->info('<---- completed the function.');
+                $log->info('<---- completed the function.');
             }
 
             $this->_exit();

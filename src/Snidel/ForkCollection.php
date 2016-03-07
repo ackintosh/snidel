@@ -11,9 +11,9 @@ class ForkCollection implements \ArrayAccess
      */
     public function __construct($forks)
     {
-        array_map(function ($fork) {
-            $this->forks[] = $fork;
-        }, $forks);
+        foreach ($forks as $f) {
+            $this->forks[] = $f;
+        }
     }
 
     /**

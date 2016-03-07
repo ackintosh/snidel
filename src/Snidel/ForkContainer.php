@@ -95,10 +95,14 @@ class ForkContainer
      */
     private function getCollectionWithTag($tag)
     {
-        return new ForkCollection(
-            array_filter($this->forks, function ($fork) use ($tag) {
-                return $this->tagsToPids[$fork->getPid()] === $tag;
-            })
-        );
+        // if snidel supports php5.4 or higher, use array_filter()
+        // in php5.3, $this can not use in anonymous functions
+        $collection = array();
+        foreach ($this->forks as $f) {
+            if ($this->tagsToPids[$f->getPid()] === $tag) {
+                $collection[] = $f;
+            }
+        }
+        return new ForkCollection($collection);
     }
 }
