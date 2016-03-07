@@ -31,7 +31,17 @@ $snidel->fork($func, 'baz');
 
 $snidel->wait();// optional
 
-var_dump($snidel->get()->toArray());
+// Snidel::get() returns instance of Snidel\ForkCollection
+$forkCollection = $snidel->get();
+
+// Snidel\ForkCollection implements \Iterator
+foreach ($forkCollection as $fork) {
+    echo $fork->getPid();
+    echo $fork->getOutput();
+    echo $fork->getReturn();
+}
+
+var_dump($forkCollection->toArray());
 // * the order of results is not guaranteed. *
 // array(3) {
 //   [0]=>
