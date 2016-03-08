@@ -101,6 +101,11 @@ class SharedMemory
         }
     }
 
+    /**
+     * check whether shared memory exists
+     *
+     * @return  bool
+     */
     public function exists()
     {
         $ret = @shmop_open($this->key, 'a', 0, 0);

@@ -35,6 +35,8 @@ class IpcKey
     }
 
     /**
+     * check whether a pid is owner
+     *
      * @param   int     $pid
      * @return  bool
      */

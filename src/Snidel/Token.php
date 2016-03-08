@@ -47,6 +47,8 @@ class Token
 
     /**
      * returns the token
+     *
+     * @return  bool
      */
     public function back()
     {

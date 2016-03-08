@@ -20,6 +20,11 @@ class Result
         $this->return = $return;
     }
 
+    /**
+     * return return value
+     *
+     * @return  mix
+     */
     public function getReturn()
     {
         return $this->return;
