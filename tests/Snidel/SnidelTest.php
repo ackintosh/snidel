@@ -236,6 +236,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @requires PHP 5.4
      * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function waitThrowsException()
