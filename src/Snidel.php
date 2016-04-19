@@ -207,7 +207,7 @@ class Snidel
 
             $childPid   = $fork->getPid();
             $result     = $fork->getResult();
-            if (!$fork->isSuccessful()) {
+            if ($fork->hasNotFinishedSuccessfully()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 $this->error[$childPid] = array(
@@ -368,7 +368,7 @@ class Snidel
             }
 
             $childPid = $fork->getPid();
-            if (!$fork->isSuccessful()) {
+            if ($fork->hasNotFinishedSuccessfully()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 throw new \RuntimeException($message);

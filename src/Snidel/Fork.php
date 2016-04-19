@@ -100,13 +100,23 @@ class Fork
     {
         return $this->args;
     }
+
     /**
      * @return bool
      */
-    public function isSuccessful()
+    public function hasFinishedSuccessfully()
     {
         return $this->pcntl->wifexited($this->status) && $this->pcntl->wexitstatus($this->status) === 0;
     }
+
+    /**
+     * @return bool
+     */
+    public function hasNotFinishedSuccessfully()
+    {
+        return !$this->hasFinishedSuccessfully();
+    }
+
 
     /**
      * load result
