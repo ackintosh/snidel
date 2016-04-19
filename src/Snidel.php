@@ -152,7 +152,7 @@ class Snidel
 
             $result = new Result();
             /**
-             * in php5.3, $this can not use in anonymous functions
+             * in php5.3, we can not use $this in anonymous functions
              */
             $dataRepository     = $this->dataRepository;
             $log                = $this->log;
