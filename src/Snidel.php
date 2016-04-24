@@ -88,21 +88,24 @@ class Snidel
         $this->taskQueue        = new TaskQueue(getmypid());
         $this->resultQueue      = new ResultQueue(getmypid());
 
+        $log    = $this->log;
+        $token  = $this->token;
+        $self   = $this;
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
                 $sig,
-                function ($sig) {
-                    $this->log->info('received signal. signo: ' . $sig);
-                    $this->receivedSignal = $sig;
+                function ($sig) use($log, $token, $self) {
+                    $log->info('received signal. signo: ' . $sig);
+                    $self->setReceivedSignal($sig);
 
-                    $this->log->info('--> sending a signal to children.');
-                    $this->sendSignalToChildren($sig);
+                    $log->info('--> sending a signal to children.');
+                    $self->sendSignalToChildren($sig);
 
-                    $this->log->info('--> deleting token.');
-                    unset($this->token);
+                    $log->info('--> deleting token.');
+                    unset($token);
 
-                    $this->log->info('<-- signal handling has been completed successfully.');
-                    $this->_exit();
+                    $log->info('<-- signal handling has been completed successfully.');
+                    exit;
                 },
                 false
             );
@@ -221,12 +224,14 @@ class Snidel
             }
 
             $resultHasQueued = false;
-            register_shutdown_function(function () use ($fork, &$resultHasQueued) {
+            // in php5.3, $this is not usable directly with closures.
+            $resultQueue = $this->resultQueue;
+            register_shutdown_function(function () use ($fork, $resultQueue, &$resultHasQueued) {
                 if ($fork->hasNoResult() || $resultHasQueued === false) {
                     $result = new Result();
                     $result->setFailure();
                     $fork->setResult($result);
-                    $this->resultQueue->enqueue($fork);
+                    $resultQueue->enqueue($fork);
                 }
             });
             $this->log->info('----> started the function.');
@@ -455,12 +460,17 @@ class Snidel
      * @param   int     $sig
      * @return  void
      */
-    private function sendSignalToChildren($sig)
+    public function sendSignalToChildren($sig)
     {
         foreach ($this->childPids as $pid) {
             $this->log->info('----> sending a signal to child. pid: ' . $pid);
             posix_kill($pid, $sig);
         }
+    }
+
+    public function setReceivedSignal($sig)
+    {
+        $this->receivedSignal = $sig;
     }
 
     /**
