@@ -19,7 +19,7 @@ use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 class Snidel
 {
     /** @var string */
-    const VERSION = '0.5.0';
+    const VERSION = '0.6.0';
 
     private $masterProcessId = null;
 
