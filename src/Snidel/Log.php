@@ -6,6 +6,9 @@ class Log
     /** @var int */
     private $ownerPid;
 
+    /** @var int */
+    private $masterPid;
+
     /** @var resource */
     private $destination;
 
@@ -15,6 +18,11 @@ class Log
     public function __construct($ownerPid)
     {
         $this->ownerPid = $ownerPid;
+    }
+
+    public function setMasterProcessId($pid)
+    {
+        $this->masterPid = $pid;
     }
 
     /**
@@ -41,6 +49,17 @@ class Log
             return;
         }
         $pid = getmypid();
+        switch (true) {
+        case $this->ownerPid === $pid:
+            $role = 'owner';
+            break;
+        case $this->masterPid !== null && $this->masterPid === $pid:
+            $role = 'master';
+            break;
+        default:
+            $role = 'worker';
+            break;
+        }
         fputs(
             $this->destination,
             sprintf(
@@ -48,7 +67,7 @@ class Log
                 date('Y-m-d H:i:s'),
                 $type,
                 $pid,
-                ($this->ownerPid === $pid) ? 'p' : 'c',
+                $role,
                 $message . PHP_EOL
             )
         );

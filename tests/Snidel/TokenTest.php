@@ -22,10 +22,10 @@ class TokenTest extends \PHPUnit_Framework_TestCase
         $token->back();
 
         $snidel = new Snidel();
-        $snidel->fork('sleepsTwoSeconds', array(), null, $token);
-        $snidel->fork('sleepsTwoSeconds', array(), null, $token);
+        $snidel->forkSimply('sleepsTwoSeconds', array(), null, $token);
+        $snidel->forkSimply('sleepsTwoSeconds', array(), null, $token);
         $time = time();
-        $snidel->get();
+        $snidel->getSimply();
         $this->assertSame(4, time() - $time);
     }
 }

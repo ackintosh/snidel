@@ -4,6 +4,7 @@ declare(ticks = 1);
 namespace Ackintosh;
 
 use Ackintosh\Snidel\ForkContainer;
+use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
@@ -11,6 +12,8 @@ use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\MapContainer;
+use Ackintosh\Snidel\TaskQueue;
+use Ackintosh\Snidel\ResultQueue;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Snidel
@@ -18,11 +21,16 @@ class Snidel
     /** @var string */
     const VERSION = '0.5.0';
 
+    private $masterProcessId = null;
+
     /** @var array */
     private $childPids = array();
 
     /** @var \Ackintosh\Snidel\ForkContainer */
     private $forkContainer;
+
+    /**  @var array */
+    private $forks = array();
 
     /** @var \Ackintosh\Snidel\Error */
     private $error;
@@ -77,6 +85,8 @@ class Snidel
         $this->pcntl            = new Pcntl();
         $this->dataRepository   = new DataRepository();
         $this->forkContainer    = new ForkContainer();
+        $this->taskQueue        = new TaskQueue(getmypid());
+        $this->resultQueue      = new ResultQueue(getmypid());
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
@@ -119,10 +129,136 @@ class Snidel
      * @param   callable    $callable
      * @param   mixed       $args
      * @param   string      $tag
-     * @return  int         $pid        forked PID of forked child process
+     * @return  void
      * @throws  \RuntimeException
      */
-    public function fork($callable, $args = array(), $tag = null, Token $token = null)
+    public function fork($callable, $args = array(), $tag = null)
+    {
+        if (!is_array($args)) {
+            $args = array($args);
+        }
+
+        if ($this->masterProcessId === null) {
+            $this->forkMaster();
+        }
+
+        try {
+            $this->taskQueue->enqueue($callable, $args, $tag);
+        } catch (\RuntimeException $e) {
+            throw $e;
+        }
+
+        $this->log->info('queued task #' . $this->taskQueue->queuedCount());
+    }
+
+    /**
+     * fork master process
+     *
+     * @return  void
+     */
+    private function forkMaster()
+    {
+        $pid = $this->pcntl->fork();
+        $this->masterProcessId = ($pid === 0) ? getmypid() : $pid;
+        $this->log->setMasterProcessId($this->masterProcessId);
+
+        if ($pid) {
+            // owner
+            $this->log->info('pid: ' . getmypid());
+        } elseif ($pid === -1) {
+            // error
+        } else {
+            // master
+            $this->log->info('pid: ' . $this->masterProcessId);
+            foreach ($this->signals as $sig) {
+                $this->pcntl->signal($sig, SIG_DFL, true);
+            }
+            while ($task = $this->taskQueue->dequeue()) {
+                $this->log->info('dequeued task #' . $this->taskQueue->dequeuedCount());
+                if ($this->token->accept()) {
+                    $this->forkWorker($task['callable'], $task['args'], $task['tag']);
+                }
+            }
+            $this->_exit();
+        }
+    }
+
+    /**
+     * fork worker process
+     *
+     * @param   callable    $callable
+     * @param   mixed       $args
+     * @param   string      $tag
+     * @return  void
+     * @throws  \RuntimeException
+     */
+    private function forkWorker($callable, $args = array(), $tag = null)
+    {
+        if (!is_array($args)) {
+            $args = array($args);
+        }
+
+        try {
+            $fork = $this->forkContainer->fork($tag);
+        } catch (\RuntimeException $e) {
+            $this->log->error($e->getMessage());
+            throw $e;
+        }
+
+        $fork->setCallable($callable);
+        $fork->setArgs($args);
+        $fork->setTag($tag);
+
+        if (getmypid() === $this->masterProcessId) {
+            // master
+            $this->log->info('forked worker. pid: ' . $fork->getPid());
+        } else {
+            // worker
+            $this->log->info('has forked. pid: ' . getmypid());
+            // @codeCoverageIgnoreStart
+            foreach ($this->signals as $sig) {
+                $this->pcntl->signal($sig, SIG_DFL, true);
+            }
+
+            $resultHasQueued = false;
+            register_shutdown_function(function () use ($fork, &$resultHasQueued) {
+                if ($fork->hasNoResult() || $resultHasQueued === false) {
+                    $result = new Result();
+                    $result->setFailure();
+                    $fork->setResult($result);
+                    $this->resultQueue->enqueue($fork);
+                }
+            });
+            $this->log->info('----> started the function.');
+            ob_start();
+            $result = new Result();
+            $result->setReturn(call_user_func_array($callable, $args));
+            $result->setOutput(ob_get_clean());
+            $fork->setResult($result);
+            $this->log->info('<---- completed the function.');
+
+            $this->resultQueue->enqueue($fork);
+            $resultHasQueued = true;
+            $this->log->info('queued the result.');
+            $this->token->back();
+            $this->log->info('return the token and exit.');
+            $this->_exit();
+            // @codeCoverageIgnoreEnd
+        }
+    }
+
+    /**
+     * fork process
+     * this method does't use a master / worker model.
+     *
+     * @param   callable                    $callable
+     * @param   mixed                       $args
+     * @param   string                      $tag
+     * @param   \Ackintosh\Snidel\Token     $token
+     * @return  void
+     * @throws  \RuntimeException
+     */
+    public function forkSimply($callable, $args = array(), $tag = null, Token $token = null)
     {
         $this->processToken = $token ? $token : $this->token;
         if (!is_array($args)) {
@@ -139,10 +275,10 @@ class Snidel
         $fork->setCallable($callable);
         $fork->setArgs($args);
 
-        if ($pid = $fork->getPid()) {
+        if (getmypid() === $this->ownerPid) {
             // parent
-            $this->log->info('created child process. pid: ' . $pid);
-            $this->childPids[] = $pid;
+            $this->log->info('created child process. pid: ' . $fork->getPid());
+            $this->childPids[] = $fork->getPid();
         } else {
             // @codeCoverageIgnoreStart
             // child
@@ -181,16 +317,16 @@ class Snidel
             // @codeCoverageIgnoreEnd
         }
 
-        return $pid;
+        return $fork->getPid();
     }
 
     /**
-     * waits until all children are completed
+     * waits until all children that has forked by Snidel::forkSimply() are completed
      *
      * @return  void
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
-    public function wait()
+    public function waitSimply()
     {
         if ($this->joined) {
             return;
@@ -224,6 +360,24 @@ class Snidel
     }
 
     /**
+     * waits until all tasks that queued by Snidel::fork() are completed
+     *
+     * @return  void
+     */
+    public function wait()
+    {
+        for (; $this->taskQueue->queuedCount() > $this->resultQueue->dequeuedCount();) {
+            $fork = $this->resultQueue->dequeue();
+            if ($fork->getResult()->isFailure()) {
+                $this->error[$fork->getPid()] = $fork;
+            }
+            $this->forks[] = $fork;
+        }
+
+        $this->joined = true;
+    }
+
+    /**
      * @return  bool
      */
     public function hasError()
@@ -243,13 +397,13 @@ class Snidel
      * gets results
      *
      * @param   string  $tag
-     * @return  array   $ret
+     * @return  \Ackintosh\Snidel\ForkCollection
      * @throws  \InvalidArgumentException
      */
-    public function get($tag = null)
+    public function getSimply($tag = null)
     {
         if (!$this->joined) {
-            $this->wait();
+            $this->waitSimply();
         }
 
         if ($tag === null) {
@@ -261,6 +415,38 @@ class Snidel
         }
 
         return $this->forkContainer->getCollection($tag);
+    }
+
+    /**
+     * gets results
+     *
+     * @param   string  $tag
+     * @return  \Ackintosh\Snidel\ForkCollection
+     * @throws  \InvalidArgumentException
+     */
+    public function get($tag = null)
+    {
+        if (!$this->joined) {
+            $this->wait();
+        }
+
+        if ($this->taskQueue->queuedCount() === 0) {
+            return;
+        }
+
+        if ($tag === null) {
+            return new ForkCollection($this->forks);
+        }
+
+        $filtered = array_filter($this->forks, function ($fork) use ($tag) {
+            return $fork->getTag() === $tag;
+        });
+
+        if (count($filtered) === 0) {
+            throw new \InvalidArgumentException('unknown tag: ' . $tag);
+        }
+
+        return new ForkCollection($filtered);
     }
 
     /**
@@ -338,7 +524,7 @@ class Snidel
     {
         foreach ($mapContainer->getFirstArgs() as $args) {
             try {
-                $childPid = $this->fork($mapContainer->getFirstMap()->getCallable(), $args);
+                $childPid = $this->forkSimply($mapContainer->getFirstMap()->getCallable(), $args);
             } catch (\RuntimeException $e) {
                 throw $e;
             }
@@ -377,7 +563,7 @@ class Snidel
             unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {
-                    $nextMapPid = $this->fork(
+                    $nextMapPid = $this->forkSimply(
                         $nextMap->getCallable(),
                         $fork,
                         null,
@@ -420,6 +606,14 @@ class Snidel
 
     public function __destruct()
     {
+        if ($this->masterProcessId !== null && $this->ownerPid === getmypid()) {
+            $this->log->info('shutdown master process.');
+            posix_kill($this->masterProcessId, SIGTERM);
+
+            unset($this->taskQueue);
+            unset($this->resultQueue);
+        }
+
         if ($this->exceptionHasOccured) {
             $this->log->info('destruct processes are started.(exception has occured)');
             $this->log->info('--> deleting all shared memory.');

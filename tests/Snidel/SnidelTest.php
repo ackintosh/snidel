@@ -30,21 +30,18 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      */
     public function throwsExceptionWhenFailedToFork()
     {
-        $pcntl = $this->getMockBuilder('Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('fork'))
+        $taskQueue = $this->getMockBuilder('Ackintosh\Snidel\TaskQueue')
+            ->setConstructorArgs(array(getmypid()))
+            ->setMethods(array('enqueue'))
             ->getMock();
-        $pcntl->method('fork')
-            ->willReturn(-1);
-
-        $forkContainer = new ForkContainer();
-        $ref = new \ReflectionProperty($forkContainer, 'pcntl');
-        $ref->setAccessible(true);
-        $ref->setValue($forkContainer, $pcntl);
+        $taskQueue->method('enqueue')
+            ->will($this->throwException(new \RuntimeException()));
 
         $snidel = new Snidel();
-        $ref = new \ReflectionProperty($snidel, 'forkContainer');
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $ref = new \ReflectionProperty($snidel, 'taskQueue');
         $ref->setAccessible(true);
-        $ref->setValue($snidel, $forkContainer);
+        $ref->setValue($snidel, $taskQueue);
 
         try {
             $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
@@ -239,7 +236,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      * @requires PHP 5.4
      * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
-    public function waitThrowsException()
+    public function waitSimplyThrowsException()
     {
         $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
             ->setMethods(array('wait'))
@@ -251,9 +248,9 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $ref = new \ReflectionProperty($snidel, 'forkContainer');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $forkContainer);
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $snidel->forkSimply('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $snidel->wait();
+        $snidel->waitSimply();
     }
 
     /**

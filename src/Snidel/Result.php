@@ -9,6 +9,8 @@ class Result
     /** @var string */
     private $output;
 
+    private $failure = false;
+
     /**
      * set return
      *
@@ -49,5 +51,15 @@ class Result
     public function getOutput()
     {
         return $this->output;
+    }
+
+    public function setFailure()
+    {
+        $this->failure = true;
+    }
+
+    public function isFailure()
+    {
+        return $this->failure;
     }
 }

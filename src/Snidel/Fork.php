@@ -28,6 +28,9 @@ class Fork
     /** @var \Ackintosh\Snidel\Result */
     private $result;
 
+    /** @var string */
+    private $tag;
+
     /**
      * @param   int     $pid
      */
@@ -127,10 +130,20 @@ class Fork
     public function loadResult()
     {
         try {
-            $this->result = $this->dataRepository->load($this->pid)->readAndDelete();
+            $this->setResult($this->dataRepository->load($this->pid)->readAndDelete());
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
+    }
+
+    /**
+     *
+     * @param   \Ackintosh\Snidel\Result
+     * @return  void
+     */
+    public function setResult($result)
+    {
+        $this->result = $result;
     }
 
     /**
@@ -141,5 +154,27 @@ class Fork
     public function getResult()
     {
         return $this->result;
+    }
+
+    public function hasNoResult()
+    {
+        return $this->result === null;
+    }
+
+    /**
+     * @param   string  $tag
+     * @return  void
+     */
+    public function setTag($tag)
+    {
+        $this->tag = $tag;
+    }
+
+    /**
+     * @return  string
+     */
+    public function getTag()
+    {
+        return $this->tag;
     }
 }

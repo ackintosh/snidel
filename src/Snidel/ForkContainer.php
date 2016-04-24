@@ -34,7 +34,10 @@ class ForkContainer
             throw new \RuntimeException('could not fork a new process');
         }
 
+        $pid = ($pid === 0) ? getmypid() : $pid;
+
         $this->forks[$pid] = new Fork($pid);
+        $this->forks[$pid]->setTag($tag);
         if ($tag !== null) {
             $this->tagsToPids[$pid] = $tag;
         }
@@ -95,14 +98,10 @@ class ForkContainer
      */
     private function getCollectionWithTag($tag)
     {
-        // if snidel supports php5.4 or higher, use array_filter()
-        // in php5.3, $this can not use in anonymous functions
-        $collection = array();
-        foreach ($this->forks as $f) {
-            if ($this->tagsToPids[$f->getPid()] === $tag) {
-                $collection[] = $f;
-            }
-        }
+        $collection = array_filter($this->forks, function ($fork) use ($tag) {
+            return $fork->getTag() ===  $tag;
+        });
+
         return new ForkCollection($collection);
     }
 }
