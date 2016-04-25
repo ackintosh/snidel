@@ -251,9 +251,7 @@ class Snidel
     public function forkSimply($callable, $args = array(), $tag = null, Token $token = null)
     {
         $this->processToken = $token ? $token : $this->token;
-        if (!is_array($args)) {
-            $args = array($args);
-        }
+        $task = new Task($callable, $args, $tag);
 
         try {
             $fork = $this->forkContainer->fork($tag);
@@ -262,8 +260,7 @@ class Snidel
             throw $e;
         }
 
-        $fork->setCallable($callable);
-        $fork->setArgs($args);
+        $fork->setTask($task);
 
         if (getmypid() === $this->ownerPid) {
             // parent
@@ -276,17 +273,16 @@ class Snidel
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
 
-            $result = new Result();
             /**
              * in php5.3, we can not use $this in anonymous functions
              */
             $dataRepository     = $this->dataRepository;
             $log                = $this->log;
             $processToken       = $this->processToken;
-            register_shutdown_function(function () use ($result, $dataRepository, $log, $processToken) {
+            register_shutdown_function(function () use ($fork, $dataRepository, $log, $processToken) {
                 $data = $dataRepository->load(getmypid());
                 try {
-                    $data->write($result);
+                    $data->write($fork->getResult());
                 } catch (SharedMemoryControlException $e) {
                     throw $e;
                 }
@@ -297,9 +293,7 @@ class Snidel
             $log->info('--> waiting for the token come around.');
             if ($processToken->accept()) {
                 $log->info('----> started the function.');
-                ob_start();
-                $result->setReturn(call_user_func_array($callable, $args));
-                $result->setOutput(ob_get_clean());
+                $fork->executeTask();
                 $log->info('<---- completed the function.');
             }
 
