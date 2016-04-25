@@ -3,6 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Pcntl;
+use Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Fork
@@ -30,6 +31,12 @@ class Fork
 
     /** @var string */
     private $tag;
+
+    /** @var \Ackintosh\Snidel\Task */
+    private $task;
+
+    /** @var string */
+    private $serializedTask;
 
     /**
      * @param   int     $pid
@@ -70,6 +77,15 @@ class Fork
     public function getStatus()
     {
         return $this->status;
+    }
+
+    /**
+     * @param   \Ackintosh\Snidel\Task
+     * @return  void
+     */
+    public function setTask($task)
+    {
+        $this->task = $task;
     }
 
     /**
@@ -176,5 +192,44 @@ class Fork
     public function getTag()
     {
         return $this->tag;
+    }
+
+    public function executeTask()
+    {
+        ob_start();
+        $result = new Result();
+        $result->setReturn(call_user_func_array($this->task->getCallable(), $this->task->getArgs()));
+        $result->setOutput(ob_get_clean());
+        $this->result = $result;
+    }
+
+    public function serialize()
+    {
+        $this->serializedTask = $this->task->serialize();
+        unset($this->task);
+
+        return serialize($this);
+    }
+
+    /**
+     * @param   string  $serializedFork
+     * @return  \Ackintosh\Snidel\Fork
+     */
+    public static function unserialize($serializedFork)
+    {
+        $fork = unserialize($serializedFork);
+        $fork->unserializeTask();
+
+        return $fork;
+    }
+
+    /**
+     * @return  void
+     */
+    private function unserializeTask()
+    {
+        $task = unserialize($this->serializedTask);
+        $this->task = $task->unserialize();
+        unset($this->serializedTask);
     }
 }

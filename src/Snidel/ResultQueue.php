@@ -2,6 +2,7 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\IpcKey;
+use Ackintosh\Snidel\Fork;
 use Opis\Closure\SerializableClosure;
 
 class ResultQueue
@@ -18,22 +19,25 @@ class ResultQueue
         $this->id = msg_get_queue($this->ipcKey->generate());
     }
 
-    public function enqueue($result)
+    /**
+     * @param   \Ackintosh\Snidel\Fork
+     */
+    public function enqueue($fork)
     {
-        return msg_send($this->id, 1, serialize($result));
+        return msg_send($this->id, 1, $fork->serialize());
     }
 
     public function dequeue()
     {
         $this->dequeuedCount++;
-        $msgtype = $message = null;
-        $success = msg_receive($this->id, 1, $msgtype, self::RESULT_MAX_SIZE, $message);
+        $msgtype = $serializedFork = null;
+        $success = msg_receive($this->id, 1, $msgtype, self::RESULT_MAX_SIZE, $serializedFork);
 
         if (!$success) {
             throw new \RuntimeException('failed to dequeue result');
         }
 
-        return unserialize($message);
+        return Fork::unserialize($serializedFork);
     }
 
     /**

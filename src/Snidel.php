@@ -138,10 +138,6 @@ class Snidel
      */
     public function fork($callable, $args = array(), $tag = null)
     {
-        if (!is_array($args)) {
-            $args = array($args);
-        }
-
         if ($this->masterProcessId === null) {
             $this->forkMaster();
         }
@@ -203,9 +199,7 @@ class Snidel
             throw $e;
         }
 
-        $fork->setCallable($task->getCallable());
-        $fork->setArgs($task->getArgs());
-        $fork->setTag($task->getTag());
+        $fork->setTask($task);
 
         if (getmypid() === $this->masterProcessId) {
             // master
@@ -230,11 +224,7 @@ class Snidel
                 }
             });
             $this->log->info('----> started the function.');
-            ob_start();
-            $result = new Result();
-            $result->setReturn(call_user_func_array($task->getCallable(), $task->getArgs()));
-            $result->setOutput(ob_get_clean());
-            $fork->setResult($result);
+            $fork->executeTask();
             $this->log->info('<---- completed the function.');
 
             $this->resultQueue->enqueue($fork);
