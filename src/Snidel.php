@@ -12,6 +12,7 @@ use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\MapContainer;
+use Ackintosh\Snidel\Task;
 use Ackintosh\Snidel\TaskQueue;
 use Ackintosh\Snidel\ResultQueue;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
@@ -146,7 +147,7 @@ class Snidel
         }
 
         try {
-            $this->taskQueue->enqueue($callable, $args, $tag);
+            $this->taskQueue->enqueue(new Task($callable, $args, $tag));
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -179,7 +180,7 @@ class Snidel
             while ($task = $this->taskQueue->dequeue()) {
                 $this->log->info('dequeued task #' . $this->taskQueue->dequeuedCount());
                 if ($this->token->accept()) {
-                    $this->forkWorker($task['callable'], $task['args'], $task['tag']);
+                    $this->forkWorker($task);
                 }
             }
             $this->_exit();
@@ -189,28 +190,22 @@ class Snidel
     /**
      * fork worker process
      *
-     * @param   callable    $callable
-     * @param   mixed       $args
-     * @param   string      $tag
+     * @param   \Ackintosh\Snidel\Task
      * @return  void
      * @throws  \RuntimeException
      */
-    private function forkWorker($callable, $args = array(), $tag = null)
+    private function forkWorker($task)
     {
-        if (!is_array($args)) {
-            $args = array($args);
-        }
-
         try {
-            $fork = $this->forkContainer->fork($tag);
+            $fork = $this->forkContainer->fork($task->getTag());
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
         }
 
-        $fork->setCallable($callable);
-        $fork->setArgs($args);
-        $fork->setTag($tag);
+        $fork->setCallable($task->getCallable());
+        $fork->setArgs($task->getArgs());
+        $fork->setTag($task->getTag());
 
         if (getmypid() === $this->masterProcessId) {
             // master
@@ -237,7 +232,7 @@ class Snidel
             $this->log->info('----> started the function.');
             ob_start();
             $result = new Result();
-            $result->setReturn(call_user_func_array($callable, $args));
+            $result->setReturn(call_user_func_array($task->getCallable(), $task->getArgs()));
             $result->setOutput(ob_get_clean());
             $fork->setResult($result);
             $this->log->info('<---- completed the function.');

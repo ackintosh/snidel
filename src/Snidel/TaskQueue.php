@@ -2,7 +2,6 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\IpcKey;
-use Opis\Closure\SerializableClosure;
 
 class TaskQueue
 {
@@ -19,32 +18,23 @@ class TaskQueue
     }
 
     /**
-     * @param   callable            $callable
-     * @param   array               $args
-     * @param   string              $tag
+     * @param   \Ackintosh\Snidel\Task  $task
      * @return  void
      * @throws  RuntimeException
      */
-    public function enqueue($callable, $args = array(), $tag = null)
+    public function enqueue($task)
     {
         $this->queuedCount++;
-        if ($this->isClosure($callable)) {
-            $serializedCallable = new SerializableClosure($callable);
-        } else {
-            $serializedCallable = serialize($callable);
-        }
 
-        $data = array(
-            'callable'  => $serializedCallable,
-            'args'      => $args,
-            'tag'       => $tag,
-        );
-
-        if (!msg_send($this->id, 1, serialize($data))) {
+        if (!msg_send($this->id, 1, $task->serialize())) {
             throw new RuntimeException('failed to enqueue task.');
         }
     }
 
+    /**
+     * @return  \Ackintosh\Snidel\Task
+     * @throws  \RuntimeException
+     */
     public function dequeue()
     {
         $this->dequeuedCount++;
@@ -55,13 +45,8 @@ class TaskQueue
             throw new \RuntimeException('failed to dequeue task');
         }
 
-        $data = unserialize($message);
-        if ($this->isClosure($data['callable'])) {
-            $data['callable'] = $data['callable']->getClosure();
-        } else {
-            $data['callable'] = unserialize($data['callable']);
-        }
-        return $data;
+        $task = unserialize($message);
+        return $task->unserialize();
     }
 
     public function queuedCount()
@@ -72,11 +57,6 @@ class TaskQueue
     public function dequeuedCount()
     {
         return $this->dequeuedCount;
-    }
-
-    private function isClosure($callable)
-    {
-        return is_object($callable) && is_callable($callable);
     }
 
     public function __destruct()
