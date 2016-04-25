@@ -24,7 +24,7 @@ class ResultQueue
      */
     public function enqueue($fork)
     {
-        return msg_send($this->id, 1, $fork->serialize());
+        return msg_send($this->id, 1, Fork::serialize($fork));
     }
 
     public function dequeue()

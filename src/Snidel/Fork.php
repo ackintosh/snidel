@@ -4,6 +4,7 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result;
+use Ackintosh\Snidel\Task;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Fork
@@ -203,12 +204,24 @@ class Fork
         $this->result = $result;
     }
 
-    public function serialize()
+    /**
+     * @param   \Ackintosh\Snidel\Fork  $fork
+     * @return  string
+     */
+    public static function serialize($fork)
     {
-        $this->serializedTask = $this->task->serialize();
-        unset($this->task);
+        $fork->serializeTask();
 
-        return serialize($this);
+        return serialize($fork);
+    }
+
+    /**
+     * @return  void
+     */
+    private function serializeTask()
+    {
+        $this->serializedTask = Task::serialize($this->task);
+        unset($this->task);
     }
 
     /**
@@ -228,8 +241,7 @@ class Fork
      */
     private function unserializeTask()
     {
-        $task = unserialize($this->serializedTask);
-        $this->task = $task->unserialize();
+        $this->task = Task::unserialize($this->serializedTask);
         unset($this->serializedTask);
     }
 }

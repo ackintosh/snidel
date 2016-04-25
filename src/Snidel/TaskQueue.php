@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\Task;
 use Ackintosh\Snidel\IpcKey;
 
 class TaskQueue
@@ -26,7 +27,7 @@ class TaskQueue
     {
         $this->queuedCount++;
 
-        if (!msg_send($this->id, 1, $task->serialize())) {
+        if (!msg_send($this->id, 1, Task::serialize($task))) {
             throw new RuntimeException('failed to enqueue task.');
         }
     }
@@ -38,15 +39,14 @@ class TaskQueue
     public function dequeue()
     {
         $this->dequeuedCount++;
-        $msgtype = $message = null;
-        $success = msg_receive($this->id, 1, $msgtype, self::TASK_MAX_SIZE, $message);
+        $msgtype = $serializedTask = null;
+        $success = msg_receive($this->id, 1, $msgtype, self::TASK_MAX_SIZE, $serializedTask);
 
         if (!$success) {
             throw new \RuntimeException('failed to dequeue task');
         }
 
-        $task = unserialize($message);
-        return $task->unserialize();
+        return Task::unserialize($serializedTask);
     }
 
     public function queuedCount()

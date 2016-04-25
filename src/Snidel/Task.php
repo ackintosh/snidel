@@ -7,6 +7,9 @@ class Task
     /** @var callable */
     private $callable;
 
+    /** @var string */
+    private $serializedCallable;
+
     /** @var array */
     private $args;
 
@@ -26,21 +29,44 @@ class Task
     }
 
     /**
+     * @param   \Ackintosh\Snidel\Task      $task
      * @return  string
      */
-    public function serialize()
+    public static function serialize($task)
     {
-        $serializedCallable = $this->isClosure($this->callable) ? new SerializableClosure($this->callable) : serialize($this->callable);
-        return serialize(new self($serializedCallable, $this->args, $this->tag));
+        $task->serializeCallable();
+
+        return serialize($task);
+    }
+
+    /**
+     * @return  void
+     */
+    private function serializeCallable()
+    {
+        $this->callable = $this->isClosure($this->callable) ? new SerializableClosure($this->callable) : $this->callable;
+    }
+
+    /**
+     * @param   string  $serializedTask
+     * @return  \Ackintosh\Snidel\Task
+     */
+    public static function unserialize($serializedTask)
+    {
+        $task = unserialize($serializedTask);
+        $task->unserializeCallable();
+
+        return $task;
     }
 
     /**
      * @return  \Ackintosh\Snidel\Task
      */
-    public function unserialize()
+    private function unserializeCallable()
     {
-        $unserializedCallable = $this->isClosure($this->callable) ? $this->callable->getClosure() : unserialize($this->callable);
-        return new self($unserializedCallable, $this->args, $this->tag);
+        if ($this->isClosure($this->callable)) {
+            $this->callable = $this->callable->getClosure();
+        }
     }
 
     /**
