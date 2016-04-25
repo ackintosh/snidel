@@ -39,6 +39,9 @@ class Fork
     /** @var string */
     private $serializedTask;
 
+    /** @var bool */
+    private $queued = false;
+
     /**
      * @param   int     $pid
      */
@@ -193,6 +196,22 @@ class Fork
     public function getTag()
     {
         return $this->tag;
+    }
+
+    /**
+     * @return  void
+     */
+    public function setQueued()
+    {
+        $this->queued = true;
+    }
+
+    /**
+     * @return  bool
+     */
+    public function isQueued()
+    {
+        return $this->queued;
     }
 
     public function executeTask()

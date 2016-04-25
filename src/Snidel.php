@@ -212,11 +212,10 @@ class Snidel
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
 
-            $resultHasQueued = false;
             // in php5.3, $this is not usable directly with closures.
             $resultQueue = $this->resultQueue;
-            register_shutdown_function(function () use ($fork, $resultQueue, &$resultHasQueued) {
-                if ($fork->hasNoResult() || $resultHasQueued === false) {
+            register_shutdown_function(function () use ($fork, $resultQueue) {
+                if ($fork->hasNoResult() || !$fork->isQueued()) {
                     $result = new Result();
                     $result->setFailure();
                     $fork->setResult($result);
@@ -228,8 +227,9 @@ class Snidel
             $this->log->info('<---- completed the function.');
 
             $this->resultQueue->enqueue($fork);
-            $resultHasQueued = true;
+            $fork->setQueued();
             $this->log->info('queued the result.');
+
             $this->token->back();
             $this->log->info('return the token and exit.');
             $this->_exit();
