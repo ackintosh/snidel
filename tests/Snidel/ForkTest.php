@@ -5,16 +5,10 @@ class ForkTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
-     * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
-    public function loadResultThrowsExceptionWhenFailedControlShm()
+    public function isQueued()
     {
         $fork = new Fork(getmypid());
-
-        $ref = new \ReflectionProperty($fork, 'pid');
-        $ref->setAccessible(true);
-        $ref->setValue($fork, 0);
-
-        $fork->loadResult();
+        $this->assertFalse($fork->isQueued());
     }
 }

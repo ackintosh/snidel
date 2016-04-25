@@ -2,10 +2,19 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Data;
+use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\Task;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class DataTest extends \PHPUnit_Framework_TestCase
 {
+    private function makeFork()
+    {
+        $fork = new Fork(getmypid());
+        $fork->setTask(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
+        return $fork;
+    }
+
     /**
      * @test
      */
@@ -23,8 +32,10 @@ class DataTest extends \PHPUnit_Framework_TestCase
     public function writeAndRead()
     {
         $data = new Data(getmypid());
-        $data->write('foo');
-        $this->assertSame($data->readAndDelete(), 'foo');
+        $fork = $this->makeFork();
+        $originalFork = clone $fork;
+        $data->write($fork);
+        $this->assertEquals($data->readAndDelete(), $originalFork);
     }
 
     /**
@@ -47,7 +58,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
         try {
-            $data->write('foo');
+            $data->write($this->makeFork());
             $data->readAndDelete();
         } catch (SharedMemoryControlException $e) {
             $data->delete();
@@ -74,7 +85,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
         try {
-            $data->write('foo');
+            $data->write($this->makeFork());
         } catch (SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
@@ -101,7 +112,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
         try {
-            $data->write('foo');
+            $data->write($this->makeFork());
         } catch (SharedMemoryControlException $e) {
             $data->delete();
             throw $e;
@@ -124,7 +135,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             ->will($this->throwException(new SharedMemoryControlException));
 
         $data = new Data(getmypid());
-        $data->write('foo');
+        $data->write($this->makeFork());
         $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $ref->setValue($data, $shm);
@@ -152,7 +163,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             ->will($this->throwException(new SharedMemoryControlException));
 
         $data = new Data(getmypid());
-        $data->write('foo');
+        $data->write($this->makeFork());
         $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $originalShm = $ref->getValue($data);
@@ -183,7 +194,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             ->will($this->throwException(new SharedMemoryControlException));
 
         $data = new Data(getmypid());
-        $data->write('foo');
+        $data->write($this->makeFork());
         $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $originalShm = $ref->getValue($data);
@@ -206,7 +217,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
         $data = new Data(getmypid());
         $this->assertNull($data->deleteIfExists());
 
-        $data->write('foo');
+        $data->write($this->makeFork());
         $this->assertNull($data->deleteIfExists());
     }
 
@@ -226,7 +237,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
             ->will($this->throwException(new SharedMemoryControlException));
 
         $data = new Data(getmypid());
-        $data->write('foo');
+        $data->write($this->makeFork());
         $ref = new \ReflectionProperty($data, 'shm');
         $ref->setAccessible(true);
         $originalShm = $ref->getValue($data);

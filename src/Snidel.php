@@ -193,7 +193,7 @@ class Snidel
     private function forkWorker($task)
     {
         try {
-            $fork = $this->forkContainer->fork($task->getTag());
+            $fork = $this->forkContainer->fork($task);
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
@@ -254,7 +254,7 @@ class Snidel
         $task = new Task($callable, $args, $tag);
 
         try {
-            $fork = $this->forkContainer->fork($tag);
+            $fork = $this->forkContainer->fork($task);
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
@@ -282,7 +282,7 @@ class Snidel
             register_shutdown_function(function () use ($fork, $dataRepository, $log, $processToken) {
                 $data = $dataRepository->load(getmypid());
                 try {
-                    $data->write($fork->getResult());
+                    $data->write($fork);
                 } catch (SharedMemoryControlException $e) {
                     throw $e;
                 }

@@ -1,11 +1,9 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\Task;
-use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Fork
 {
@@ -14,9 +12,6 @@ class Fork
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
-
-    /** @var \Ackintosh\Snidel\DataRepository */
-    private $dataRepository;
 
     /** @var int */
     private $status;
@@ -47,9 +42,8 @@ class Fork
      */
     public function __construct($pid)
     {
-        $this->pid              = $pid;
-        $this->pcntl            = new Pcntl();
-        $this->dataRepository   = new DataRepository();
+        $this->pid      = $pid;
+        $this->pcntl    = new Pcntl();
     }
 
     /**
@@ -140,22 +134,6 @@ class Fork
         return !$this->hasFinishedSuccessfully();
     }
 
-
-    /**
-     * load result
-     *
-     * @return void
-     * @throws \Ackintosh\Snidel\Exception\SharedMemoryControlException
-     */
-    public function loadResult()
-    {
-        try {
-            $this->setResult($this->dataRepository->load($this->pid)->readAndDelete());
-        } catch (SharedMemoryControlException $e) {
-            throw $e;
-        }
-    }
-
     /**
      *
      * @param   \Ackintosh\Snidel\Result
@@ -195,7 +173,7 @@ class Fork
      */
     public function getTag()
     {
-        return $this->tag;
+        return $this->task->getTag();
     }
 
     /**
@@ -261,6 +239,6 @@ class Fork
     private function unserializeTask()
     {
         $this->task = Task::unserialize($this->serializedTask);
-        unset($this->serializedTask);
+        $this->serializedTask = null;
     }
 }

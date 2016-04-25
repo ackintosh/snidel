@@ -4,6 +4,8 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel\Fork;
 use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Pcntl;
+use Ackintosh\Snidel\DataRepository;
+use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class ForkContainer
 {
@@ -13,21 +15,23 @@ class ForkContainer
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
 
-    /** @var array */
-    private $tagsToPids = array();
+    /** @var \Ackintosh\Snidel\DataRepository */
+    private $dataRepository;
 
     public function __construct()
     {
-        $this->pcntl = new Pcntl();
+        $this->pcntl            = new Pcntl();
+        $this->dataRepository   = new DataRepository();
     }
 
     /**
      * fork process
      *
-     * @return \Ackintosh\Snidel\Fork
-     * @throws \RuntimeException
+     * @param   \Ackintosh\Snidel\Task
+     * @return  \Ackintosh\Snidel\Fork
+     * @throws  \RuntimeException
      */
-    public function fork($tag = null)
+    public function fork($task)
     {
         $pid = $this->pcntl->fork();
         if ($pid === -1) {
@@ -36,13 +40,10 @@ class ForkContainer
 
         $pid = ($pid === 0) ? getmypid() : $pid;
 
-        $this->forks[$pid] = new Fork($pid);
-        $this->forks[$pid]->setTag($tag);
-        if ($tag !== null) {
-            $this->tagsToPids[$pid] = $tag;
-        }
+        $fork = new Fork($pid);
+        $fork->setTask($task);
 
-        return $this->forks[$pid];
+        return $fork;
     }
 
     /**
@@ -52,7 +53,11 @@ class ForkContainer
      */
     public function hasTag($tag)
     {
-        return in_array($tag, $this->tagsToPids, true);
+        foreach ($this->forks as $fork) {
+            if ($fork->getTag() === $tag) {
+                return true;
+            }
+        }
     }
 
     /**
@@ -64,10 +69,14 @@ class ForkContainer
     {
         $status = null;
         $childPid = $this->pcntl->waitpid(-1, $status);
-        $this->get($childPid)->setStatus($status);
-        $this->get($childPid)->loadResult();
+        try {
+            $this->forks[$childPid] = $this->dataRepository->load($childPid)->readAndDelete();
+        } catch (SharedMemoryControlException $e) {
+            throw $e;
+        }
+        $this->forks[$childPid]->setStatus($status);
 
-        return $this->get($childPid);
+        return $this->forks[$childPid];
     }
 
     /**
