@@ -232,30 +232,6 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
-     * @expectedException \Ackintosh\Snidel\Exception\SharedMemoryControlException
-     */
-    public function waitSimplyThrowsException()
-    {
-        $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
-            ->setConstructorArgs(array(getmypid()))
-            ->setMethods(array('waitSimply'))
-            ->getMock();
-        $forkContainer->method('waitSimply')
-            ->will($this->throwException(new SharedMemoryControlException));
-
-        $snidel = new Snidel();
-        $ref = new \ReflectionProperty($snidel, 'forkContainer');
-        $ref->setAccessible(true);
-        $ref->setValue($snidel, $forkContainer);
-        $reflectionMethod = new \ReflectionMethod('\Ackintosh\Snidel', 'prefork');
-        $reflectionMethod->setAccessible(true);
-        $reflectionMethod->invoke($snidel, 'receivesArgumentsAndReturnsIt', array('bar'));
-
-        $snidel->waitSimply();
-    }
-
-    /**
-     * @test
      */
     public function waitDoNothingIfAlreadyJoined()
     {

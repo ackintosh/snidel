@@ -295,36 +295,6 @@ class Snidel
     }
 
     /**
-     * waits until all children that has forked by Snidel::prefork() are completed
-     *
-     * @return  void
-     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
-     */
-    public function waitSimply()
-    {
-        if ($this->joined) {
-            return;
-        }
-
-        $count = count($this->childPids);
-        for ($i = 0; $i < $count; $i++) {
-            try {
-                $fork = $this->forkContainer->waitSimply();
-            } catch (SharedMemoryControlException $e) {
-                $this->exceptionHasOccured = true;
-                throw $e;
-            }
-
-            if ($fork->hasNotFinishedSuccessfully()) {
-                $message = 'an error has occurred in child process. pid: ' . $fork->getPid();
-                $this->log->error($message);
-            }
-            unset($this->childPids[array_search($fork->getPid(), $this->childPids)]);
-        }
-        $this->joined = true;
-    }
-
-    /**
      * waits until all tasks that queued by Snidel::fork() are completed
      *
      * @return  void
