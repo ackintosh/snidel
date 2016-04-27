@@ -66,7 +66,7 @@ class ForkContainer
     /**
      * @return  \Ackintosh\Snidel\Fork
      */
-    public function dequeue()
+    private function dequeue()
     {
         return $this->resultQueue->dequeue();
     }
