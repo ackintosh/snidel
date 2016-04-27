@@ -5,10 +5,16 @@ use Ackintosh\Snidel\Fork;
 use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
+use Ackintosh\Snidel\TaskQueue;
+use Ackintosh\Snidel\ResultQueue;
+use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class ForkContainer
 {
+    /** @var int */
+    private $ownerPid;
+
     /** @var \Ackintosh\Snidel\Fork[] */
     private $forks = array();
 
@@ -18,10 +24,59 @@ class ForkContainer
     /** @var \Ackintosh\Snidel\DataRepository */
     private $dataRepository;
 
-    public function __construct()
+    /** @var \Ackintosh\Snidel\Error */
+    private $error;
+
+    /** @var \Ackintosh\Snidel\TaskQueue */
+    private $taskQueue;
+
+    /** @var \Ackintosh\Snidel\ResultQueue */
+    private $resultQueue;
+
+    /**
+     * @param   int     $ownerPid
+     */
+    public function __construct($ownerPid)
     {
+        $this->ownerPid         = $ownerPid;
         $this->pcntl            = new Pcntl();
         $this->dataRepository   = new DataRepository();
+        $this->taskQueue        = new TaskQueue($this->ownerPid);
+        $this->resultQueue      = new ResultQueue($this->ownerPid);
+        $this->error            = new Error();
+    }
+
+    /**
+     * @param   \Ackintosh\Snidel\Task
+     * @return  void
+     */
+    public function enqueue($task)
+    {
+        $this->taskQueue->enqueue($task);
+    }
+
+    /**
+     * @return  int
+     */
+    public function queuedCount()
+    {
+        return $this->taskQueue->queuedCount();
+    }
+
+    /**
+     * @return  \Ackintosh\Snidel\Fork
+     */
+    public function dequeue()
+    {
+        return $this->resultQueue->dequeue();
+    }
+
+    /**
+     * @return  int
+     */
+    public function dequeuedCount()
+    {
+        return $this->resultQueue->dequeuedCount();
     }
 
     /**
@@ -61,22 +116,42 @@ class ForkContainer
     }
 
     /**
+     * @return void
+     */
+    public function wait()
+    {
+        for (; $this->queuedCount() > $this->dequeuedCount();) {
+            $fork = $this->dequeue();
+            $this->forks[$fork->getPid()] = $fork;
+
+            if ($fork->getResult()->isFailure()) {
+                $this->error[$fork->getPid()] = $fork;
+            }
+        }
+    }
+
+    /**
      * wait child
      *
      * @return \Ackintosh\Snidel\Fork
      */
-    public function wait()
+    public function waitSimply()
     {
         $status = null;
         $childPid = $this->pcntl->waitpid(-1, $status);
         try {
-            $this->forks[$childPid] = $this->dataRepository->load($childPid)->readAndDelete();
+            $fork = $this->dataRepository->load($childPid)->readAndDelete();
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
-        $this->forks[$childPid]->setStatus($status);
+        $fork->setStatus($status);
 
-        return $this->forks[$childPid];
+        if ($fork->hasNotFinishedSuccessfully()) {
+            $this->error[$childPid] = $fork;
+        }
+
+        $this->forks[$childPid] = $fork;
+        return $fork;
     }
 
     /**
@@ -112,5 +187,27 @@ class ForkContainer
         });
 
         return new ForkCollection($collection);
+    }
+
+    /**
+     * @return  bool
+     */
+    public function hasError()
+    {
+        return $this->error->exists();
+    }
+
+    /**
+     * @return  \Ackintosh\Sniden\Error
+     */
+    public function getError()
+    {
+        return $this->error;
+    }
+
+    public function __destruct()
+    {
+        unset($this->taskQueue);
+        unset($this->resultQueue);
     }
 }

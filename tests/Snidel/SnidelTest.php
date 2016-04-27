@@ -30,18 +30,17 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      */
     public function throwsExceptionWhenFailedToFork()
     {
-        $taskQueue = $this->getMockBuilder('Ackintosh\Snidel\TaskQueue')
+        $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
             ->setConstructorArgs(array(getmypid()))
             ->setMethods(array('enqueue'))
             ->getMock();
-        $taskQueue->method('enqueue')
+        $forkContainer->method('enqueue')
             ->will($this->throwException(new \RuntimeException()));
 
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $ref = new \ReflectionProperty($snidel, 'taskQueue');
+        $ref = new \ReflectionProperty($snidel, 'forkContainer');
         $ref->setAccessible(true);
-        $ref->setValue($snidel, $taskQueue);
+        $ref->setValue($snidel, $forkContainer);
 
         try {
             $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
@@ -238,9 +237,10 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     public function waitSimplyThrowsException()
     {
         $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
-            ->setMethods(array('wait'))
+            ->setConstructorArgs(array(getmypid()))
+            ->setMethods(array('waitSimply'))
             ->getMock();
-        $forkContainer->method('wait')
+        $forkContainer->method('waitSimply')
             ->will($this->throwException(new SharedMemoryControlException));
 
         $snidel = new Snidel();
@@ -286,7 +286,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $pcntl->method('fork')
             ->willReturn(-1);
 
-        $forkContainer = new ForkContainer();
+        $forkContainer = new ForkContainer(getmypid());
         $ref = new \ReflectionProperty($forkContainer, 'pcntl');
         $ref->setAccessible(true);
         $ref->setValue($forkContainer, $pcntl);

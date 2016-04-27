@@ -8,7 +8,6 @@ use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
-use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\MapContainer;
@@ -29,12 +28,6 @@ class Snidel
 
     /** @var \Ackintosh\Snidel\ForkContainer */
     private $forkContainer;
-
-    /**  @var array */
-    private $forks = array();
-
-    /** @var \Ackintosh\Snidel\Error */
-    private $error;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
@@ -82,12 +75,9 @@ class Snidel
         $this->concurrency      = $concurrency;
         $this->token            = new Token(getmypid(), $concurrency);
         $this->log              = new Log(getmypid());
-        $this->error            = new Error();
         $this->pcntl            = new Pcntl();
         $this->dataRepository   = new DataRepository();
-        $this->forkContainer    = new ForkContainer();
-        $this->taskQueue        = new TaskQueue(getmypid());
-        $this->resultQueue      = new ResultQueue(getmypid());
+        $this->forkContainer    = new ForkContainer($this->ownerPid);
 
         $log    = $this->log;
         $token  = $this->token;
@@ -143,12 +133,12 @@ class Snidel
         }
 
         try {
-            $this->taskQueue->enqueue(new Task($callable, $args, $tag));
+            $this->forkContainer->enqueue(new Task($callable, $args, $tag));
         } catch (\RuntimeException $e) {
             throw $e;
         }
 
-        $this->log->info('queued task #' . $this->taskQueue->queuedCount());
+        $this->log->info('queued task #' . $this->forkContainer->queuedCount());
     }
 
     /**
@@ -169,12 +159,15 @@ class Snidel
             // error
         } else {
             // master
+            $taskQueue = new TaskQueue($this->ownerPid);
             $this->log->info('pid: ' . $this->masterProcessId);
+
             foreach ($this->signals as $sig) {
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
-            while ($task = $this->taskQueue->dequeue()) {
-                $this->log->info('dequeued task #' . $this->taskQueue->dequeuedCount());
+
+            while ($task = $taskQueue->dequeue()) {
+                $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
                 if ($this->token->accept()) {
                     $this->forkWorker($task);
                 }
@@ -208,12 +201,12 @@ class Snidel
             // worker
             $this->log->info('has forked. pid: ' . getmypid());
             // @codeCoverageIgnoreStart
+
             foreach ($this->signals as $sig) {
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
 
-            // in php5.3, $this is not usable directly with closures.
-            $resultQueue = $this->resultQueue;
+            $resultQueue = new ResultQueue($this->ownerPid);
             register_shutdown_function(function () use ($fork, $resultQueue) {
                 if ($fork->hasNoResult() || !$fork->isQueued()) {
                     $result = new Result();
@@ -222,11 +215,12 @@ class Snidel
                     $resultQueue->enqueue($fork);
                 }
             });
+
             $this->log->info('----> started the function.');
             $fork->executeTask();
             $this->log->info('<---- completed the function.');
 
-            $this->resultQueue->enqueue($fork);
+            $resultQueue->enqueue($fork);
             $fork->setQueued();
             $this->log->info('queued the result.');
 
@@ -319,26 +313,17 @@ class Snidel
         $count = count($this->childPids);
         for ($i = 0; $i < $count; $i++) {
             try {
-                $fork = $this->forkContainer->wait();
+                $fork = $this->forkContainer->waitSimply();
             } catch (SharedMemoryControlException $e) {
                 $this->exceptionHasOccured = true;
                 throw $e;
             }
 
-            $childPid   = $fork->getPid();
-            $result     = $fork->getResult();
             if ($fork->hasNotFinishedSuccessfully()) {
-                $message = 'an error has occurred in child process. pid: ' . $childPid;
+                $message = 'an error has occurred in child process. pid: ' . $fork->getPid();
                 $this->log->error($message);
-                $this->error[$childPid] = array(
-                    'status'    => $fork->getStatus(),
-                    'message'   => $message,
-                    'callable'  => $fork->getCallable(),
-                    'args'      => $fork->getArgs(),
-                    'return'    => $result->getReturn(),
-                );
             }
-            unset($this->childPids[array_search($childPid, $this->childPids)]);
+            unset($this->childPids[array_search($fork->getPid(), $this->childPids)]);
         }
         $this->joined = true;
     }
@@ -350,14 +335,7 @@ class Snidel
      */
     public function wait()
     {
-        for (; $this->taskQueue->queuedCount() > $this->resultQueue->dequeuedCount();) {
-            $fork = $this->resultQueue->dequeue();
-            if ($fork->getResult()->isFailure()) {
-                $this->error[$fork->getPid()] = $fork;
-            }
-            $this->forks[] = $fork;
-        }
-
+        $this->forkContainer->wait();
         $this->joined = true;
     }
 
@@ -366,7 +344,7 @@ class Snidel
      */
     public function hasError()
     {
-        return $this->error->exists();
+        return $this->forkContainer->hasError();
     }
 
     /**
@@ -374,7 +352,7 @@ class Snidel
      */
     public function getError()
     {
-        return $this->error;
+        return $this->forkContainer->getError();
     }
 
     /**
@@ -414,23 +392,15 @@ class Snidel
             $this->wait();
         }
 
-        if ($this->taskQueue->queuedCount() === 0) {
+        if ($this->forkContainer->queuedCount() === 0) {
             return;
         }
 
-        if ($tag === null) {
-            return new ForkCollection($this->forks);
-        }
-
-        $filtered = array_filter($this->forks, function ($fork) use ($tag) {
-            return $fork->getTag() === $tag;
-        });
-
-        if (count($filtered) === 0) {
+        if (!$this->forkContainer->hasTag($tag)) {
             throw new \InvalidArgumentException('unknown tag: ' . $tag);
         }
 
-        return new ForkCollection($filtered);
+        return $this->forkContainer->getCollection($tag);
     }
 
     /**
@@ -537,7 +507,7 @@ class Snidel
 
         while ($mapContainer->isProcessing()) {
             try {
-                $fork = $this->forkContainer->wait();
+                $fork = $this->forkContainer->waitSimply();
             } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
@@ -599,8 +569,7 @@ class Snidel
             $this->log->info('shutdown master process.');
             posix_kill($this->masterProcessId, SIGTERM);
 
-            unset($this->taskQueue);
-            unset($this->resultQueue);
+            unset($this->forkContainer);
         }
 
         if ($this->exceptionHasOccured) {
