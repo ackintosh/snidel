@@ -358,38 +358,10 @@ class Snidel
      * @return  \Ackintosh\Snidel\ForkCollection
      * @throws  \InvalidArgumentException
      */
-    public function getSimply($tag = null)
-    {
-        if (!$this->joined) {
-            $this->waitSimply();
-        }
-
-        if ($tag === null) {
-            return $this->forkContainer->getCollection();
-        }
-
-        if (!$this->forkContainer->hasTag($tag)) {
-            throw new \InvalidArgumentException('unknown tag: ' . $tag);
-        }
-
-        return $this->forkContainer->getCollection($tag);
-    }
-
-    /**
-     * gets results
-     *
-     * @param   string  $tag
-     * @return  \Ackintosh\Snidel\ForkCollection
-     * @throws  \InvalidArgumentException
-     */
     public function get($tag = null)
     {
         if (!$this->joined) {
             $this->wait();
-        }
-
-        if ($this->forkContainer->queuedCount() === 0) {
-            return;
         }
 
         if (!$this->forkContainer->hasTag($tag)) {
