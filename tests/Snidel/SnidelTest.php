@@ -247,7 +247,9 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $ref = new \ReflectionProperty($snidel, 'forkContainer');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $forkContainer);
-        $snidel->forkSimply('receivesArgumentsAndReturnsIt', array('bar'));
+        $reflectionMethod = new \ReflectionMethod('\Ackintosh\Snidel', 'prefork');
+        $reflectionMethod->setAccessible(true);
+        $reflectionMethod->invoke($snidel, 'receivesArgumentsAndReturnsIt', array('bar'));
 
         $snidel->waitSimply();
     }

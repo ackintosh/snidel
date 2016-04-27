@@ -114,7 +114,7 @@ class Snidel
     }
 
     /**
-     * fork process
+     * this method uses master / worker model.
      *
      * @param   callable    $callable
      * @param   mixed       $args
@@ -229,7 +229,7 @@ class Snidel
 
     /**
      * fork process
-     * this method does't use a master / worker model.
+     * the processes which forked are wait for token.
      *
      * @param   callable                    $callable
      * @param   mixed                       $args
@@ -238,7 +238,7 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    public function forkSimply($callable, $args = array(), $tag = null, Token $token = null)
+    private function prefork($callable, $args = array(), $tag = null, Token $token = null)
     {
         $this->processToken = $token ? $token : $this->token;
         $task = new Task($callable, $args, $tag);
@@ -295,7 +295,7 @@ class Snidel
     }
 
     /**
-     * waits until all children that has forked by Snidel::forkSimply() are completed
+     * waits until all children that has forked by Snidel::prefork() are completed
      *
      * @return  void
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
@@ -451,7 +451,7 @@ class Snidel
     {
         foreach ($mapContainer->getFirstArgs() as $args) {
             try {
-                $childPid = $this->forkSimply($mapContainer->getFirstMap()->getCallable(), $args);
+                $childPid = $this->prefork($mapContainer->getFirstMap()->getCallable(), $args);
             } catch (\RuntimeException $e) {
                 throw $e;
             }
@@ -490,7 +490,7 @@ class Snidel
             unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {
-                    $nextMapPid = $this->forkSimply(
+                    $nextMapPid = $this->prefork(
                         $nextMap->getCallable(),
                         $fork,
                         null,
