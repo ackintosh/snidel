@@ -14,7 +14,7 @@ class TaskQueue
     public function __construct($ownerPid)
     {
         $this->ownerPid = $ownerPid;
-        $this->ipcKey = new IpcKey($ownerPid, 'snidel_task_' . uniqid((string) mt_rand(1, 100), true));
+        $this->ipcKey = new IpcKey($ownerPid, 'snidel_task_queue_');
         $this->id = msg_get_queue($this->ipcKey->generate());
     }
 

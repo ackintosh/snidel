@@ -52,6 +52,8 @@ class IpcKey
      */
     public function delete()
     {
-        unlink('/tmp/' . $this->prefix . $this->ownerPid);
+        if (file_exists('/tmp/' . $this->prefix . $this->ownerPid)) {
+            unlink('/tmp/' . $this->prefix . $this->ownerPid);
+        }
     }
 }

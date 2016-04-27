@@ -15,7 +15,7 @@ class ResultQueue
     public function __construct($ownerPid)
     {
         $this->ownerPid = $ownerPid;
-        $this->ipcKey = new IpcKey($ownerPid, 'snidel_result_' . uniqid((string) mt_rand(1, 100), true));
+        $this->ipcKey = new IpcKey($ownerPid, 'snidel_result_queue_');
         $this->id = msg_get_queue($this->ipcKey->generate());
     }
 
