@@ -4,7 +4,6 @@ declare(ticks = 1);
 namespace Ackintosh;
 
 use Ackintosh\Snidel\ForkContainer;
-use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
@@ -46,9 +45,6 @@ class Snidel
 
     /** @var bool */
     private $joined = false;
-
-    /** @var array */
-    private $results = array();
 
     /** @var int */
     private $ownerPid;

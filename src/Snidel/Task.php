@@ -7,9 +7,6 @@ class Task
     /** @var callable */
     private $callable;
 
-    /** @var string */
-    private $serializedCallable;
-
     /** @var array */
     private $args;
 
