@@ -133,9 +133,8 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    private function prefork($callable, $args = array(), $tag = null, Token $token = null)
+    private function prefork($callable, $args = array(), $tag = null, Token $token)
     {
-        $this->processToken = $token ? $token : $this->token;
         $task = new Task($callable, $args, $tag);
 
         try {
@@ -162,8 +161,7 @@ class Snidel
              */
             $dataRepository     = $this->dataRepository;
             $log                = $this->log;
-            $processToken       = $this->processToken;
-            register_shutdown_function(function () use ($fork, $dataRepository, $log, $processToken) {
+            register_shutdown_function(function () use ($fork, $dataRepository, $log, $token) {
                 $data = $dataRepository->load(getmypid());
                 try {
                     $data->write($fork);
@@ -171,11 +169,11 @@ class Snidel
                     throw $e;
                 }
                 $log->info('<-- return token.');
-                $processToken->back();
+                $token->back();
             });
 
             $log->info('--> waiting for the token come around.');
-            if ($processToken->accept()) {
+            if ($token->accept()) {
                 $log->info('----> started the function.');
                 $fork->executeTask();
                 $log->info('<---- completed the function.');
@@ -292,8 +290,9 @@ class Snidel
      */
     public function run(MapContainer $mapContainer)
     {
+        $token = new Token($this->ownerPid, $this->concurrency);
         try {
-            $this->forkTheFirstProcessing($mapContainer);
+            $this->forkTheFirstProcessing($mapContainer, $token);
             $this->waitsAndConnectsProcess($mapContainer);
         } catch (\RuntimeException $e) {
             $this->exceptionHasOccured = true;
@@ -310,9 +309,8 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    private function forkTheFirstProcessing(MapContainer $mapContainer)
+    private function forkTheFirstProcessing(MapContainer $mapContainer, $token)
     {
-        $token = new Token(getmypid(), $this->concurrency);
         foreach ($mapContainer->getFirstArgs() as $args) {
             try {
                 $childPid = $this->prefork($mapContainer->getFirstMap()->getCallable(), $args, null, $token);
