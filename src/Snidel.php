@@ -11,8 +11,6 @@ use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\MapContainer;
 use Ackintosh\Snidel\Task;
-use Ackintosh\Snidel\TaskQueue;
-use Ackintosh\Snidel\ResultQueue;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Snidel
@@ -30,9 +28,6 @@ class Snidel
 
     /** @var int */
     private $concurrency;
-
-    /** @var \Ackintosh\Snidel\Token */
-    private $token;
 
     /** @var \Ackintosh\Snidel\Log */
     private $log;
@@ -65,28 +60,22 @@ class Snidel
     {
         $this->ownerPid         = getmypid();
         $this->concurrency      = $concurrency;
-        $this->token            = new Token(getmypid(), $concurrency);
         $this->log              = new Log(getmypid());
         $this->pcntl            = new Pcntl();
         $this->dataRepository   = new DataRepository();
-        $this->forkContainer    = new ForkContainer($this->ownerPid);
+        $this->forkContainer    = new ForkContainer($this->ownerPid, $this->log, $this->concurrency);
 
         $log    = $this->log;
-        $token  = $this->token;
         $self   = $this;
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
                 $sig,
-                function ($sig) use($log, $token, $self) {
+                function ($sig) use($log, $self) {
                     $log->info('received signal. signo: ' . $sig);
                     $self->setReceivedSignal($sig);
 
                     $log->info('--> sending a signal to children.');
                     $self->sendSignalToChildren($sig);
-
-                    $log->info('--> deleting token.');
-                    unset($token);
-
                     $log->info('<-- signal handling has been completed successfully.');
                     exit;
                 },
@@ -121,7 +110,7 @@ class Snidel
     public function fork($callable, $args = array(), $tag = null)
     {
         if ($this->masterProcessId === null) {
-            $this->forkMaster();
+            $this->masterProcessId = $this->forkContainer->forkMaster();
         }
 
         try {
@@ -131,96 +120,6 @@ class Snidel
         }
 
         $this->log->info('queued task #' . $this->forkContainer->queuedCount());
-    }
-
-    /**
-     * fork master process
-     *
-     * @return  void
-     */
-    private function forkMaster()
-    {
-        $pid = $this->pcntl->fork();
-        $this->masterProcessId = ($pid === 0) ? getmypid() : $pid;
-        $this->log->setMasterProcessId($this->masterProcessId);
-
-        if ($pid) {
-            // owner
-            $this->log->info('pid: ' . getmypid());
-        } elseif ($pid === -1) {
-            // error
-        } else {
-            // master
-            $taskQueue = new TaskQueue($this->ownerPid);
-            $this->log->info('pid: ' . $this->masterProcessId);
-
-            foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, SIG_DFL, true);
-            }
-
-            while ($task = $taskQueue->dequeue()) {
-                $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
-                if ($this->token->accept()) {
-                    $this->forkWorker($task);
-                }
-            }
-            $this->_exit();
-        }
-    }
-
-    /**
-     * fork worker process
-     *
-     * @param   \Ackintosh\Snidel\Task
-     * @return  void
-     * @throws  \RuntimeException
-     */
-    private function forkWorker($task)
-    {
-        try {
-            $fork = $this->forkContainer->fork($task);
-        } catch (\RuntimeException $e) {
-            $this->log->error($e->getMessage());
-            throw $e;
-        }
-
-        $fork->setTask($task);
-
-        if (getmypid() === $this->masterProcessId) {
-            // master
-            $this->log->info('forked worker. pid: ' . $fork->getPid());
-        } else {
-            // worker
-            $this->log->info('has forked. pid: ' . getmypid());
-            // @codeCoverageIgnoreStart
-
-            foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, SIG_DFL, true);
-            }
-
-            $resultQueue = new ResultQueue($this->ownerPid);
-            register_shutdown_function(function () use ($fork, $resultQueue) {
-                if ($fork->hasNoResult() || !$fork->isQueued()) {
-                    $result = new Result();
-                    $result->setFailure();
-                    $fork->setResult($result);
-                    $resultQueue->enqueue($fork);
-                }
-            });
-
-            $this->log->info('----> started the function.');
-            $fork->executeTask();
-            $this->log->info('<---- completed the function.');
-
-            $resultQueue->enqueue($fork);
-            $fork->setQueued();
-            $this->log->info('queued the result.');
-
-            $this->token->back();
-            $this->log->info('return the token and exit.');
-            $this->_exit();
-            // @codeCoverageIgnoreEnd
-        }
     }
 
     /**
@@ -328,7 +227,6 @@ class Snidel
         if (!$this->joined) {
             $this->wait();
         }
-
         if (!$this->forkContainer->hasTag($tag)) {
             throw new \InvalidArgumentException('unknown tag: ' . $tag);
         }
@@ -414,9 +312,10 @@ class Snidel
      */
     private function forkTheFirstProcessing(MapContainer $mapContainer)
     {
+        $token = new Token(getmypid(), $this->concurrency);
         foreach ($mapContainer->getFirstArgs() as $args) {
             try {
-                $childPid = $this->prefork($mapContainer->getFirstMap()->getCallable(), $args);
+                $childPid = $this->prefork($mapContainer->getFirstMap()->getCallable(), $args, null, $token);
             } catch (\RuntimeException $e) {
                 throw $e;
             }

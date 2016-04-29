@@ -3,6 +3,9 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Map;
 
+/**
+ * @runTestsInSeparateProcesses
+ */
 class MapTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()

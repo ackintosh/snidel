@@ -30,14 +30,18 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      */
     public function throwsExceptionWhenFailedToFork()
     {
+        $snidel = new Snidel();
+        $ref = new \ReflectionProperty($snidel, 'log');
+        $ref->setAccessible(true);
+        $log = $ref->getValue($snidel);
+
         $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
-            ->setConstructorArgs(array(getmypid()))
+            ->setConstructorArgs(array(getmypid(), $log))
             ->setMethods(array('enqueue'))
             ->getMock();
         $forkContainer->method('enqueue')
             ->will($this->throwException(new \RuntimeException()));
 
-        $snidel = new Snidel();
         $ref = new \ReflectionProperty($snidel, 'forkContainer');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $forkContainer);
@@ -174,7 +178,6 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
             echo 'foobar';
         });
         $forks = $snidel->get();
-
         $this->assertSame('foobar', $forks[0]->getResult()->getOutput());
     }
 
@@ -258,18 +261,22 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
      */
     public function runThrowsExceptionWhenFailedToFork()
     {
+        $snidel = new Snidel();
+        $ref = new \ReflectionProperty($snidel, 'log');
+        $ref->setAccessible(true);
+        $log = $ref->getValue($snidel);
+
         $pcntl = $this->getMockBuilder('Ackintosh\\Snidel\\Pcntl')
             ->setMethods(array('fork'))
             ->getMock();
         $pcntl->method('fork')
             ->willReturn(-1);
 
-        $forkContainer = new ForkContainer(getmypid());
+        $forkContainer = new ForkContainer(getmypid(), $log);
         $ref = new \ReflectionProperty($forkContainer, 'pcntl');
         $ref->setAccessible(true);
         $ref->setValue($forkContainer, $pcntl);
 
-        $snidel = new Snidel();
         $ref = new \ReflectionProperty($snidel, 'forkContainer');
         $ref->setAccessible(true);
         $ref->setValue($snidel, $forkContainer);
