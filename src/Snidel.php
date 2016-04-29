@@ -22,9 +22,6 @@ class Snidel
 
     private $masterProcessId = null;
 
-    /** @var array */
-    private $childPids = array();
-
     /** @var \Ackintosh\Snidel\ForkContainer */
     private $forkContainer;
 
@@ -67,7 +64,6 @@ class Snidel
     public function __construct($concurrency = 5)
     {
         $this->ownerPid         = getmypid();
-        $this->childPids        = array();
         $this->concurrency      = $concurrency;
         $this->token            = new Token(getmypid(), $concurrency);
         $this->log              = new Log(getmypid());
@@ -255,7 +251,6 @@ class Snidel
         if (getmypid() === $this->ownerPid) {
             // parent
             $this->log->info('created child process. pid: ' . $fork->getPid());
-            $this->childPids[] = $fork->getPid();
         } else {
             // @codeCoverageIgnoreStart
             // child
@@ -349,7 +344,7 @@ class Snidel
      */
     public function sendSignalToChildren($sig)
     {
-        foreach ($this->childPids as $pid) {
+        foreach ($this->forkContainer->getChildPids() as $pid) {
             $this->log->info('----> sending a signal to child. pid: ' . $pid);
             posix_kill($pid, $sig);
         }
@@ -368,7 +363,7 @@ class Snidel
      */
     private function deleteAllData()
     {
-        foreach ($this->childPids as $pid) {
+        foreach ($this->forkContainer->getChildPids() as $pid) {
             $data = $this->dataRepository->load($pid);
             try {
                 $data->deleteIfExists();
@@ -457,7 +452,6 @@ class Snidel
                 throw new \RuntimeException($message);
             }
 
-            unset($this->childPids[array_search($childPid, $this->childPids)]);
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {
                     $nextMapPid = $this->prefork(

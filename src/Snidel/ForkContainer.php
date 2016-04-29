@@ -97,6 +97,7 @@ class ForkContainer
 
         $fork = new Fork($pid);
         $fork->setTask($task);
+        $this->forks[$pid] = $fork;
 
         return $fork;
     }
@@ -152,6 +153,14 @@ class ForkContainer
 
         $this->forks[$childPid] = $fork;
         return $fork;
+    }
+
+    /**
+     * @return  array
+     */
+    public function getChildPids()
+    {
+        return array_keys($this->forks);
     }
 
     /**
