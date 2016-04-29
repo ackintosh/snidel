@@ -10,8 +10,7 @@ class DataTest extends \PHPUnit_Framework_TestCase
 {
     private function makeFork()
     {
-        $fork = new Fork(getmypid());
-        $fork->setTask(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
+        $fork = new Fork(getmypid(), new Task('receivesArgumentsAndReturnsIt', 'foo', null));
         return $fork;
     }
 

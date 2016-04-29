@@ -14,7 +14,7 @@ class ForkCollectionTest extends \PHPUnit_Framework_TestCase
         $forkCollection = new ForkCollection(array());
         $this->assertNull($forkCollection[0]);
 
-        $forkCollection[0] = new Fork($dummyPid = 123);
+        $forkCollection[0] = new Fork($dummyPid = 123, new Task('receivesArgumentsAndReturnsIt', 'foo', null));
         $this->assertInstanceOf('\Ackintosh\Snidel\Fork', $forkCollection[0]);
 
         unset($forkCollection[0]);
@@ -27,8 +27,8 @@ class ForkCollectionTest extends \PHPUnit_Framework_TestCase
     public function implementsIteratorInterface()
     {
         $forks = array(
-            new Fork($dummyPid = 100),
-            new Fork($dummyPid = 200),
+            new Fork($dummyPid = 100, new Task('receivesArgumentsAndReturnsIt', 'foo', null)),
+            new Fork($dummyPid = 200, new Task('receivesArgumentsAndReturnsIt', 'foo', null)),
         );
         $forkCollection = new ForkCollection($forks);
 

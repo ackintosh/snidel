@@ -107,8 +107,7 @@ class ForkContainer
 
         $pid = ($pid === 0) ? getmypid() : $pid;
 
-        $fork = new Fork($pid);
-        $fork->setTask($task);
+        $fork = new Fork($pid, $task);
         $this->forks[$pid] = $fork;
 
         return $fork;
@@ -166,8 +165,6 @@ class ForkContainer
             $this->log->error($e->getMessage());
             throw $e;
         }
-
-        $fork->setTask($task);
 
         if (getmypid() === $this->masterProcessId) {
             // master

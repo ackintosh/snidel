@@ -144,8 +144,6 @@ class Snidel
             throw $e;
         }
 
-        $fork->setTask($task);
-
         if (getmypid() === $this->ownerPid) {
             // parent
             $this->log->info('created child process. pid: ' . $fork->getPid());

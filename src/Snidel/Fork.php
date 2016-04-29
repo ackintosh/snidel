@@ -40,9 +40,10 @@ class Fork
     /**
      * @param   int     $pid
      */
-    public function __construct($pid)
+    public function __construct($pid, $task)
     {
         $this->pid      = $pid;
+        $this->task     = $task;
         $this->pcntl    = new Pcntl();
     }
 
@@ -75,15 +76,6 @@ class Fork
     public function getStatus()
     {
         return $this->status;
-    }
-
-    /**
-     * @param   \Ackintosh\Snidel\Task
-     * @return  void
-     */
-    public function setTask($task)
-    {
-        $this->task = $task;
     }
 
     /**
