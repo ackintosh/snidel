@@ -127,7 +127,7 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    private function prefork($callable, $args = array(), $tag = null, Token $token)
+    private function prefork(Token $token, $callable, $args = array(), $tag = null)
     {
         $task = new Task($callable, $args, $tag);
 
@@ -303,7 +303,7 @@ class Snidel
     {
         foreach ($mapContainer->getFirstArgs() as $args) {
             try {
-                $childPid = $this->prefork($mapContainer->getFirstMap()->getCallable(), $args, null, $token);
+                $childPid = $this->prefork($token, $mapContainer->getFirstMap()->getCallable(), $args);
             } catch (\RuntimeException $e) {
                 throw $e;
             }
@@ -342,10 +342,9 @@ class Snidel
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {
                     $nextMapPid = $this->prefork(
+                        $nextMap->getToken(),
                         $nextMap->getCallable(),
-                        $fork,
-                        null,
-                        $nextMap->getToken()
+                        $fork
                     );
                 } catch (\RuntimeException $e) {
                     throw $e;
