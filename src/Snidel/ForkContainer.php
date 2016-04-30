@@ -16,6 +16,9 @@ class ForkContainer
     /** @var int */
     private $ownerPid;
 
+    /** @var int */
+    private $masterPid;
+
     /** @var \Ackintosh\Snidel\Fork[] */
     private $forks = array();
 
@@ -116,25 +119,25 @@ class ForkContainer
     /**
      * fork master process
      *
-     * @return  int     $masterProcessId
+     * @return  int     $masterPid
      */
     public function forkMaster()
     {
         $pid = $this->pcntl->fork();
-        $this->masterProcessId = ($pid === 0) ? getmypid() : $pid;
-        $this->log->setMasterProcessId($this->masterProcessId);
+        $this->masterPid = ($pid === 0) ? getmypid() : $pid;
+        $this->log->setMasterProcessId($this->masterPid);
 
         if ($pid) {
             // owner
             $this->log->info('pid: ' . getmypid());
 
-            return $this->masterProcessId;
+            return $this->masterPid;
         } elseif ($pid === -1) {
             // error
         } else {
             // master
             $taskQueue = new TaskQueue($this->ownerPid);
-            $this->log->info('pid: ' . $this->masterProcessId);
+            $this->log->info('pid: ' . $this->masterPid);
 
             foreach ($this->signals as $sig) {
                 $this->pcntl->signal($sig, SIG_DFL, true);
@@ -166,7 +169,7 @@ class ForkContainer
             throw $e;
         }
 
-        if (getmypid() === $this->masterProcessId) {
+        if (getmypid() === $this->masterPid) {
             // master
             $this->log->info('forked worker. pid: ' . $fork->getPid());
         } else {
@@ -201,6 +204,24 @@ class ForkContainer
             exit;
             // @codeCoverageIgnoreEnd
         }
+    }
+
+    /**
+     * @return  bool
+     */
+    public function existsMaster()
+    {
+        return $this->masterPid !== null;
+    }
+
+    /**
+     * kill master process
+     *
+     * @return  void
+     */
+    public function killMaster()
+    {
+        posix_kill($this->masterPid, SIGTERM);
     }
 
     /**

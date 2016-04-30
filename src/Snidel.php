@@ -18,8 +18,6 @@ class Snidel
     /** @var string */
     const VERSION = '0.6.0';
 
-    private $masterProcessId = null;
-
     /** @var \Ackintosh\Snidel\ForkContainer */
     private $forkContainer;
 
@@ -109,8 +107,8 @@ class Snidel
      */
     public function fork($callable, $args = array(), $tag = null)
     {
-        if ($this->masterProcessId === null) {
-            $this->masterProcessId = $this->forkContainer->forkMaster();
+        if (!$this->forkContainer->existsMaster()) {
+            $this->forkContainer->forkMaster();
         }
 
         try {
@@ -392,9 +390,9 @@ class Snidel
 
     public function __destruct()
     {
-        if ($this->masterProcessId !== null && $this->ownerPid === getmypid()) {
+        if ($this->forkContainer->existsMaster() && $this->ownerPid === getmypid()) {
             $this->log->info('shutdown master process.');
-            posix_kill($this->masterProcessId, SIGTERM);
+            $this->forkContainer->killMaster();
 
             unset($this->forkContainer);
         }
