@@ -30,9 +30,6 @@ class Snidel
     /** @var \Ackintosh\Snidel\Log */
     private $log;
 
-    /** @var \Ackintosh\Snidel\DataRepository */
-    private $dataRepository;
-
     /** @var bool */
     private $joined = false;
 
@@ -60,7 +57,6 @@ class Snidel
         $this->concurrency      = $concurrency;
         $this->log              = new Log(getmypid());
         $this->pcntl            = new Pcntl();
-        $this->dataRepository   = new DataRepository();
         $this->forkContainer    = new ForkContainer($this->ownerPid, $this->log, $this->concurrency);
 
         $log    = $this->log;
@@ -155,9 +151,9 @@ class Snidel
             /**
              * in php5.3, we can not use $this in anonymous functions
              */
-            $dataRepository     = $this->dataRepository;
-            $log                = $this->log;
-            register_shutdown_function(function () use ($fork, $dataRepository, $log, $token) {
+            $log = $this->log;
+            register_shutdown_function(function () use ($fork, $log, $token) {
+                $dataRepository = new DataRepository();
                 $data = $dataRepository->load(getmypid());
                 try {
                     $data->write($fork);
@@ -255,8 +251,9 @@ class Snidel
      */
     private function deleteAllData()
     {
+        $dataRepository = new DataRepository();
         foreach ($this->forkContainer->getChildPids() as $pid) {
-            $data = $this->dataRepository->load($pid);
+            $data = $dataRepository->load($pid);
             try {
                 $data->deleteIfExists();
             } catch (SharedMemoryControlException $e) {
