@@ -127,7 +127,7 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    private function prefork(Token $token, $callable, $args = array(), $tag = null)
+    private function forkChild(Token $token, $callable, $args = array(), $tag = null)
     {
         $task = new Task($callable, $args, $tag);
 
@@ -303,7 +303,7 @@ class Snidel
     {
         foreach ($mapContainer->getFirstArgs() as $args) {
             try {
-                $childPid = $this->prefork($token, $mapContainer->getFirstMap()->getCallable(), $args);
+                $childPid = $this->forkChild($token, $mapContainer->getFirstMap()->getCallable(), $args);
             } catch (\RuntimeException $e) {
                 throw $e;
             }
@@ -327,7 +327,7 @@ class Snidel
 
         while ($mapContainer->isProcessing()) {
             try {
-                $fork = $this->forkContainer->waitSimply();
+                $fork = $this->forkContainer->waitForChild();
             } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
@@ -341,7 +341,7 @@ class Snidel
 
             if ($nextMap = $mapContainer->nextMap($childPid)) {
                 try {
-                    $nextMapPid = $this->prefork(
+                    $nextMapPid = $this->forkChild(
                         $nextMap->getToken(),
                         $nextMap->getCallable(),
                         $fork

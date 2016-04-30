@@ -260,7 +260,7 @@ class ForkContainer
      *
      * @return \Ackintosh\Snidel\Fork
      */
-    public function waitSimply()
+    public function waitForChild()
     {
         $status = null;
         $childPid = $this->pcntl->waitpid(-1, $status);
