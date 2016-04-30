@@ -10,6 +10,12 @@ A multi-process container. It looks like multi-thread-ish.
 $ composer require ackintosh/snidel
 ```
 
+## Architecture
+
+![Master - Worker Architecture](images/master_worker.png)
+
+This image was made by <a href="https://cacoo.com/" target="_blank">cacoo</a>.
+
 ## Usage
 
 ### Basic
