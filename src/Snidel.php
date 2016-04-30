@@ -55,7 +55,7 @@ class Snidel
     {
         $this->ownerPid         = getmypid();
         $this->concurrency      = $concurrency;
-        $this->log              = new Log(getmypid());
+        $this->log              = new Log($this->ownerPid);
         $this->pcntl            = new Pcntl();
         $this->forkContainer    = new ForkContainer($this->ownerPid, $this->log, $this->concurrency);
 
@@ -252,13 +252,10 @@ class Snidel
     private function deleteAllData()
     {
         $dataRepository = new DataRepository();
-        foreach ($this->forkContainer->getChildPids() as $pid) {
-            $data = $dataRepository->load($pid);
-            try {
-                $data->deleteIfExists();
-            } catch (SharedMemoryControlException $e) {
-                throw $e;
-            }
+        try {
+            $dataRepository->deleteAll();
+        } catch (SharedMemoryControlException $e) {
+            throw $e;
         }
     }
 
