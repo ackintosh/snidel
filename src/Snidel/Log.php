@@ -20,7 +20,7 @@ class Log
         $this->ownerPid = $ownerPid;
     }
 
-    public function setMasterProcessId($pid)
+    public function setMasterPid($pid)
     {
         $this->masterPid = $pid;
     }
@@ -53,7 +53,7 @@ class Log
         case $this->ownerPid === $pid:
             $role = 'owner';
             break;
-        case $this->masterPid !== null && $this->masterPid === $pid:
+        case $this->masterPid === $pid:
             $role = 'master';
             break;
         default:

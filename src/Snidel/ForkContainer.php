@@ -125,7 +125,7 @@ class ForkContainer
     {
         $pid = $this->pcntl->fork();
         $this->masterPid = ($pid === 0) ? getmypid() : $pid;
-        $this->log->setMasterProcessId($this->masterPid);
+        $this->log->setMasterPid($this->masterPid);
 
         if ($pid) {
             // owner
