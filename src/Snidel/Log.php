@@ -1,6 +1,8 @@
 <?php
 namespace Ackintosh\Snidel;
 
+date_default_timezone_set('UTC');
+
 class Log
 {
     /** @var int */

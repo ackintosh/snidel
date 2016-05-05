@@ -28,7 +28,7 @@ class TaskQueue
         $this->queuedCount++;
 
         if (!msg_send($this->id, 1, Task::serialize($task))) {
-            throw new RuntimeException('failed to enqueue task.');
+            throw new \RuntimeException('failed to enqueue task.');
         }
     }
 
