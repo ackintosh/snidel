@@ -1,23 +1,11 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\AbstractQueue;
 use Ackintosh\Snidel\Task;
-use Ackintosh\Snidel\IpcKey;
 
-class TaskQueue
+class TaskQueue extends AbstractQueue
 {
-    const TASK_MAX_SIZE = 1024;
-
-    private $queuedCount = 0;
-    private $dequeuedCount = 0;
-
-    public function __construct($ownerPid)
-    {
-        $this->ownerPid = $ownerPid;
-        $this->ipcKey = new IpcKey($ownerPid, 'snidel_task_queue_');
-        $this->id = msg_get_queue($this->ipcKey->generate());
-    }
-
     /**
      * @param   \Ackintosh\Snidel\Task  $task
      * @return  void
@@ -27,7 +15,7 @@ class TaskQueue
     {
         $this->queuedCount++;
 
-        if (!msg_send($this->id, 1, Task::serialize($task))) {
+        if (!$this->sendMessage(Task::serialize($task))) {
             throw new \RuntimeException('failed to enqueue task.');
         }
     }
@@ -39,31 +27,12 @@ class TaskQueue
     public function dequeue()
     {
         $this->dequeuedCount++;
-        $msgtype = $serializedTask = null;
-        $success = msg_receive($this->id, 1, $msgtype, self::TASK_MAX_SIZE, $serializedTask);
-
-        if (!$success) {
+        try {
+            $serializedTask = $this->receiveMessage();
+        } catch (\RuntimeException $e) {
             throw new \RuntimeException('failed to dequeue task');
         }
 
         return Task::unserialize($serializedTask);
     }
-
-    public function queuedCount()
-    {
-        return $this->queuedCount;
-    }
-
-    public function dequeuedCount()
-    {
-        return $this->dequeuedCount;
-    }
-
-    public function __destruct()
-    {
-        if ($this->ipcKey->isOwner(getmypid())) {
-            $this->ipcKey->delete();
-            return msg_remove_queue($this->id);
-        }
-    }// @codeCoverageIgnore
 }
