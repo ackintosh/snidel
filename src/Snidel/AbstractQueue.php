@@ -57,6 +57,15 @@ abstract class AbstractQueue
     }
 
     /**
+     * @param   string  $message
+     * @return  bool
+     */
+    protected function isExceedsLimit($message)
+    {
+        return $this->stat['msg_qbytes'] < strlen($message);
+    }
+
+    /**
      * @return  int
      */
     public function queuedCount()

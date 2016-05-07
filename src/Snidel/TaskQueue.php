@@ -15,7 +15,12 @@ class TaskQueue extends AbstractQueue
     {
         $this->queuedCount++;
 
-        if (!$this->sendMessage(Task::serialize($task))) {
+        $serialized = Task::serialize($task);
+        if ($this->isExceedsLimit($serialized)) {
+            throw new \RuntimeException('the task exceeds the message queue limit.');
+        }
+
+        if (!$this->sendMessage($serialized)) {
             throw new \RuntimeException('failed to enqueue task.');
         }
     }

@@ -64,10 +64,15 @@ class ForkContainer
     /**
      * @param   \Ackintosh\Snidel\Task
      * @return  void
+     * @throws  \RuntimeException
      */
     public function enqueue($task)
     {
-        $this->taskQueue->enqueue($task);
+        try {
+            $this->taskQueue->enqueue($task);
+        } catch (\RuntimeException $e) {
+            throw $e;
+        }
     }
 
     /**
@@ -195,7 +200,15 @@ class ForkContainer
             $fork->executeTask();
             $this->log->info('<---- completed the function.');
 
-            $resultQueue->enqueue($fork);
+            try {
+                $resultQueue->enqueue($fork);
+            } catch (\RuntimeException $e) {
+                $this->log->error($e->getMessage());
+                $result = new Result();
+                $result->setFailure();
+                $fork->setResult($result);
+                $resultQueue->enqueue($fork);
+            }
             $fork->setQueued();
             $this->log->info('queued the result.');
 

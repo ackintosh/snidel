@@ -199,9 +199,10 @@ class Fork
      */
     public static function serialize($fork)
     {
-        $fork->serializeTask();
+        $cloned = clone $fork;
+        $cloned->serializeTask();
 
-        return serialize($fork);
+        return serialize($cloned);
     }
 
     /**
@@ -232,5 +233,14 @@ class Fork
     {
         $this->task = Task::unserialize($this->serializedTask);
         $this->serializedTask = null;
+    }
+
+    /**
+     * @return  void
+     */
+    public function __clone()
+    {
+        // to avoid point to same object.
+        $this->task = clone $this->task;
     }
 }
