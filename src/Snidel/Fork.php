@@ -4,6 +4,7 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\Task;
+use Ackintosh\Snidel\TaskFormatter;
 
 class Fork
 {
@@ -188,7 +189,12 @@ class Fork
     {
         ob_start();
         $result = new Result();
-        $result->setReturn(call_user_func_array($this->task->getCallable(), $this->task->getArgs()));
+        $result->setReturn(
+            call_user_func_array(
+                $this->task->getCallable(),
+                (is_array($args = $this->task->getArgs())) ? $args : array($args)
+            )
+        );
         $result->setOutput(ob_get_clean());
         $this->result = $result;
     }
@@ -210,7 +216,21 @@ class Fork
      */
     private function serializeTask()
     {
-        $this->serializedTask = Task::serialize($this->task);
+        $this->serializedTask = TaskFormatter::serialize($this->task);
+        unset($this->task);
+    }
+
+    public static function minifyAndSerialize($fork)
+    {
+        $cloned = clone $fork;
+        $cloned->minifyAndSerializeTask();
+
+        return serialize($cloned);
+    }
+
+    private function minifyAndSerializeTask()
+    {
+        $this->serializedTask = TaskFormatter::minifyAndSerialize($this->task);
         unset($this->task);
     }
 
@@ -231,7 +251,7 @@ class Fork
      */
     private function unserializeTask()
     {
-        $this->task = Task::unserialize($this->serializedTask);
+        $this->task = TaskFormatter::unserialize($this->serializedTask);
         $this->serializedTask = null;
     }
 

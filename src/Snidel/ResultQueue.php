@@ -13,7 +13,10 @@ class ResultQueue extends AbstractQueue
     public function enqueue($fork)
     {
         $serialized = Fork::serialize($fork);
-        if ($this->isExceedsLimit($serialized)) {
+        if (
+            $this->isExceedsLimit($serialized = Fork::serialize($fork))
+            && $this->isExceedsLimit($serialized = Fork::minifyAndSerialize($fork))
+        ) {
             throw new \RuntimeException('the fork which includes result exceeds the message queue limit.');
         }
 

@@ -1,8 +1,10 @@
 <?php
 namespace Ackintosh\Snidel;
-use Opis\Closure\SerializableClosure;
 
-class Task
+use Ackintosh\Snidel\TaskInterface;
+use Ackintosh\Snidel\MinifiedTask;
+
+class Task implements TaskInterface
 {
     /** @var callable */
     private $callable;
@@ -26,47 +28,6 @@ class Task
     }
 
     /**
-     * @param   \Ackintosh\Snidel\Task      $task
-     * @return  string
-     */
-    public static function serialize($task)
-    {
-        $task->serializeCallable();
-
-        return serialize($task);
-    }
-
-    /**
-     * @return  void
-     */
-    private function serializeCallable()
-    {
-        $this->callable = $this->isClosure($this->callable) ? new SerializableClosure($this->callable) : $this->callable;
-    }
-
-    /**
-     * @param   string  $serializedTask
-     * @return  \Ackintosh\Snidel\Task
-     */
-    public static function unserialize($serializedTask)
-    {
-        $task = unserialize($serializedTask);
-        $task->unserializeCallable();
-
-        return $task;
-    }
-
-    /**
-     * @return  \Ackintosh\Snidel\Task
-     */
-    private function unserializeCallable()
-    {
-        if ($this->isClosure($this->callable)) {
-            $this->callable = $this->callable->getClosure();
-        }
-    }
-
-    /**
      * @return  callable
      */
     public function getCallable()
@@ -75,11 +36,11 @@ class Task
     }
 
     /**
-     * @return  array
+     * @return  mixed
      */
     public function getArgs()
     {
-        return is_array($this->args) ? $this->args : array($this->args);
+        return $this->args;
     }
 
     /**
@@ -88,10 +49,5 @@ class Task
     public function getTag()
     {
         return $this->tag;
-    }
-
-    private function isClosure()
-    {
-        return is_object($this->callable) && is_callable($this->callable);
     }
 }
