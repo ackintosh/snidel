@@ -103,6 +103,8 @@ class Snidel
      */
     public function fork($callable, $args = array(), $tag = null)
     {
+        $this->joined = false;
+
         if (!$this->forkContainer->existsMaster()) {
             $this->forkContainer->forkMaster();
         }

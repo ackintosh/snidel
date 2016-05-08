@@ -314,7 +314,10 @@ class ForkContainer
     public function getCollection($tag = null)
     {
         if ($tag === null) {
-            return new ForkCollection($this->forks);
+            $collection = new ForkCollection($this->forks);
+            $this->forks = array();
+
+            return $collection;
         }
 
         return $this->getCollectionWithTag($tag);
@@ -328,11 +331,17 @@ class ForkContainer
      */
     private function getCollectionWithTag($tag)
     {
-        $collection = array_filter($this->forks, function ($fork) use ($tag) {
-            return $fork->getTag() ===  $tag;
-        });
+        $forks = array();
+        foreach ($this->forks as $f) {
+            if ($f->getTag() !== $tag) {
+                continue;
+            }
 
-        return new ForkCollection($collection);
+            $forks[] = $f;
+            unset($this->forks[$f->getPid()]);
+        }
+
+        return new ForkCollection($forks);
     }
 
     /**

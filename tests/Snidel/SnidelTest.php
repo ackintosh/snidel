@@ -125,6 +125,26 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function getReturnsEachResult()
+    {
+        $snidel = new Snidel();
+
+        $snidel->fork(function () {
+            return 'foo';
+        });
+        $collection = $snidel->get();
+        $this->assertSame('foo', $collection[0]->getResult()->getReturn());
+
+        $snidel->fork(function () {
+            return 'bar';
+        });
+        $collection = $snidel->get();
+        $this->assertSame('bar', $collection[0]->getResult()->getReturn());
+    }
+
+    /**
+     * @test
+     */
     public function runInstanceMethod()
     {
         $snidel = new Snidel();
