@@ -36,7 +36,7 @@ abstract class AbstractQueue
      */
     protected function sendMessage($message)
     {
-        return msg_send($this->id, 1, $message);
+        return msg_send($this->id, 1, $message, false);
     }
 
     /**
@@ -48,7 +48,7 @@ abstract class AbstractQueue
         $msgtype = $message = null;
 
         // argument #3: specify the maximum number of bytes allowsed in one message queue.
-        $success = msg_receive($this->id, 1, $msgtype, $this->stat['msg_qbytes'], $message);
+        $success = msg_receive($this->id, 1, $msgtype, $this->stat['msg_qbytes'], $message, false);
         if (!$success) {
             throw new \RuntimeException('failed to receive message.');
         }
