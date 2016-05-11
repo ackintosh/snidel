@@ -219,7 +219,7 @@ class Snidel
         if (!$this->joined) {
             $this->wait();
         }
-        if (!$this->forkContainer->hasTag($tag)) {
+        if ($tag !== null && !$this->forkContainer->hasTag($tag)) {
             throw new \InvalidArgumentException('unknown tag: ' . $tag);
         }
 
