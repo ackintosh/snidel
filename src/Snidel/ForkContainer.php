@@ -3,7 +3,6 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Fork;
 use Ackintosh\Snidel\ForkCollection;
-use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\TaskQueue;
@@ -46,6 +45,9 @@ class ForkContainer
         SIGINT,
     );
 
+    /** @var int */
+    private $concurrency;
+
     /**
      * @param   int     $ownerPid
      */
@@ -53,7 +55,7 @@ class ForkContainer
     {
         $this->ownerPid         = $ownerPid;
         $this->log              = $log;
-        $this->token            = new Token($this->ownerPid, $concurrency);
+        $this->concurrency      = $concurrency;
         $this->pcntl            = new Pcntl();
         $this->dataRepository   = new DataRepository();
         $this->taskQueue        = new TaskQueue($this->ownerPid);
@@ -147,12 +149,17 @@ class ForkContainer
             foreach ($this->signals as $sig) {
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
+            $workerCount = 0;
 
             while ($task = $taskQueue->dequeue()) {
                 $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
-                if ($this->token->accept()) {
-                    $this->forkWorker($task);
+                if ($workerCount >= $this->concurrency) {
+                    $status = null;
+                    $this->pcntl->waitpid(-1, $status);
+                    $workerCount--;
                 }
+                $this->forkWorker($task);
+                $workerCount++;
             }
             exit;
         }
@@ -210,10 +217,7 @@ class ForkContainer
                 $resultQueue->enqueue($fork);
             }
             $fork->setQueued();
-            $this->log->info('queued the result.');
-
-            $this->token->back();
-            $this->log->info('return the token and exit.');
+            $this->log->info('queued the result and exit.');
             exit;
             // @codeCoverageIgnoreEnd
         }
