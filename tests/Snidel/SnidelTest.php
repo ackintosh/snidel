@@ -21,7 +21,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $this->assertEquals($snidel->get()->toArray(), array('foo', 'bar'));
+        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
     }
 
     /**
