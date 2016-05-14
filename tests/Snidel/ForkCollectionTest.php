@@ -3,6 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Fork;
 use Ackintosh\Snidel\ForkCollection;
+use Ackintosh\Snidel\Task\Task;
 
 class ForkCollectionTest extends \PHPUnit_Framework_TestCase
 {

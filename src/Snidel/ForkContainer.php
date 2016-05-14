@@ -5,7 +5,7 @@ use Ackintosh\Snidel\Fork;
 use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
-use Ackintosh\Snidel\TaskQueue;
+use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\ResultQueue;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
@@ -30,7 +30,7 @@ class ForkContainer
     /** @var \Ackintosh\Snidel\Error */
     private $error;
 
-    /** @var \Ackintosh\Snidel\TaskQueue */
+    /** @var \Ackintosh\Snidel\Task\Queue */
     private $taskQueue;
 
     /** @var \Ackintosh\Snidel\ResultQueue */

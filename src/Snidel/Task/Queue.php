@@ -1,10 +1,10 @@
 <?php
-namespace Ackintosh\Snidel;
+namespace Ackintosh\Snidel\Task;
 
 use Ackintosh\Snidel\AbstractQueue;
-use Ackintosh\Snidel\TaskFormatter;
+use Ackintosh\Snidel\Task\Formatter;
 
-class TaskQueue extends AbstractQueue
+class Queue extends AbstractQueue
 {
     /**
      * @param   \Ackintosh\Snidel\Task  $task
@@ -15,7 +15,7 @@ class TaskQueue extends AbstractQueue
     {
         $this->queuedCount++;
 
-        $serialized = TaskFormatter::serialize($task);
+        $serialized = Formatter::serialize($task);
         if ($this->isExceedsLimit($serialized)) {
             throw new \RuntimeException('the task exceeds the message queue limit.');
         }
@@ -38,6 +38,6 @@ class TaskQueue extends AbstractQueue
             throw new \RuntimeException('failed to dequeue task');
         }
 
-        return TaskFormatter::unserialize($serializedTask);
+        return Formatter::unserialize($serializedTask);
     }
 }

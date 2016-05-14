@@ -3,7 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Data;
 use Ackintosh\Snidel\Fork;
-use Ackintosh\Snidel\Task;
+use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class DataTest extends \PHPUnit_Framework_TestCase

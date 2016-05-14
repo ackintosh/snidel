@@ -10,7 +10,7 @@ use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\MapContainer;
-use Ackintosh\Snidel\Task;
+use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Snidel

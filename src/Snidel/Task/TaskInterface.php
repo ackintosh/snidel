@@ -1,5 +1,5 @@
 <?php
-namespace Ackintosh\Snidel;
+namespace Ackintosh\Snidel\Task;
 
 interface TaskInterface
 {

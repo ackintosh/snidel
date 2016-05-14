@@ -3,8 +3,8 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result;
-use Ackintosh\Snidel\Task;
-use Ackintosh\Snidel\TaskFormatter;
+use Ackintosh\Snidel\Task\Task;
+use Ackintosh\Snidel\Task\Formatter;
 
 class Fork
 {
@@ -216,7 +216,7 @@ class Fork
      */
     private function serializeTask()
     {
-        $this->serializedTask = TaskFormatter::serialize($this->task);
+        $this->serializedTask = Formatter::serialize($this->task);
         unset($this->task);
     }
 
@@ -230,7 +230,7 @@ class Fork
 
     private function minifyAndSerializeTask()
     {
-        $this->serializedTask = TaskFormatter::minifyAndSerialize($this->task);
+        $this->serializedTask = Formatter::minifyAndSerialize($this->task);
         unset($this->task);
     }
 
@@ -251,7 +251,7 @@ class Fork
      */
     private function unserializeTask()
     {
-        $this->task = TaskFormatter::unserialize($this->serializedTask);
+        $this->task = Formatter::unserialize($this->serializedTask);
         $this->serializedTask = null;
     }
 
