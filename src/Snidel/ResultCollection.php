@@ -1,21 +1,21 @@
 <?php
 namespace Ackintosh\Snidel;
 
-class ForkCollection implements \ArrayAccess, \Iterator
+class ResultCollection implements \ArrayAccess, \Iterator
 {
-    /** @var \Ackintosh\Snidel\Fork[] */
-    private $forks = array();
+    /** @var \Ackintosh\Snidel\Result[] */
+    private $results = array();
 
     /** @var int */
     private $position;
 
     /**
-     * @param   \Ackintosh\Snidel\Fork[]
+     * @param   \Ackintosh\Snidel\Result[]
      */
-    public function __construct($forks)
+    public function __construct($results)
     {
-        foreach ($forks as $f) {
-            $this->forks[] = $f;
+        foreach ($results as $f) {
+            $this->results[] = $f;
         }
         $this->position = 0;
     }
@@ -26,10 +26,10 @@ class ForkCollection implements \ArrayAccess, \Iterator
     public function toArray()
     {
         return array_map(
-            function ($fork) {
-                return $fork->getResult()->getReturn();
+            function ($result) {
+                return $result->getReturn();
             },
-            $this->forks
+            $this->results
         );
     }
 
@@ -41,7 +41,7 @@ class ForkCollection implements \ArrayAccess, \Iterator
      */
     public function offsetExists($offset)
     {
-        if (isset($this->forks[$offset]) && $this->forks[$offset] !== '') {
+        if (isset($this->results[$offset]) && $this->results[$offset] !== '') {
             return true;
         }
 
@@ -60,7 +60,7 @@ class ForkCollection implements \ArrayAccess, \Iterator
             return null;
         }
 
-        return $this->forks[$offset];
+        return $this->results[$offset];
     }
 
     /**
@@ -71,7 +71,7 @@ class ForkCollection implements \ArrayAccess, \Iterator
      */
     public function offsetSet($offset, $value)
     {
-        $this->forks[$offset] = $value;
+        $this->results[$offset] = $value;
     }
 
     /**
@@ -82,7 +82,7 @@ class ForkCollection implements \ArrayAccess, \Iterator
      */
     public function offsetUnset($offset)
     {
-        unset($this->forks[$offset]);
+        unset($this->results[$offset]);
     }
 
     /**
@@ -92,7 +92,7 @@ class ForkCollection implements \ArrayAccess, \Iterator
      */
     public function current()
     {
-        return $this->forks[$this->position];
+        return $this->results[$this->position];
     }
 
     /**
@@ -132,6 +132,6 @@ class ForkCollection implements \ArrayAccess, \Iterator
      */
     public function valid()
     {
-        return isset($this->forks[$this->position]);
+        return isset($this->results[$this->position]);
     }
 }

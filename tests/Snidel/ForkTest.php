@@ -8,9 +8,9 @@ class ForkTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function isQueued()
+    public function executeTask()
     {
         $fork = new Fork(getmypid(), new Task('receivesArgumentsAndReturnsIt', 'foo', null));
-        $this->assertFalse($fork->isQueued());
+        $this->assertInstanceOf('Ackintosh\Snidel\Result', $fork->executeTask());
     }
 }

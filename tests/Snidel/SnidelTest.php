@@ -21,7 +21,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
+        $this->assertEquals($snidel->get()->toArray(), array('foo', 'bar'));
     }
 
     /**
@@ -112,14 +112,14 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function getReturnsForkCollection()
+    public function getReturnsResultCollection()
     {
         $snidel = new Snidel();
         $snidel->fork(function () {
             return 'foo';
         });
 
-        $this->assertInstanceOf('\Ackintosh\Snidel\ForkCollection', $snidel->get());
+        $this->assertInstanceOf('\Ackintosh\Snidel\ResultCollection', $snidel->get());
     }
 
     /**
@@ -133,13 +133,13 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
             return 'foo';
         });
         $collection = $snidel->get();
-        $this->assertSame('foo', $collection[0]->getResult()->getReturn());
+        $this->assertSame('foo', $collection[0]->getReturn());
 
         $snidel->fork(function () {
             return 'bar';
         });
         $collection = $snidel->get();
-        $this->assertSame('bar', $collection[0]->getResult()->getReturn());
+        $this->assertSame('bar', $collection[0]->getReturn());
     }
 
     /**
@@ -197,8 +197,8 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->fork(function () {
             echo 'foobar';
         });
-        $forks = $snidel->get();
-        $this->assertSame('foobar', $forks[0]->getResult()->getOutput());
+        $collection = $snidel->get();
+        $this->assertSame('foobar', $collection[0]->getOutput());
     }
 
     /**
@@ -221,8 +221,8 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
         $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')
-            ->then(function (\Ackintosh\Snidel\Fork $fork) {
-                return ucfirst($fork->getResult()->getReturn());
+            ->then(function (\Ackintosh\Snidel\Result $result) {
+                return ucfirst($result->getReturn());
             }));
         $this->isSame($result, array('Foo', 'Bar'));
     }

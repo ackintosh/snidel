@@ -2,6 +2,7 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\ResultFormatter;
 use Ackintosh\Snidel\SharedMemory;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
@@ -25,13 +26,13 @@ class Data
     /**
      * write data
      *
-     * @param   \Ackintosh\Snidel\Fork     $fork
+     * @param   \Ackintosh\Snidel\Result     $result
      * @return  void
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
-    public function write($fork)
+    public function write($result)
     {
-        $serialized = Fork::serialize($fork);
+        $serialized = ResultFormatter::serialize($result);
         try {
             $this->shm->open(strlen($serialized));
         } catch (SharedMemoryControlException $e) {
@@ -68,21 +69,21 @@ class Data
     /**
      * read data
      *
-     * @return  \Ackintosh\Snidel\Fork
+     * @return  \Ackintosh\Snidel\Result
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function read()
     {
         try {
             $this->shm->open();
-            $serializedFork = $this->shm->read();
+            $serialized = $this->shm->read();
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
 
         $this->shm->close();
 
-        return Fork::unserialize($serializedFork);
+        return ResultFormatter::unserialize($serialized);
     }
 
     /**

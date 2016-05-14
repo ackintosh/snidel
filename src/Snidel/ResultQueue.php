@@ -3,19 +3,19 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\AbstractQueue;
 use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\ResultFormatter;
 
 class ResultQueue extends AbstractQueue
 {
     /**
-     * @param   \Ackintosh\Snidel\Fork
+     * @param   \Ackintosh\Snidel\Result
      * @throws  \RuntimeException
      */
-    public function enqueue($fork)
+    public function enqueue($result)
     {
-        $serialized = Fork::serialize($fork);
         if (
-            $this->isExceedsLimit($serialized = Fork::serialize($fork))
-            && $this->isExceedsLimit($serialized = Fork::minifyAndSerialize($fork))
+            $this->isExceedsLimit($serialized = ResultFormatter::serialize($result))
+            && $this->isExceedsLimit($serialized = ResultFormatter::minifyAndSerialize($result))
         ) {
             throw new \RuntimeException('the fork which includes result exceeds the message queue limit.');
         }
@@ -31,11 +31,11 @@ class ResultQueue extends AbstractQueue
     {
         $this->dequeuedCount++;
         try {
-        $serializedFork = $this->receiveMessage();
+        $serialized = $this->receiveMessage();
         } catch (\RuntimeException $e) {
             throw new \RuntimeException('failed to dequeue result');
         }
 
-        return Fork::unserialize($serializedFork);
+        return ResultFormatter::unserialize($serialized);
     }
 }

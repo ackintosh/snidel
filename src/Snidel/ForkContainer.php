@@ -7,6 +7,7 @@ use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\ResultQueue;
+use Ackintosh\Snidel\ResultCollection;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
@@ -20,6 +21,9 @@ class ForkContainer
 
     /** @var \Ackintosh\Snidel\Fork[] */
     private $forks = array();
+
+    /** @var \Ackintosh\Snidel\Result[] */
+    private $results = array();
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
@@ -194,29 +198,28 @@ class ForkContainer
             }
 
             $resultQueue = new ResultQueue($this->ownerPid);
-            register_shutdown_function(function () use ($fork, $resultQueue) {
-                if ($fork->hasNoResult() || !$fork->isQueued()) {
+            $resultHasQueued = false;
+            register_shutdown_function(function () use (&$resultHasQueued, $fork, $resultQueue) {
+                if (!$resultHasQueued) {
                     $result = new Result();
                     $result->setFailure();
-                    $fork->setResult($result);
-                    $resultQueue->enqueue($fork);
+                    $result->setFork($fork);
+                    $resultQueue->enqueue($result);
                 }
             });
 
             $this->log->info('----> started the function.');
-            $fork->executeTask();
+            $result = $fork->executeTask();
             $this->log->info('<---- completed the function.');
 
             try {
-                $resultQueue->enqueue($fork);
+                $resultQueue->enqueue($result);
             } catch (\RuntimeException $e) {
                 $this->log->error($e->getMessage());
-                $result = new Result();
                 $result->setFailure();
-                $fork->setResult($result);
-                $resultQueue->enqueue($fork);
+                $resultQueue->enqueue($result);
             }
-            $fork->setQueued();
+            $resultHasQueued = true;
             $this->log->info('queued the result and exit.');
             exit;
             // @codeCoverageIgnoreEnd
@@ -248,8 +251,8 @@ class ForkContainer
      */
     public function hasTag($tag)
     {
-        foreach ($this->forks as $fork) {
-            if ($fork->getTag() === $tag) {
+        foreach ($this->results as $result) {
+            if ($result->getFork()->getTag() === $tag) {
                 return true;
             }
         }
@@ -263,11 +266,12 @@ class ForkContainer
     public function wait()
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
-            $fork = $this->dequeue();
-            $this->forks[$fork->getPid()] = $fork;
+            $result = $this->dequeue();
+            $pid = $result->getFork()->getPid();
+            $this->results[$pid] = $result;
 
-            if ($fork->getResult()->isFailure()) {
-                $this->error[$fork->getPid()] = $fork;
+            if ($result->isFailure()) {
+                $this->error[$pid] = $result;
             }
         }
     }
@@ -275,25 +279,27 @@ class ForkContainer
     /**
      * wait child
      *
-     * @return \Ackintosh\Snidel\Fork
+     * @return \Ackintosh\Snidel\Result
      */
     public function waitForChild()
     {
         $status = null;
         $childPid = $this->pcntl->waitpid(-1, $status);
         try {
-            $fork = $this->dataRepository->load($childPid)->readAndDelete();
+            $result = $this->dataRepository->load($childPid)->readAndDelete();
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
+        $fork = $result->getFork();
         $fork->setStatus($status);
+        $result->setFork($fork);
 
         if ($fork->hasNotFinishedSuccessfully()) {
             $this->error[$childPid] = $fork;
         }
+        $this->results[$childPid] = $result;
 
-        $this->forks[$childPid] = $fork;
-        return $fork;
+        return $result;
     }
 
     /**
@@ -312,14 +318,14 @@ class ForkContainer
      */
     public function get($pid)
     {
-        return $this->forks[$pid];
+        return $this->results[$pid];
     }
 
     public function getCollection($tag = null)
     {
         if ($tag === null) {
-            $collection = new ForkCollection($this->forks);
-            $this->forks = array();
+            $collection = new ResultCollection($this->results);
+            $this->results = array();
 
             return $collection;
         }
@@ -328,24 +334,24 @@ class ForkContainer
     }
 
     /**
-     * return forks
+     * return results
      *
      * @param   string  $tag
-     * @return  \Ackintosh\Snidel\Fork[]
+     * @return  \Ackintosh\Snidel\ResultCollection
      */
     private function getCollectionWithTag($tag)
     {
-        $forks = array();
-        foreach ($this->forks as $f) {
-            if ($f->getTag() !== $tag) {
+        $results = array();
+        foreach ($this->results as $r) {
+            if ($r->getFork()->getTag() !== $tag) {
                 continue;
             }
 
-            $forks[] = $f;
-            unset($this->forks[$f->getPid()]);
+            $results[] = $r;
+            unset($this->results[$r->getFork()->getPid()]);
         }
 
-        return new ForkCollection($forks);
+        return new ResultCollection($results);
     }
 
     /**

@@ -154,14 +154,21 @@ class Snidel
              * in php5.3, we can not use $this in anonymous functions
              */
             $log = $this->log;
-            register_shutdown_function(function () use ($fork, $log, $token) {
-                $dataRepository = new DataRepository();
-                $data = $dataRepository->load(getmypid());
-                try {
-                    $data->write($fork);
-                } catch (SharedMemoryControlException $e) {
-                    throw $e;
+            $resultHasWritten = false;
+            register_shutdown_function(function () use (&$resultHasWritten, $fork, $log, $token) {
+                if (!$resultHasWritten) {
+                    $dataRepository = new DataRepository();
+                    $data = $dataRepository->load(getmypid());
+                    $result = new Result();
+                    $result->setFailure();
+                    $result->setFork($fork);
+                    try {
+                        $data->write($result);
+                    } catch (SharedMemoryControlException $e) {
+                        throw $e;
+                    }
                 }
+
                 $log->info('<-- return token.');
                 $token->back();
             });
@@ -169,8 +176,16 @@ class Snidel
             $log->info('--> waiting for the token come around.');
             if ($token->accept()) {
                 $log->info('----> started the function.');
-                $fork->executeTask();
+                $result = $fork->executeTask();
                 $log->info('<---- completed the function.');
+                $dataRepository = new DataRepository();
+                $data = $dataRepository->load(getmypid());
+                try {
+                    $data->write($result);
+                } catch (SharedMemoryControlException $e) {
+                    throw $e;
+                }
+                $resultHasWritten = true;
             }
 
             $this->_exit();
@@ -329,13 +344,13 @@ class Snidel
 
         while ($mapContainer->isProcessing()) {
             try {
-                $fork = $this->forkContainer->waitForChild();
+                $result = $this->forkContainer->waitForChild();
             } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
 
-            $childPid = $fork->getPid();
-            if ($fork->hasNotFinishedSuccessfully()) {
+            $childPid = $result->getFork()->getPid();
+            if ($result->getFork()->hasNotFinishedSuccessfully()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 throw new \RuntimeException($message);
@@ -346,7 +361,7 @@ class Snidel
                     $nextMapPid = $this->forkChild(
                         $nextMap->getToken(),
                         $nextMap->getCallable(),
-                        $fork
+                        $result
                     );
                 } catch (\RuntimeException $e) {
                     throw $e;
@@ -372,7 +387,7 @@ class Snidel
     {
         $results = array();
         foreach ($mapContainer->getLastMapPids() as $pid) {
-            $results[] = $this->forkContainer->get($pid)->getResult()->getReturn();
+            $results[] = $this->forkContainer->get($pid)->getReturn();
         }
 
         return $results;

@@ -37,17 +37,17 @@ $snidel->fork($func, 'baz');
 
 $snidel->wait();// optional
 
-// Snidel::get() returns instance of Snidel\ForkCollection
-$forkCollection = $snidel->get();
+// Snidel::get() returns instance of Snidel\ResultCollection
+$collection = $snidel->get();
 
-// Snidel\ForkCollection implements \Iterator
-foreach ($forkCollection as $fork) {
-    echo $fork->getPid();
-    echo $fork->getOutput();
-    echo $fork->getReturn();
+// Snidel\ResultCollection implements \Iterator
+foreach ($collection as $result) {
+    echo $result->getFork()->getPid();
+    echo $result->getOutput();
+    echo $result->getReturn();
 }
 
-var_dump($forkCollection->toArray());
+var_dump($collection->toArray());
 // * the order of results is not guaranteed. *
 // array(3) {
 //   [0]=>
@@ -150,11 +150,12 @@ $camelize = $snidel->map($args, function (Array $arg) {
     //   [3] =>
     //   string(7) "horizon"
     // }
-})->then(function (\Ackintosh\Snidel\Fork $fork) {
-    // $fork has informations about previous process.
-    echo $fork->getPid();
+})->then(function (\Ackintosh\Snidel\Result $result) {
+    // Snidel\Result::getFork() returns instance of Snidel\Fork .
+    // Snidel\Fork has informations about previous process.
+    echo $result->getFork()->getPid();
 
-    return array_map('ucfirst', $fork->getResult()->getReturn());
+    return array_map('ucfirst', $result->getReturn());
     // array(4) {
     //   [0] =>
     //   string(5) "Bring"
@@ -165,8 +166,8 @@ $camelize = $snidel->map($args, function (Array $arg) {
     //   [3] =>
     //   string(7) "Horizon"
     // }
-})->then(function (\Ackintosh\Snidel\Fork $fork) {
-    return implode('', $fork->getResult()->getReturn());
+})->then(function (\Ackintosh\Snidel\Result $result) {
+    return implode('', $result->getReturn());
     // string(17) "BringMeTheHorizon"
 });
 

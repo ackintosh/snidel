@@ -35,9 +35,6 @@ class Fork
     /** @var string */
     private $serializedTask;
 
-    /** @var bool */
-    private $queued = false;
-
     /**
      * @param   int     $pid
      */
@@ -169,22 +166,6 @@ class Fork
         return $this->task->getTag();
     }
 
-    /**
-     * @return  void
-     */
-    public function setQueued()
-    {
-        $this->queued = true;
-    }
-
-    /**
-     * @return  bool
-     */
-    public function isQueued()
-    {
-        return $this->queued;
-    }
-
     public function executeTask()
     {
         ob_start();
@@ -196,7 +177,9 @@ class Fork
             )
         );
         $result->setOutput(ob_get_clean());
-        $this->result = $result;
+        $result->setFork($this);
+
+        return $result;
     }
 
     /**

@@ -9,6 +9,8 @@ class Result
     /** @var string */
     private $output;
 
+    private $fork;
+
     private $failure = false;
 
     /**
@@ -56,6 +58,16 @@ class Result
     public function setFailure()
     {
         $this->failure = true;
+    }
+
+    public function setFork($fork)
+    {
+        $this->fork = $fork;
+    }
+
+    public function getFork()
+    {
+        return $this->fork;
     }
 
     public function isFailure()
