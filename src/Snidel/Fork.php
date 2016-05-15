@@ -2,7 +2,7 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\Result;
+use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Task\Formatter;
 
@@ -23,7 +23,7 @@ class Fork
     /** @var array */
     private $args;
 
-    /** @var \Ackintosh\Snidel\Result */
+    /** @var \Ackintosh\Snidel\Result\Result */
     private $result;
 
     /** @var string */
@@ -126,7 +126,7 @@ class Fork
 
     /**
      *
-     * @param   \Ackintosh\Snidel\Result
+     * @param   \Ackintosh\Snidel\Result\Result
      * @return  void
      */
     public function setResult($result)
@@ -137,7 +137,7 @@ class Fork
     /**
      * return result
      *
-     * @return \Ackintosh\Snidel\Result
+     * @return \Ackintosh\Snidel\Result\Result
      */
     public function getResult()
     {

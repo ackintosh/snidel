@@ -11,6 +11,6 @@ class ForkTest extends \PHPUnit_Framework_TestCase
     public function executeTask()
     {
         $fork = new Fork(getmypid(), new Task('receivesArgumentsAndReturnsIt', 'foo', null));
-        $this->assertInstanceOf('Ackintosh\Snidel\Result', $fork->executeTask());
+        $this->assertInstanceOf('Ackintosh\Snidel\Result\Result', $fork->executeTask());
     }
 }

@@ -6,8 +6,9 @@ use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
-use Ackintosh\Snidel\ResultQueue;
-use Ackintosh\Snidel\ResultCollection;
+use Ackintosh\Snidel\Result\Result;
+use Ackintosh\Snidel\Result\Queue as ResultQueue;
+use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
@@ -22,7 +23,7 @@ class ForkContainer
     /** @var \Ackintosh\Snidel\Fork[] */
     private $forks = array();
 
-    /** @var \Ackintosh\Snidel\Result[] */
+    /** @var \Ackintosh\Snidel\Result\Result[] */
     private $results = array();
 
     /** @var \Ackintosh\Snidel\Pcntl */
@@ -37,7 +38,7 @@ class ForkContainer
     /** @var \Ackintosh\Snidel\Task\Queue */
     private $taskQueue;
 
-    /** @var \Ackintosh\Snidel\ResultQueue */
+    /** @var \Ackintosh\Snidel\Result\Queue */
     private $resultQueue;
 
     /** @var \Ackintosh\Snidel\Log */
@@ -279,7 +280,7 @@ class ForkContainer
     /**
      * wait child
      *
-     * @return \Ackintosh\Snidel\Result
+     * @return \Ackintosh\Snidel\Result\Result
      */
     public function waitForChild()
     {
@@ -324,7 +325,7 @@ class ForkContainer
     public function getCollection($tag = null)
     {
         if ($tag === null) {
-            $collection = new ResultCollection($this->results);
+            $collection = new Collection($this->results);
             $this->results = array();
 
             return $collection;
@@ -337,7 +338,7 @@ class ForkContainer
      * return results
      *
      * @param   string  $tag
-     * @return  \Ackintosh\Snidel\ResultCollection
+     * @return  \Ackintosh\Snidel\Result\Collection
      */
     private function getCollectionWithTag($tag)
     {
@@ -351,7 +352,7 @@ class ForkContainer
             unset($this->results[$r->getFork()->getPid()]);
         }
 
-        return new ResultCollection($results);
+        return new Collection($results);
     }
 
     /**

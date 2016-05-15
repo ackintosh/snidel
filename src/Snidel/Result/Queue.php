@@ -1,14 +1,14 @@
 <?php
-namespace Ackintosh\Snidel;
+namespace Ackintosh\Snidel\Result;
 
 use Ackintosh\Snidel\AbstractQueue;
 use Ackintosh\Snidel\Fork;
-use Ackintosh\Snidel\ResultFormatter;
+use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 
-class ResultQueue extends AbstractQueue
+class Queue extends AbstractQueue
 {
     /**
-     * @param   \Ackintosh\Snidel\Result
+     * @param   \Ackintosh\Snidel\Result\Result
      * @throws  \RuntimeException
      */
     public function enqueue($result)

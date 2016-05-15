@@ -1,10 +1,10 @@
 <?php
-namespace Ackintosh\Snidel;
+namespace Ackintosh\Snidel\Result;
 
-use Ackintosh\Snidel\Result;
+use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Fork;
 
-class ResultFormatter
+class Formatter
 {
     public static function serialize(Result $result)
     {

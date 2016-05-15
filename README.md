@@ -37,10 +37,10 @@ $snidel->fork($func, 'baz');
 
 $snidel->wait();// optional
 
-// Snidel::get() returns instance of Snidel\ResultCollection
+// Snidel::get() returns instance of Snidel\Result\Collection
 $collection = $snidel->get();
 
-// Snidel\ResultCollection implements \Iterator
+// Snidel\Result\Collection implements \Iterator
 foreach ($collection as $result) {
     echo $result->getFork()->getPid();
     echo $result->getOutput();
@@ -150,8 +150,8 @@ $camelize = $snidel->map($args, function (Array $arg) {
     //   [3] =>
     //   string(7) "horizon"
     // }
-})->then(function (\Ackintosh\Snidel\Result $result) {
-    // Snidel\Result::getFork() returns instance of Snidel\Fork .
+})->then(function (\Ackintosh\Snidel\Result\Result $result) {
+    // Snidel\Result\Result::getFork() returns instance of Snidel\Fork .
     // Snidel\Fork has informations about previous process.
     echo $result->getFork()->getPid();
 
@@ -166,7 +166,7 @@ $camelize = $snidel->map($args, function (Array $arg) {
     //   [3] =>
     //   string(7) "Horizon"
     // }
-})->then(function (\Ackintosh\Snidel\Result $result) {
+})->then(function (\Ackintosh\Snidel\Result\Result $result) {
     return implode('', $result->getReturn());
     // string(17) "BringMeTheHorizon"
 });

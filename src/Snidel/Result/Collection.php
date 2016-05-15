@@ -1,16 +1,16 @@
 <?php
-namespace Ackintosh\Snidel;
+namespace Ackintosh\Snidel\Result;
 
-class ResultCollection implements \ArrayAccess, \Iterator
+class Collection implements \ArrayAccess, \Iterator
 {
-    /** @var \Ackintosh\Snidel\Result[] */
+    /** @var \Ackintosh\Snidel\Result\Result[] */
     private $results = array();
 
     /** @var int */
     private $position;
 
     /**
-     * @param   \Ackintosh\Snidel\Result[]
+     * @param   \Ackintosh\Snidel\Result\Result[]
      */
     public function __construct($results)
     {

@@ -119,7 +119,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
             return 'foo';
         });
 
-        $this->assertInstanceOf('\Ackintosh\Snidel\ResultCollection', $snidel->get());
+        $this->assertInstanceOf('\Ackintosh\Snidel\Result\Collection', $snidel->get());
     }
 
     /**
@@ -221,7 +221,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     {
         $snidel = new Snidel();
         $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')
-            ->then(function (\Ackintosh\Snidel\Result $result) {
+            ->then(function (\Ackintosh\Snidel\Result\Result $result) {
                 return ucfirst($result->getReturn());
             }));
         $this->isSame($result, array('Foo', 'Bar'));
