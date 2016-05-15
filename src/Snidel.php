@@ -4,7 +4,7 @@ declare(ticks = 1);
 namespace Ackintosh;
 
 use Ackintosh\Snidel\ForkContainer;
-use Ackintosh\Snidel\Result;
+use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;

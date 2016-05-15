@@ -1,6 +1,8 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\Result\Result;
+
 class ResultTest extends \PHPUnit_Framework_TestCase
 {
     /**

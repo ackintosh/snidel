@@ -1,8 +1,8 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Result;
-use Ackintosh\Snidel\ResultCollection;
+use Ackintosh\Snidel\Result\Result;
+use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Task\Task;
 
 class ResultCollectionTest extends \PHPUnit_Framework_TestCase
@@ -12,11 +12,11 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
      */
     public function arrayAccess()
     {
-        $collection = new ResultCollection(array());
+        $collection = new Collection(array());
         $this->assertNull($collection[0]);
 
         $collection[0] = new Result();
-        $this->assertInstanceOf('\Ackintosh\Snidel\Result', $collection[0]);
+        $this->assertInstanceOf('\Ackintosh\Snidel\Result\Result', $collection[0]);
 
         unset($collection[0]);
         $this->assertNull($collection[0]);
@@ -36,7 +36,7 @@ class ResultCollectionTest extends \PHPUnit_Framework_TestCase
             $resultA,
             $resultB,
         );
-        $collection = new ResultCollection($results);
+        $collection = new Collection($results);
 
         foreach ($collection as $position => $result) {
             $this->assertSame(($position + 1) * 100, $result->getFork()->getPid());

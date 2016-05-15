@@ -2,7 +2,7 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Fork;
-use Ackintosh\Snidel\ResultFormatter;
+use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 use Ackintosh\Snidel\SharedMemory;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
@@ -26,7 +26,7 @@ class Data
     /**
      * write data
      *
-     * @param   \Ackintosh\Snidel\Result     $result
+     * @param   \Ackintosh\Snidel\Result\Result     $result
      * @return  void
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
@@ -69,7 +69,7 @@ class Data
     /**
      * read data
      *
-     * @return  \Ackintosh\Snidel\Result
+     * @return  \Ackintosh\Snidel\Result\Result
      * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
      */
     public function read()
