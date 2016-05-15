@@ -188,7 +188,7 @@ class Snidel
                 $resultHasWritten = true;
             }
 
-            $this->_exit();
+            exit;
             // @codeCoverageIgnoreEnd
         }
 
@@ -226,7 +226,7 @@ class Snidel
      * gets results
      *
      * @param   string  $tag
-     * @return  \Ackintosh\Snidel\ForkCollection
+     * @return  \Ackintosh\Snidel\Result\Collection
      * @throws  \InvalidArgumentException
      */
     public function get($tag = null)
@@ -391,11 +391,6 @@ class Snidel
         }
 
         return $results;
-    }
-
-    private function _exit($status = 0)
-    {
-        exit($status);
     }
 
     public function __destruct()

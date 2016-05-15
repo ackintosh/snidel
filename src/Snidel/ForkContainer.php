@@ -2,7 +2,6 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Fork;
-use Ackintosh\Snidel\ForkCollection;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;

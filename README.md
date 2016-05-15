@@ -14,7 +14,7 @@ $ composer require ackintosh/snidel
 
 ![Master - Worker Architecture](images/master_worker.png)
 
-This image was made by <a href="https://cacoo.com/" target="_blank">cacoo</a>.
+This image was made with <a href="https://cacoo.com/" target="_blank">cacoo</a>.
 
 ## Usage
 
