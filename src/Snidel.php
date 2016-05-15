@@ -134,7 +134,7 @@ class Snidel
         $task = new Task($callable, $args, $tag);
 
         try {
-            $fork = $this->forkContainer->fork($task);
+            $fork = $this->forkContainer->fork();
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
@@ -155,12 +155,13 @@ class Snidel
              */
             $log = $this->log;
             $resultHasWritten = false;
-            register_shutdown_function(function () use (&$resultHasWritten, $fork, $log, $token) {
+            register_shutdown_function(function () use (&$resultHasWritten, $fork, $task, $log, $token) {
                 if (!$resultHasWritten) {
                     $dataRepository = new DataRepository();
                     $data = $dataRepository->load(getmypid());
                     $result = new Result();
                     $result->setFailure();
+                    $result->setTask($task);
                     $result->setFork($fork);
                     try {
                         $data->write($result);
@@ -176,7 +177,8 @@ class Snidel
             $log->info('--> waiting for the token come around.');
             if ($token->accept()) {
                 $log->info('----> started the function.');
-                $result = $fork->executeTask();
+                $result = $task->execute();
+                $result->setFork($fork);
                 $log->info('<---- completed the function.');
                 $dataRepository = new DataRepository();
                 $data = $dataRepository->load(getmypid());
@@ -350,7 +352,7 @@ class Snidel
             }
 
             $childPid = $result->getFork()->getPid();
-            if ($result->getFork()->hasNotFinishedSuccessfully()) {
+            if ($result->isFailure()) {
                 $message = 'an error has occurred in child process. pid: ' . $childPid;
                 $this->log->error($message);
                 throw new \RuntimeException($message);

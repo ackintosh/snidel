@@ -108,11 +108,10 @@ class ForkContainer
     /**
      * fork process
      *
-     * @param   \Ackintosh\Snidel\Task
      * @return  \Ackintosh\Snidel\Fork
      * @throws  \RuntimeException
      */
-    public function fork($task)
+    public function fork()
     {
         $pid = $this->pcntl->fork();
         if ($pid === -1) {
@@ -121,7 +120,7 @@ class ForkContainer
 
         $pid = ($pid === 0) ? getmypid() : $pid;
 
-        $fork = new Fork($pid, $task);
+        $fork = new Fork($pid);
         $this->forks[$pid] = $fork;
 
         return $fork;
@@ -179,7 +178,7 @@ class ForkContainer
     private function forkWorker($task)
     {
         try {
-            $fork = $this->fork($task);
+            $fork = $this->fork();
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
@@ -199,17 +198,19 @@ class ForkContainer
 
             $resultQueue = new ResultQueue($this->ownerPid);
             $resultHasQueued = false;
-            register_shutdown_function(function () use (&$resultHasQueued, $fork, $resultQueue) {
+            register_shutdown_function(function () use (&$resultHasQueued, $fork, $task, $resultQueue) {
                 if (!$resultHasQueued) {
                     $result = new Result();
                     $result->setFailure();
+                    $result->setTask($task);
                     $result->setFork($fork);
                     $resultQueue->enqueue($result);
                 }
             });
 
             $this->log->info('----> started the function.');
-            $result = $fork->executeTask();
+            $result = $task->execute();
+            $result->setFork($fork);
             $this->log->info('<---- completed the function.');
 
             try {
@@ -252,7 +253,7 @@ class ForkContainer
     public function hasTag($tag)
     {
         foreach ($this->results as $result) {
-            if ($result->getFork()->getTag() === $tag) {
+            if ($result->getTask()->getTag() === $tag) {
                 return true;
             }
         }
@@ -294,7 +295,7 @@ class ForkContainer
         $fork->setStatus($status);
         $result->setFork($fork);
 
-        if ($fork->hasNotFinishedSuccessfully()) {
+        if ($result->isFailure() || !$this->pcntl->wifexited($status) || $this->pcntl->wexitstatus($status) !== 0) {
             $this->error[$childPid] = $fork;
         }
         $this->results[$childPid] = $result;
@@ -343,7 +344,7 @@ class ForkContainer
     {
         $results = array();
         foreach ($this->results as $r) {
-            if ($r->getFork()->getTag() !== $tag) {
+            if ($r->getTask()->getTag() !== $tag) {
                 continue;
             }
 

@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel\Task;
 
+use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\TaskInterface;
 use Ackintosh\Snidel\Task\MinifiedTask;
 
@@ -49,5 +50,24 @@ class Task implements TaskInterface
     public function getTag()
     {
         return $this->tag;
+    }
+
+    /**
+     * @return  Ackintosh\Snidel\Result\Result
+     */
+    public function execute()
+    {
+        ob_start();
+        $result = new Result();
+        $result->setReturn(
+            call_user_func_array(
+                $this->getCallable(),
+                (is_array($args = $this->getArgs())) ? $args : array($args)
+            )
+        );
+        $result->setOutput(ob_get_clean());
+        $result->setTask($this);
+
+        return $result;
     }
 }
