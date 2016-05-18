@@ -24,7 +24,7 @@ class Queue extends AbstractQueue
     }
 
     /**
-     * @return  \Ackintosh\Snidel\Fork\Fork
+     * @return  \Ackintosh\Snidel\Result\Result
      * @throws  \RuntimeException
      */
     public function dequeue()
