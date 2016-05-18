@@ -151,8 +151,8 @@ $camelize = $snidel->map($args, function (Array $arg) {
     //   string(7) "horizon"
     // }
 })->then(function (\Ackintosh\Snidel\Result\Result $result) {
-    // Snidel\Result\Result::getFork() returns instance of Snidel\Fork .
-    // Snidel\Fork has informations about previous process.
+    // Snidel\Result\Result::getFork() returns instance of Snidel\Fork\Fork .
+    // Snidel\Fork\Fork has informations about previous process.
     echo $result->getFork()->getPid();
 
     return array_map('ucfirst', $result->getReturn());

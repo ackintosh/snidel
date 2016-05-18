@@ -3,7 +3,7 @@ declare(ticks = 1);
 
 namespace Ackintosh;
 
-use Ackintosh\Snidel\ForkContainer;
+use Ackintosh\Snidel\Fork\Container;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
@@ -18,8 +18,8 @@ class Snidel
     /** @var string */
     const VERSION = '0.6.3';
 
-    /** @var \Ackintosh\Snidel\ForkContainer */
-    private $forkContainer;
+    /** @var \Ackintosh\Snidel\Fork\Container */
+    private $container;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
@@ -57,7 +57,7 @@ class Snidel
         $this->concurrency      = $concurrency;
         $this->log              = new Log($this->ownerPid);
         $this->pcntl            = new Pcntl();
-        $this->forkContainer    = new ForkContainer($this->ownerPid, $this->log, $this->concurrency);
+        $this->container        = new Container($this->ownerPid, $this->log, $this->concurrency);
 
         $log    = $this->log;
         $self   = $this;
@@ -105,17 +105,17 @@ class Snidel
     {
         $this->joined = false;
 
-        if (!$this->forkContainer->existsMaster()) {
-            $this->forkContainer->forkMaster();
+        if (!$this->container->existsMaster()) {
+            $this->container->forkMaster();
         }
 
         try {
-            $this->forkContainer->enqueue(new Task($callable, $args, $tag));
+            $this->container->enqueue(new Task($callable, $args, $tag));
         } catch (\RuntimeException $e) {
             throw $e;
         }
 
-        $this->log->info('queued task #' . $this->forkContainer->queuedCount());
+        $this->log->info('queued task #' . $this->container->queuedCount());
     }
 
     /**
@@ -134,7 +134,7 @@ class Snidel
         $task = new Task($callable, $args, $tag);
 
         try {
-            $fork = $this->forkContainer->fork();
+            $fork = $this->container->fork();
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
@@ -204,7 +204,7 @@ class Snidel
      */
     public function wait()
     {
-        $this->forkContainer->wait();
+        $this->container->wait();
         $this->joined = true;
     }
 
@@ -213,7 +213,7 @@ class Snidel
      */
     public function hasError()
     {
-        return $this->forkContainer->hasError();
+        return $this->container->hasError();
     }
 
     /**
@@ -221,7 +221,7 @@ class Snidel
      */
     public function getError()
     {
-        return $this->forkContainer->getError();
+        return $this->container->getError();
     }
 
     /**
@@ -236,11 +236,11 @@ class Snidel
         if (!$this->joined) {
             $this->wait();
         }
-        if ($tag !== null && !$this->forkContainer->hasTag($tag)) {
+        if ($tag !== null && !$this->container->hasTag($tag)) {
             throw new \InvalidArgumentException('unknown tag: ' . $tag);
         }
 
-        return $this->forkContainer->getCollection($tag);
+        return $this->container->getCollection($tag);
     }
 
     /**
@@ -251,7 +251,7 @@ class Snidel
      */
     public function sendSignalToChildren($sig)
     {
-        foreach ($this->forkContainer->getChildPids() as $pid) {
+        foreach ($this->container->getChildPids() as $pid) {
             $this->log->info('----> sending a signal to child. pid: ' . $pid);
             posix_kill($pid, $sig);
         }
@@ -346,7 +346,7 @@ class Snidel
 
         while ($mapContainer->isProcessing()) {
             try {
-                $result = $this->forkContainer->waitForChild();
+                $result = $this->container->waitForChild();
             } catch (SharedMemoryControlException $e) {
                 throw $e;
             }
@@ -389,7 +389,7 @@ class Snidel
     {
         $results = array();
         foreach ($mapContainer->getLastMapPids() as $pid) {
-            $results[] = $this->forkContainer->get($pid)->getReturn();
+            $results[] = $this->container->get($pid)->getReturn();
         }
 
         return $results;
@@ -397,11 +397,11 @@ class Snidel
 
     public function __destruct()
     {
-        if ($this->forkContainer->existsMaster() && $this->ownerPid === getmypid()) {
+        if ($this->container->existsMaster() && $this->ownerPid === getmypid()) {
             $this->log->info('shutdown master process.');
-            $this->forkContainer->killMaster();
+            $this->container->killMaster();
 
-            unset($this->forkContainer);
+            unset($this->container);
         }
 
         if ($this->exceptionHasOccured) {

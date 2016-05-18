@@ -9,7 +9,7 @@ class Result
     /** @var string */
     private $output;
 
-    /** @var Ackintosh\Snidel\Fork */
+    /** @var Ackintosh\Snidel\Fork\Fork */
     private $fork;
 
     /** @var Ackintosh\Snidel\Task\Task */
@@ -69,7 +69,7 @@ class Result
     }
 
     /**
-     * @param   Ackintosh\Snidel\Fork
+     * @param   Ackintosh\Snidel\Fork\Fork
      * @return  void
      */
     public function setFork($fork)
@@ -78,7 +78,7 @@ class Result
     }
 
     /**
-     * @return  Ackintosh\Snidel\Fork
+     * @return  Ackintosh\Snidel\Fork\Fork
      */
     public function getFork()
     {

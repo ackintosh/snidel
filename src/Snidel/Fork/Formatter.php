@@ -1,10 +1,10 @@
 <?php
-namespace Ackintosh\Snidel;
+namespace Ackintosh\Snidel\Fork;
 
-class ForkFormatter
+class Formatter
 {
     /**
-     * @param   \Ackintosh\Snidel\Fork  $fork
+     * @param   \Ackintosh\Snidel\Fork\Fork  $fork
      * @return  string
      */
     public static function serialize($fork)
@@ -14,7 +14,7 @@ class ForkFormatter
 
     /**
      * @param   string  $serializedFork
-     * @return  \Ackintosh\Snidel\Fork
+     * @return  \Ackintosh\Snidel\Fork\Fork
      */
     public static function unserialize($serializedFork)
     {

@@ -2,7 +2,7 @@
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Data;
-use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;

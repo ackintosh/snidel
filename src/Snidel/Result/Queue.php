@@ -2,7 +2,7 @@
 namespace Ackintosh\Snidel\Result;
 
 use Ackintosh\Snidel\AbstractQueue;
-use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 
 class Queue extends AbstractQueue
@@ -24,7 +24,7 @@ class Queue extends AbstractQueue
     }
 
     /**
-     * @return  \Ackintosh\Snidel\Fork
+     * @return  \Ackintosh\Snidel\Fork\Fork
      * @throws  \RuntimeException
      */
     public function dequeue()

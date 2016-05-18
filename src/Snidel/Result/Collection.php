@@ -88,7 +88,7 @@ class Collection implements \ArrayAccess, \Iterator
     /**
      * Iterator interface
      *
-     * @return  \Ackintosh\Snidel\Fork
+     * @return  \Ackintosh\Snidel\Fork\Fork
      */
     public function current()
     {

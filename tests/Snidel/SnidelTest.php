@@ -3,7 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel;
 use Ackintosh\Snidel\DataRepository;
-use Ackintosh\Snidel\ForkContainer;
+use Ackintosh\Snidel\Fork\Container;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 /**
@@ -35,16 +35,16 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $ref->setAccessible(true);
         $log = $ref->getValue($snidel);
 
-        $forkContainer = $this->getMockBuilder('Ackintosh\Snidel\ForkContainer')
+        $container = $this->getMockBuilder('Ackintosh\Snidel\Fork\Container')
             ->setConstructorArgs(array(getmypid(), $log))
             ->setMethods(array('enqueue'))
             ->getMock();
-        $forkContainer->method('enqueue')
+        $container->method('enqueue')
             ->will($this->throwException(new \RuntimeException()));
 
-        $ref = new \ReflectionProperty($snidel, 'forkContainer');
+        $ref = new \ReflectionProperty($snidel, 'container');
         $ref->setAccessible(true);
-        $ref->setValue($snidel, $forkContainer);
+        $ref->setValue($snidel, $container);
 
         try {
             $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
@@ -292,14 +292,14 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $pcntl->method('fork')
             ->willReturn(-1);
 
-        $forkContainer = new ForkContainer(getmypid(), $log);
-        $ref = new \ReflectionProperty($forkContainer, 'pcntl');
+        $container = new Container(getmypid(), $log);
+        $ref = new \ReflectionProperty($container, 'pcntl');
         $ref->setAccessible(true);
-        $ref->setValue($forkContainer, $pcntl);
+        $ref->setValue($container, $pcntl);
 
-        $ref = new \ReflectionProperty($snidel, 'forkContainer');
+        $ref = new \ReflectionProperty($snidel, 'container');
         $ref->setAccessible(true);
-        $ref->setValue($snidel, $forkContainer);
+        $ref->setValue($snidel, $container);
         try {
             $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
         } catch (\RuntimeException $e) {

@@ -1,7 +1,7 @@
 <?php
-namespace Ackintosh\Snidel;
+namespace Ackintosh\Snidel\Fork;
 
-use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
@@ -11,7 +11,7 @@ use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
-class ForkContainer
+class Container
 {
     /** @var int */
     private $ownerPid;
@@ -19,7 +19,7 @@ class ForkContainer
     /** @var int */
     private $masterPid;
 
-    /** @var \Ackintosh\Snidel\Fork[] */
+    /** @var \Ackintosh\Snidel\Fork\Fork[] */
     private $forks = array();
 
     /** @var \Ackintosh\Snidel\Result\Result[] */
@@ -90,7 +90,7 @@ class ForkContainer
     }
 
     /**
-     * @return  \Ackintosh\Snidel\Fork
+     * @return  \Ackintosh\Snidel\Fork\Fork
      */
     private function dequeue()
     {
@@ -108,7 +108,7 @@ class ForkContainer
     /**
      * fork process
      *
-     * @return  \Ackintosh\Snidel\Fork
+     * @return  \Ackintosh\Snidel\Fork\Fork
      * @throws  \RuntimeException
      */
     public function fork()
@@ -315,7 +315,7 @@ class ForkContainer
      * return fork
      *
      * @param   int     $pid
-     * @return  \Ackintosh\Snidel\Fork
+     * @return  \Ackintosh\Snidel\Fork\Fork
      */
     public function get($pid)
     {

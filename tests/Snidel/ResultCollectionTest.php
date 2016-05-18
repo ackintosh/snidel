@@ -4,6 +4,7 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Task\Task;
+use Ackintosh\Snidel\Fork\Fork;
 
 class ResultCollectionTest extends \PHPUnit_Framework_TestCase
 {
