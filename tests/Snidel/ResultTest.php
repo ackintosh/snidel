@@ -24,4 +24,18 @@ class ResultTest extends \PHPUnit_Framework_TestCase
         $result->setOutput('foo');
         $this->assertSame('foo', $result->getOutput());
     }
+
+    /**
+     * @test
+     */
+    public function setError()
+    {
+        $result = new Result();
+
+        $error = array('foo' => 'bar');
+        $result->setError($error);
+
+        $this->assertTrue($result->isFailure());
+        $this->assertSame($error, $result->getError());
+    }
 }

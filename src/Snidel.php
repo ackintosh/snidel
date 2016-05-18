@@ -160,7 +160,7 @@ class Snidel
                     $dataRepository = new DataRepository();
                     $data = $dataRepository->load(getmypid());
                     $result = new Result();
-                    $result->setFailure();
+                    $result->setError(error_get_last());
                     $result->setTask($task);
                     $result->setFork($fork);
                     try {

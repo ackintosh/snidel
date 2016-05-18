@@ -18,6 +18,9 @@ class Result
     /** @var bool */
     private $failure = false;
 
+    /** @var array */
+    private $error;
+
     /**
      * set return
      *
@@ -61,14 +64,6 @@ class Result
     }
 
     /**
-     * @return  void
-     */
-    public function setFailure()
-    {
-        $this->failure = true;
-    }
-
-    /**
      * @param   Ackintosh\Snidel\Fork\Fork
      * @return  void
      */
@@ -100,6 +95,24 @@ class Result
     public function getTask()
     {
         return $this->task;
+    }
+
+    /**
+     * @param   array | null
+     * @return  void
+     */
+    public function setError($error)
+    {
+        $this->failure  = true;
+        $this->error    = $error;
+    }
+
+    /**
+     * @return  array | null
+     */
+    public function getError()
+    {
+        return $this->error;
     }
 
     /**

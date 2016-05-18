@@ -201,7 +201,7 @@ class Container
             register_shutdown_function(function () use (&$resultHasQueued, $fork, $task, $resultQueue) {
                 if (!$resultHasQueued) {
                     $result = new Result();
-                    $result->setFailure();
+                    $result->setError(error_get_last());
                     $result->setTask($task);
                     $result->setFork($fork);
                     $resultQueue->enqueue($result);
@@ -217,7 +217,7 @@ class Container
                 $resultQueue->enqueue($result);
             } catch (\RuntimeException $e) {
                 $this->log->error($e->getMessage());
-                $result->setFailure();
+                $result->setError(error_get_last());
                 $resultQueue->enqueue($result);
             }
             $resultHasQueued = true;
