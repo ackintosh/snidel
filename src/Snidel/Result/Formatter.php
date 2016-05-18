@@ -2,7 +2,7 @@
 namespace Ackintosh\Snidel\Result;
 
 use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Fork;
+use Ackintosh\Snidel\ForkFormatter;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 
 class Formatter
@@ -11,7 +11,7 @@ class Formatter
     {
         $cloned = clone $result;
         $serializedTask = TaskFormatter::serialize($cloned->getTask());
-        $serializedFork = Fork::serialize($cloned->getFork());
+        $serializedFork = ForkFormatter::serialize($cloned->getFork());
         $cloned->setTask(null);
         $cloned->setFork(null);
 
@@ -27,7 +27,7 @@ class Formatter
         $cloned = clone $result;
 
         $serializedTask = TaskFormatter::minifyAndSerialize($cloned->getTask());
-        $serializedFork = Fork::serialize($cloned->getFork());
+        $serializedFork = ForkFormatter::serialize($cloned->getFork());
         $cloned->setTask(null);
         $cloned->setFork(null);
 
@@ -42,7 +42,7 @@ class Formatter
     {
         $unserialized = unserialize($serializedResult);
         $unserialized['result']->setTask(TaskFormatter::unserialize($unserialized['serializedTask']));
-        $unserialized['result']->setFork(Fork::unserialize($unserialized['serializedFork']));
+        $unserialized['result']->setFork(ForkFormatter::unserialize($unserialized['serializedFork']));
 
         return $unserialized['result'];
     }
