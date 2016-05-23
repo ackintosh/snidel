@@ -45,9 +45,6 @@ class Snidel
     /** @var int */
     private $receivedSignal;
 
-    /** @var \Ackintosh\Snidel\Token */
-    private $processToken;
-
     /** @var bool */
     private $exceptionHasOccured = false;
 
