@@ -19,7 +19,7 @@ class Task implements TaskInterface
     /**
      * @param   callable    $callable
      * @param   array       $args
-     * @param   string      $string
+     * @param   string      $tag
      */
     public function __construct($callable, $args, $tag)
     {
