@@ -11,7 +11,20 @@ class ForkTest extends \PHPUnit_Framework_TestCase
      */
     public function pid()
     {
-        $fork = new Fork(getmypid(), new Task('receivesArgumentsAndReturnsIt', 'foo', null));
+        $fork = new Fork(getmypid());
         $this->assertSame(getmypid(), $fork->getPid());
+    }
+
+    /**
+     * @test
+     */
+    public function status()
+    {
+        $fork = new Fork(getmypid());
+
+        $expect = 1;
+        $fork->setStatus($expect);
+
+        $this->assertSame($expect, $fork->getStatus());
     }
 }
