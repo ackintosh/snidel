@@ -2,6 +2,9 @@
 use Ackintosh\Snidel\Task\Queue;
 use Ackintosh\Snidel\Task\Task;
 
+/**
+ * @runTestsInSeparateProcesses
+ */
 class TaskQueueTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -35,5 +38,18 @@ class TaskQueueTest extends \PHPUnit_Framework_TestCase
         $queue->dequeue();
 
         $this->assertSame(1, $property->getValue($queue));
+    }
+
+    /**
+     * @test
+     * @expectedException \RuntimeException
+     */
+    public function dequeueThrowsException()
+    {
+        $queue = new Queue(getmypid());
+        $queue->enqueue(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
+
+        require_once(__DIR__ . '/../../msg_receive.php');
+        $queue->dequeue();
     }
 }
