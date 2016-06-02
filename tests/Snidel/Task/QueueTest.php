@@ -25,6 +25,33 @@ class TaskQueueTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @test
+     * @expectedException \RuntimeException
+     */
+    public function enqueueThrowsExceptionWhenTaskExceedsTheMessageQueueLimit()
+    {
+        $queue      = new Queue(getmypid());
+        $property   = new \ReflectionProperty('\Ackintosh\Snidel\Task\Queue', 'stat');
+        $property->setAccessible(true);
+        $stat   = $property->getValue($queue);
+        $arg    = str_repeat('a', $stat['msg_qbytes']);
+
+        $queue->enqueue(new Task('receivesArgumentsAndReturnsIt', $arg, null));
+    }
+
+    /**
+     * @test
+     * @expectedException \RuntimeException
+     */
+    public function enqueueThrowsExceptionWhenFailedToSendMessage()
+    {
+        $queue = new Queue(getmypid());
+
+        require_once(__DIR__ . '/../../msg_send.php');
+        $queue->enqueue(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
+    }
+
+    /**
+     * @test
      */
     public function dequeue()
     {
