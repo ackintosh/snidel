@@ -65,8 +65,8 @@ class Snidel
                     $log->info('received signal. signo: ' . $sig);
                     $self->setReceivedSignal($sig);
 
-                    $log->info('--> sending a signal to children.');
-                    $self->sendSignalToChildren($sig);
+                    $log->info('--> sending a signal " to children.');
+                    $self->container->sendSignalToMaster($sig);
                     $log->info('<-- signal handling has been completed successfully.');
                     exit;
                 },
@@ -394,9 +394,11 @@ class Snidel
 
     public function __destruct()
     {
-        if ($this->container->existsMaster() && $this->ownerPid === getmypid()) {
-            $this->log->info('shutdown master process.');
-            $this->container->killMaster();
+        if ($this->ownerPid === getmypid()) {
+            if ($this->container->existsMaster()) {
+                $this->log->info('shutdown master process.');
+                $this->container->sendSignalToMaster();
+            }
 
             unset($this->container);
         }

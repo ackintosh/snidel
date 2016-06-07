@@ -149,8 +149,12 @@ class Container
             $taskQueue = new TaskQueue($this->ownerPid);
             $this->log->info('pid: ' . $this->masterPid);
 
+            $log = $this->log;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, SIG_DFL, true);
+                $this->pcntl->signal($sig, function ($sig) use ($log) {
+                    $log->info('received signal: ' . $sig);
+                    exit;
+                });
             }
             $workerCount = 0;
 
@@ -236,13 +240,20 @@ class Container
     }
 
     /**
-     * kill master process
+     * send signal to master process
      *
      * @return  void
      */
-    public function killMaster()
+    public function sendSignalToMaster($sig = SIGTERM)
     {
-        posix_kill($this->masterPid, SIGTERM);
+        $this->log->info('----> sending signal to master. signal: ' . $sig);
+        posix_kill($this->masterPid, $sig);
+        $this->log->info('<---- sent signal.');
+
+        $status = null;
+        $this->pcntl->waitpid($this->masterPid, $status);
+        $this->log->info('. status: ' . $status);
+        $this->masterPid = null;
     }
 
     /**
