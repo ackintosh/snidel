@@ -5,15 +5,22 @@ use Ackintosh\Snidel\Log;
 
 class LogTest extends \PHPUnit_Framework_TestCase
 {
+    /** @var \Ackintosh\Snidel\Log */
+    private $log;
+
+    public function setUp()
+    {
+        $this->log = new Log(getmypid());
+    }
+
     /**
      * @test
      */
     public function setdestination()
     {
-        $log = new Log(getmypid());
         $fp = fopen('php://stdout', 'w');
-        $log->setdestination($fp);
-        $this->assertObjectHasAttribute('destination', $log);
+        $this->log->setdestination($fp);
+        $this->assertObjectHasAttribute('destination', $this->log);
         fclose($fp);
     }
 
@@ -22,10 +29,9 @@ class LogTest extends \PHPUnit_Framework_TestCase
      */
     public function info()
     {
-        $log = new Log(getmypid());
         $fp = fopen('php://temp', 'w');
-        $log->setdestination($fp);
-        $log->info('test');
+        $this->log->setdestination($fp);
+        $this->log->info('test');
         rewind($fp);
         $this->assertStringMatchesFormat('%s[info]%s', fgets($fp));
     }
@@ -35,11 +41,63 @@ class LogTest extends \PHPUnit_Framework_TestCase
      */
     public function error()
     {
-        $log = new Log(getmypid());
         $fp = fopen('php://temp', 'w');
-        $log->setdestination($fp);
-        $log->error('test');
+        $this->log->setdestination($fp);
+        $this->log->error('test');
         rewind($fp);
         $this->assertStringMatchesFormat('%s[error]%s', fgets($fp));
+    }
+
+    /**
+     * @test
+     */
+    public function writeOwnerLog()
+    {
+        $fp = fopen('php://temp', 'w');
+        $this->log->setDestination($fp);
+        $this->log->info('test');
+        rewind($fp);
+        $this->assertStringMatchesFormat('%s(owner)%s', fgets($fp));
+    }
+
+    /**
+     * @test
+     */
+    public function writeMasterLog()
+    {
+        $fp = fopen('php://temp', 'w');
+        $this->log->setDestination($fp);
+
+        $prop = new \ReflectionProperty('Ackintosh\Snidel\Log', 'ownerPid');
+        $prop->setAccessible(true);
+        $prop->setValue($this->log, 1);
+
+        $prop = new \ReflectionProperty('Ackintosh\Snidel\Log', 'masterPid');
+        $prop->setAccessible(true);
+        $prop->setValue($this->log, getmypid());
+        $this->log->info('test');
+        rewind($fp);
+        $this->assertStringMatchesFormat('%s(master)%s', fgets($fp));
+    }
+
+    /**
+     * @test
+     */
+    public function writeWorkerLog()
+    {
+        $fp = fopen('php://temp', 'w');
+        $this->log->setDestination($fp);
+
+        $prop = new \ReflectionProperty('Ackintosh\Snidel\Log', 'ownerPid');
+        $prop->setAccessible(true);
+        $prop->setValue($this->log, 1);
+
+        $prop = new \ReflectionProperty('Ackintosh\Snidel\Log', 'masterPid');
+        $prop->setAccessible(true);
+        $prop->setValue($this->log, 1);
+
+        $this->log->info('test');
+        rewind($fp);
+        $this->assertStringMatchesFormat('%s(worker)%s', fgets($fp));
     }
 }
