@@ -19,6 +19,9 @@ class Container
     /** @var int */
     private $masterPid;
 
+    /** @var int[] */
+    private $workerPids = array();
+
     /** @var \Ackintosh\Snidel\Fork\Fork[] */
     private $forks = array();
 
@@ -149,24 +152,31 @@ class Container
             $taskQueue = new TaskQueue($this->ownerPid);
             $this->log->info('pid: ' . $this->masterPid);
 
-            $log = $this->log;
+            $log    = $this->log;
+            $pcntl  = $this->pcntl;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log) {
+                $this->pcntl->signal($sig, function ($sig) use ($log, $pcntl) {
                     $log->info('received signal: ' . $sig);
+                    foreach (array_keys($this->workerPids) as $pid) {
+                        $log->info('------> sending signal to worker. signal: ' . $sig);
+                        posix_kill($pid, $sig);
+                        $log->info('<------ sent signal');
+                        $status = null;
+                        $pcntl->waitpid($pid, $status);
+                    }
                     exit;
                 });
             }
-            $workerCount = 0;
 
             while ($task = $taskQueue->dequeue()) {
                 $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
-                if ($workerCount >= $this->concurrency) {
+                if (count($this->workerPids) >= $this->concurrency) {
                     $status = null;
-                    $this->pcntl->waitpid(-1, $status);
-                    $workerCount--;
+                    $workerPid = $this->pcntl->waitpid(-1, $status);
+                    unset($this->workerPids[$workerPid]);
                 }
-                $this->forkWorker($task);
-                $workerCount++;
+                $workerPid = $this->forkWorker($task);
+                $this->workerPids[$workerPid] = true;
             }
             exit;
         }
@@ -176,7 +186,7 @@ class Container
      * fork worker process
      *
      * @param   \Ackintosh\Snidel\Task
-     * @return  void
+     * @return  int                     worker pid
      * @throws  \RuntimeException
      */
     private function forkWorker($task)
@@ -191,6 +201,7 @@ class Container
         if (getmypid() === $this->masterPid) {
             // master
             $this->log->info('forked worker. pid: ' . $fork->getPid());
+            return $fork->getPid();
         } else {
             // worker
             $this->log->info('has forked. pid: ' . getmypid());
