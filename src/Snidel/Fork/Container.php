@@ -225,7 +225,7 @@ class Container
 
             $this->log->info('----> started the function.');
             try {
-                $result = $worker->run();
+                $worker->run();
             } catch (\RuntimeException $e) {
                 $this->log->error($e->getMessage());
                 exit;
