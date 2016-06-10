@@ -59,12 +59,19 @@ class Task implements TaskInterface
     {
         ob_start();
         $result = new Result();
-        $result->setReturn(
-            call_user_func_array(
-                $this->getCallable(),
-                (is_array($args = $this->getArgs())) ? $args : array($args)
-            )
-        );
+
+        try {
+            $result->setReturn(
+                call_user_func_array(
+                    $this->getCallable(),
+                    (is_array($args = $this->getArgs())) ? $args : array($args)
+                )
+            );
+        } catch (\RuntimeException $e) {
+            ob_get_clean();
+            throw $e;
+        }
+
         $result->setOutput(ob_get_clean());
         $result->setTask($this);
 
