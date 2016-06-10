@@ -10,6 +10,7 @@ use Ackintosh\Snidel\Result\Queue as ResultQueue;
 use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
+use Ackintosh\Snidel\Worker;
 
 class Container
 {
@@ -198,6 +199,8 @@ class Container
             throw $e;
         }
 
+        $worker = new Worker($fork, $task);
+
         if (getmypid() === $this->masterPid) {
             // master
             $this->log->info('forked worker. pid: ' . $fork->getPid());
@@ -211,30 +214,24 @@ class Container
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
 
-            $resultQueue = new ResultQueue($this->ownerPid);
+            $worker->setResultQueue(new ResultQueue($this->ownerPid));
+
             $resultHasQueued = false;
-            register_shutdown_function(function () use (&$resultHasQueued, $fork, $task, $resultQueue) {
+            register_shutdown_function(function () use (&$resultHasQueued, $worker) {
                 if (!$resultHasQueued) {
-                    $result = new Result();
-                    $result->setError(error_get_last());
-                    $result->setTask($task);
-                    $result->setFork($fork);
-                    $resultQueue->enqueue($result);
+                    $worker->error();
                 }
             });
 
             $this->log->info('----> started the function.');
-            $result = $task->execute();
-            $result->setFork($fork);
-            $this->log->info('<---- completed the function.');
-
             try {
-                $resultQueue->enqueue($result);
+                $result = $worker->run();
             } catch (\RuntimeException $e) {
                 $this->log->error($e->getMessage());
-                $result->setError(error_get_last());
-                $resultQueue->enqueue($result);
+                exit;
             }
+            $this->log->info('<---- completed the function.');
+
             $resultHasQueued = true;
             $this->log->info('queued the result and exit.');
             exit;
