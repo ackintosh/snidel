@@ -65,27 +65,6 @@ class ActiveWorkerSetTest extends \PHPUnit_Framework_TestCase
         $this->assertSame(2, $this->activeWorkerSet->count());
     }
 
-    /**
-     * @test
-     */
-    public function toArray()
-    {
-        $worker1 = $this->makeWorker(1);
-        $worker2 = $this->makeWorker(2);
-        $worker3 = $this->makeWorker(3);
-        $this->activeWorkerSet->add($worker1);
-        $this->activeWorkerSet->add($worker2);
-        $this->activeWorkerSet->add($worker3);
-
-        $expect = array(
-            1 => $worker1,
-            2 => $worker2,
-            3 => $worker3,
-        );
-
-        $this->assertSame($expect, $this->activeWorkerSet->toArray());
-    }
-
     private function makeWorker($pid = null)
     {
         $pid = $pid ?: getmypid();

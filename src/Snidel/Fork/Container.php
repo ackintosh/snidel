@@ -158,17 +158,17 @@ class Container
             $activeWorderSet    = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
-            $log    = $this->log;
-            $pcntl  = $this->pcntl;
+            $log = $this->log;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log, $pcntl, $activeWorderSet) {
+                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorderSet) {
                     $log->info('received signal: ' . $sig);
-                    foreach ($activeWorderSet->toArray() as $worker) {
-                        $log->info('------> sending signal to worker. signal: ' . $sig);
-                        posix_kill($worker->getPid(), $sig);
+
+                    if ($activeWorderSet->count() === 0) {
+                        $log->info('no worker is active.');
+                    } else {
+                        $log->info('------> sending signal to workers. signal: ' . $sig);
+                        $activeWorderSet->terminate($sig);
                         $log->info('<------ sent signal');
-                        $status = null;
-                        $pcntl->waitpid($worker->getPid(), $status);
                     }
                     exit;
                 });

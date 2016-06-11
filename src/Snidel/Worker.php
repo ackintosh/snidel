@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result\Result;
 
 class Worker
@@ -14,14 +15,18 @@ class Worker
     /** @var \Ackintosh\Snidel\Result\Queue */
     private $resultQueue;
 
+    /** @var \Ackintosh\Snidel\Pcntl */
+    private $pcntl;
+
     /**
      * @param   \Ackintosh\Snidel\Fork\Fork $fork
      * @param   \Ackintosh\Snidel\Task\Task
      */
     public function __construct($fork, $task)
     {
-        $this->fork = $fork;
-        $this->task = $task;
+        $this->pcntl    = new Pcntl();
+        $this->fork     = $fork;
+        $this->task     = $task;
     }
 
     /**
@@ -78,5 +83,16 @@ class Worker
         } catch (\RuntimeException $e) {
             throw $e;
         }
+    }
+
+    /**
+     * @param   int     $sig
+     * @return  void
+     */
+    public function terminate($sig)
+    {
+        posix_kill($this->fork->getPid(), $sig);
+        $status = null;
+        $this->pcntl->waitpid($this->fork->getPid(), $status);
     }
 }

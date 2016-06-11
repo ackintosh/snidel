@@ -29,10 +29,13 @@ class ActiveWorkerSet
     }
 
     /**
-     * @return  \Ackintosh\Snidel\Worker[]
+     * @param   int     $sig
+     * @return  void
      */
-    public function toArray()
+    public function terminate($sig)
     {
-        return $this->workers;
+        foreach ($this->workers as $worker) {
+            $worker->terminate($sig);
+        }
     }
 }
