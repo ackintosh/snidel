@@ -6,6 +6,10 @@ class ActiveWorkerSet
     /** @var \Ackintosh\Snidel\Worker[] */
     private $workers = array();
 
+    /**
+     * @param   \Ackintosh\Snidel\Worker
+     * @return  void
+     */
     public function add($worker)
     {
         $this->workers[$worker->getPid()] = $worker;
