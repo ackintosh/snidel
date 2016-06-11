@@ -34,6 +34,14 @@ class Worker
     }
 
     /**
+     * @return  int
+     */
+    public function getPid()
+    {
+        return $this->fork->getPid();
+    }
+
+    /**
      * @return  void
      * @throws  \RuntimeException
      */

@@ -40,6 +40,14 @@ class WorkerTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
+    public function getPid()
+    {
+        $this->assertSame(getmypid(), $this->worker->getPid());
+    }
+
+    /**
+     * @test
+     */
     public function runTask()
     {
         $queue = new Queue(getmypid());

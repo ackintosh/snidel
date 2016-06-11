@@ -11,6 +11,7 @@ use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 use Ackintosh\Snidel\Worker;
+use Ackintosh\Snidel\ActiveWorkerSet;
 
 class Container
 {
@@ -150,20 +151,21 @@ class Container
             // error
         } else {
             // master
-            $taskQueue = new TaskQueue($this->ownerPid);
+            $taskQueue          = new TaskQueue($this->ownerPid);
+            $activeWorderSet    = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
             $log    = $this->log;
             $pcntl  = $this->pcntl;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log, $pcntl) {
+                $this->pcntl->signal($sig, function ($sig) use ($log, $pcntl, $activeWorderSet) {
                     $log->info('received signal: ' . $sig);
-                    foreach (array_keys($this->workerPids) as $pid) {
+                    foreach ($activeWorderSet->toArray() as $worker) {
                         $log->info('------> sending signal to worker. signal: ' . $sig);
-                        posix_kill($pid, $sig);
+                        posix_kill($worker->getPid(), $sig);
                         $log->info('<------ sent signal');
                         $status = null;
-                        $pcntl->waitpid($pid, $status);
+                        $pcntl->waitpid($worker->getPid(), $status);
                     }
                     exit;
                 });
@@ -171,13 +173,14 @@ class Container
 
             while ($task = $taskQueue->dequeue()) {
                 $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
-                if (count($this->workerPids) >= $this->concurrency) {
+                if ($activeWorderSet->count() >= $this->concurrency) {
                     $status = null;
                     $workerPid = $this->pcntl->waitpid(-1, $status);
-                    unset($this->workerPids[$workerPid]);
+                    $activeWorderSet->delete($workerPid);
                 }
-                $workerPid = $this->forkWorker($task);
-                $this->workerPids[$workerPid] = true;
+                $activeWorderSet->add(
+                    $this->forkWorker($task)
+                );
             }
             exit;
         }
@@ -187,7 +190,7 @@ class Container
      * fork worker process
      *
      * @param   \Ackintosh\Snidel\Task
-     * @return  int                     worker pid
+     * @return  \Ackintosh\Snidel\Worker
      * @throws  \RuntimeException
      */
     private function forkWorker($task)
@@ -203,8 +206,8 @@ class Container
 
         if (getmypid() === $this->masterPid) {
             // master
-            $this->log->info('forked worker. pid: ' . $fork->getPid());
-            return $fork->getPid();
+            $this->log->info('forked worker. pid: ' . $worker->getPid());
+            return $worker;
         } else {
             // worker
             $this->log->info('has forked. pid: ' . getmypid());
