@@ -155,19 +155,19 @@ class Container
         } else {
             // master
             $taskQueue          = new TaskQueue($this->ownerPid);
-            $activeWorderSet    = new ActiveWorkerSet();
+            $activeWorkerSet    = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
             $log = $this->log;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorderSet) {
+                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorkerSet) {
                     $log->info('received signal: ' . $sig);
 
-                    if ($activeWorderSet->count() === 0) {
+                    if ($activeWorkerSet->count() === 0) {
                         $log->info('no worker is active.');
                     } else {
                         $log->info('------> sending signal to workers. signal: ' . $sig);
-                        $activeWorderSet->terminate($sig);
+                        $activeWorkerSet->terminate($sig);
                         $log->info('<------ sent signal');
                     }
                     exit;
@@ -176,12 +176,12 @@ class Container
 
             while ($task = $taskQueue->dequeue()) {
                 $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
-                if ($activeWorderSet->count() >= $this->concurrency) {
+                if ($activeWorkerSet->count() >= $this->concurrency) {
                     $status = null;
                     $workerPid = $this->pcntl->waitpid(-1, $status);
-                    $activeWorderSet->delete($workerPid);
+                    $activeWorkerSet->delete($workerPid);
                 }
-                $activeWorderSet->add(
+                $activeWorkerSet->add(
                     $this->forkWorker($task)
                 );
             }
