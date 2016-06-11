@@ -138,17 +138,20 @@ class Container
      */
     public function forkMaster()
     {
-        $pid = $this->pcntl->fork();
-        $this->masterPid = ($pid === 0) ? getmypid() : $pid;
+        try {
+            $fork = $this->fork();
+        } catch (\RuntimeException $e) {
+            throw $e;
+        }
+
+        $this->masterPid = $fork->getPid();
         $this->log->setMasterPid($this->masterPid);
 
-        if ($pid) {
+        if (getmypid() === $this->ownerPid) {
             // owner
             $this->log->info('pid: ' . getmypid());
 
             return $this->masterPid;
-        } elseif ($pid === -1) {
-            // error
         } else {
             // master
             $taskQueue          = new TaskQueue($this->ownerPid);
