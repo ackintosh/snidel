@@ -131,7 +131,7 @@ class Snidel
         $task = new Task($callable, $args, $tag);
 
         try {
-            $fork = $this->container->fork();
+            $fork = $this->container->forkChild();
         } catch (\RuntimeException $e) {
             $this->log->error($e->getMessage());
             throw $e;
@@ -248,9 +248,9 @@ class Snidel
      */
     public function sendSignalToChildren($sig)
     {
-        foreach ($this->container->getChildPids() as $pid) {
-            $this->log->info('----> sending a signal to child. pid: ' . $pid);
-            posix_kill($pid, $sig);
+        foreach ($this->container->getChildrend() as $child) {
+            $this->log->info('----> sending a signal to child. pid: ' . $child->getPid());
+            posix_kill($child->getPid(), $sig);
         }
     }
 

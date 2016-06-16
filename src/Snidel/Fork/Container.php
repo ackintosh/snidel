@@ -25,7 +25,7 @@ class Container
     private $workerPids = array();
 
     /** @var \Ackintosh\Snidel\Fork\Fork[] */
-    private $forks = array();
+    private $children = array();
 
     /** @var \Ackintosh\Snidel\Result\Result[] */
     private $results = array();
@@ -116,7 +116,7 @@ class Container
      * @return  \Ackintosh\Snidel\Fork\Fork
      * @throws  \RuntimeException
      */
-    public function fork()
+    private function fork()
     {
         $pid = $this->pcntl->fork();
         if ($pid === -1) {
@@ -125,8 +125,24 @@ class Container
 
         $pid = ($pid === 0) ? getmypid() : $pid;
 
-        $fork = new Fork($pid);
-        $this->forks[$pid] = $fork;
+        return new Fork($pid);
+    }
+
+    /**
+     * fork child process
+     *
+     * @return  \Ackintosh\Snidel\Fork\Fork
+     * @throws  \RuntimeException
+     */
+    public function forkChild()
+    {
+        try {
+            $fork = $this->fork();
+        } catch (\RuntimeException $e) {
+            throw $e;
+        }
+
+        $this->children[] = $fork;
 
         return $fork;
     }
@@ -331,9 +347,9 @@ class Container
     /**
      * @return  array
      */
-    public function getChildPids()
+    public function getChildren()
     {
-        return array_keys($this->forks);
+        return $this->children;
     }
 
     /**
