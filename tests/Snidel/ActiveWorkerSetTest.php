@@ -1,4 +1,5 @@
 <?php
+use Ackintosh\Snidel\TestCase;
 use Ackintosh\Snidel\Worker;
 use Ackintosh\Snidel\Result\Queue;
 use Ackintosh\Snidel\Fork\Fork;
@@ -7,7 +8,7 @@ use Ackintosh\Snidel\ActiveWorkerSet;
 use Ackintosh\Snidel\Fork\Container;
 use Ackintosh\Snidel\Log;
 
-class ActiveWorkerSetTest extends \PHPUnit_Framework_TestCase
+class ActiveWorkerSetTest extends TestCase
 {
     /** @var \Ackintosh\Snidel\ActiveWorkerSet */
     private $activeWorderSet;
@@ -99,30 +100,5 @@ class ActiveWorkerSetTest extends \PHPUnit_Framework_TestCase
         $status = null;
         $this->assertSame(-1, pcntl_waitpid($worker1->getPid(), $status, WUNTRACED));
         $this->assertSame(-1, pcntl_waitpid($worker2->getPid(), $status, WUNTRACED));
-    }
-
-    private function makeWorker($pid = null)
-    {
-        $pid = $pid ?: getmypid();
-
-        return new Worker(
-            new Fork($pid),
-            new Task(
-                function ($arg) {
-                    return 'foo' . $arg;
-                },
-                'bar',
-                null
-            )
-        );
-    }
-
-    private function makeForkContainer()
-    {
-        return new Container(
-            getmypid(),
-            new Log(getmypid()),
-            3
-        );
     }
 }

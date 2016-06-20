@@ -1,33 +1,15 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\TestCase;
 use Ackintosh\Snidel\Data;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
-class DataTest extends \PHPUnit_Framework_TestCase
+class DataTest extends TestCase
 {
-    private function makeFork()
-    {
-        return new Fork(getmypid());
-    }
-
-    private function makeTask()
-    {
-        return new Task('receivesArgumentsAndReturnsIt', 'foo', null);
-    }
-
-    private function makeResult()
-    {
-        $result = new Result();
-        $result->setFork($this->makeFork());
-        $result->setTask($this->makeTask());
-
-        return $result;
-    }
-
     /**
      * @test
      */
