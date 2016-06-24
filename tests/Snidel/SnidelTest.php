@@ -106,7 +106,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel->get();
         $elapsed = time() - $start;
 
-        $this->assertTrue(4 <= $elapsed && $elapsed < 6);
+        $this->assertEquals(4, $elapsed, '', 1);
     }
 
     /**
