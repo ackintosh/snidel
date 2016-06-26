@@ -217,19 +217,6 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
     /**
      * @test
      */
-    public function mapRun()
-    {
-        $snidel = new Snidel();
-        $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')
-            ->then(function (\Ackintosh\Snidel\Result\Result $result) {
-                return ucfirst($result->getReturn());
-            }));
-        $this->isSame($result, array('Foo', 'Bar'));
-    }
-
-    /**
-     * @test
-     */
     public function abnormalExit()
     {
         $snidel = new Snidel();
@@ -273,56 +260,6 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $snidel = new Snidel();
         $snidel->wait();
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
-    }
-
-    /**
-     * @test
-     * @expectedException \RuntimeException
-     */
-    public function runThrowsExceptionWhenFailedToFork()
-    {
-        $snidel = new Snidel();
-        $ref = new \ReflectionProperty($snidel, 'log');
-        $ref->setAccessible(true);
-        $log = $ref->getValue($snidel);
-
-        $pcntl = $this->getMockBuilder('Ackintosh\\Snidel\\Pcntl')
-            ->setMethods(array('fork'))
-            ->getMock();
-        $pcntl->method('fork')
-            ->willReturn(-1);
-
-        $container = new Container(getmypid(), $log);
-        $ref = new \ReflectionProperty($container, 'pcntl');
-        $ref->setAccessible(true);
-        $ref->setValue($container, $pcntl);
-
-        $ref = new \ReflectionProperty($snidel, 'container');
-        $ref->setAccessible(true);
-        $ref->setValue($snidel, $container);
-        try {
-            $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then('ucfirst'));
-        } catch (\RuntimeException $e) {
-            $snidel->wait();
-            throw $e;
-        }
-    }
-
-    /**
-     * @test
-     * @expectedException \RuntimeException
-     */
-    public function runThrowsExceptionWhenErrorOccurredInChildProcess()
-    {
-        $snidel = new Snidel();
-        try {
-            $result = $snidel->run($snidel->map(array('FOO', 'BAR'), 'strtolower')->then(function () {
-                exit(1);
-            }));
-        } catch (\RuntimeException $e) {
-            unset($snidel);
-            throw $e;
-        }
     }
 
     private function isSame($result, $expect)

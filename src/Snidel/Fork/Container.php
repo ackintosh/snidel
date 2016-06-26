@@ -21,12 +21,6 @@ class Container
     /** @var int */
     private $masterPid;
 
-    /** @var int[] */
-    private $workerPids = array();
-
-    /** @var \Ackintosh\Snidel\Fork\Fork[] */
-    private $children = array();
-
     /** @var \Ackintosh\Snidel\Result\Result[] */
     private $results = array();
 
@@ -126,25 +120,6 @@ class Container
         $pid = ($pid === 0) ? getmypid() : $pid;
 
         return new Fork($pid);
-    }
-
-    /**
-     * fork child process
-     *
-     * @return  \Ackintosh\Snidel\Fork\Fork
-     * @throws  \RuntimeException
-     */
-    public function forkChild()
-    {
-        try {
-            $fork = $this->fork();
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
-
-        $this->children[] = $fork;
-
-        return $fork;
     }
 
     /**
@@ -316,51 +291,6 @@ class Container
                 $this->error[$pid] = $result;
             }
         }
-    }
-
-    /**
-     * wait child
-     *
-     * @return \Ackintosh\Snidel\Result\Result
-     */
-    public function waitForChild()
-    {
-        $status = null;
-        $childPid = $this->pcntl->waitpid(-1, $status);
-        try {
-            $result = $this->dataRepository->load($childPid)->readAndDelete();
-        } catch (SharedMemoryControlException $e) {
-            throw $e;
-        }
-        $fork = $result->getFork();
-        $fork->setStatus($status);
-        $result->setFork($fork);
-
-        if ($result->isFailure() || !$this->pcntl->wifexited($status) || $this->pcntl->wexitstatus($status) !== 0) {
-            $this->error[$childPid] = $fork;
-        }
-        $this->results[$childPid] = $result;
-
-        return $result;
-    }
-
-    /**
-     * @return  array
-     */
-    public function getChildren()
-    {
-        return $this->children;
-    }
-
-    /**
-     * return fork
-     *
-     * @param   int     $pid
-     * @return  \Ackintosh\Snidel\Fork\Fork
-     */
-    public function get($pid)
-    {
-        return $this->results[$pid];
     }
 
     public function getCollection($tag = null)

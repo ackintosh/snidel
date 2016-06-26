@@ -5,7 +5,6 @@ namespace Ackintosh;
 
 use Ackintosh\Snidel\Fork\Container;
 use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Token;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
@@ -116,85 +115,6 @@ class Snidel
     }
 
     /**
-     * fork process
-     * the processes which forked are wait for token.
-     *
-     * @param   callable                    $callable
-     * @param   mixed                       $args
-     * @param   string                      $tag
-     * @param   \Ackintosh\Snidel\Token     $token
-     * @return  void
-     * @throws  \RuntimeException
-     */
-    private function forkChild(Token $token, $callable, $args = array(), $tag = null)
-    {
-        $task = new Task($callable, $args, $tag);
-
-        try {
-            $fork = $this->container->forkChild();
-        } catch (\RuntimeException $e) {
-            $this->log->error($e->getMessage());
-            throw $e;
-        }
-
-        if (getmypid() === $this->ownerPid) {
-            // parent
-            $this->log->info('created child process. pid: ' . $fork->getPid());
-        } else {
-            // @codeCoverageIgnoreStart
-            // child
-            foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, SIG_DFL, true);
-            }
-
-            /**
-             * in php5.3, we can not use $this in anonymous functions
-             */
-            $log = $this->log;
-            $resultHasWritten = false;
-            register_shutdown_function(function () use (&$resultHasWritten, $fork, $task, $log, $token) {
-                if (!$resultHasWritten) {
-                    $dataRepository = new DataRepository();
-                    $data = $dataRepository->load(getmypid());
-                    $result = new Result();
-                    $result->setError(error_get_last());
-                    $result->setTask($task);
-                    $result->setFork($fork);
-                    try {
-                        $data->write($result);
-                    } catch (SharedMemoryControlException $e) {
-                        throw $e;
-                    }
-                }
-
-                $log->info('<-- return token.');
-                $token->back();
-            });
-
-            $log->info('--> waiting for the token come around.');
-            if ($token->accept()) {
-                $log->info('----> started the function.');
-                $result = $task->execute();
-                $result->setFork($fork);
-                $log->info('<---- completed the function.');
-                $dataRepository = new DataRepository();
-                $data = $dataRepository->load(getmypid());
-                try {
-                    $data->write($result);
-                } catch (SharedMemoryControlException $e) {
-                    throw $e;
-                }
-                $resultHasWritten = true;
-            }
-
-            exit;
-            // @codeCoverageIgnoreEnd
-        }
-
-        return $fork->getPid();
-    }
-
-    /**
      * waits until all tasks that queued by Snidel::fork() are completed
      *
      * @return  void
@@ -240,25 +160,10 @@ class Snidel
         return $this->container->getCollection($tag);
     }
 
-    /**
-     * sends signal to child
-     *
-     * @param   int     $sig
-     * @return  void
-     */
-    public function sendSignalToChildren($sig)
-    {
-        foreach ($this->container->getChildrend() as $child) {
-            $this->log->info('----> sending a signal to child. pid: ' . $child->getPid());
-            posix_kill($child->getPid(), $sig);
-        }
-    }
-
     public function setReceivedSignal($sig)
     {
         $this->receivedSignal = $sig;
     }
-
     /**
      * delete shared memory
      *
@@ -273,123 +178,6 @@ class Snidel
         } catch (SharedMemoryControlException $e) {
             throw $e;
         }
-    }
-
-    /**
-     * create map object
-     *
-     * @param   array       $args
-     * @param   callable    $callable
-     * @return  \Ackintosh\Snidel\MapContainer
-     */
-    public function map(Array $args, $callable)
-    {
-        return new MapContainer($args, $callable, $this->concurrency);
-    }
-
-    /**
-     * run map object
-     *
-     * @param   \Ackintosh\Snidel\MapContainer
-     * @return  array
-     * @throws  \RuntimeException
-     */
-    public function run(MapContainer $mapContainer)
-    {
-        $token = new Token($this->ownerPid, $this->concurrency);
-        try {
-            $this->forkTheFirstProcessing($mapContainer, $token);
-            $this->waitsAndConnectsProcess($mapContainer);
-        } catch (\RuntimeException $e) {
-            $this->exceptionHasOccured = true;
-            throw $e;
-        }
-
-        return $this->getResultsOf($mapContainer);
-    }
-
-    /**
-     * fork the first processing of the map container
-     *
-     * @param   \Ackintosh\Snidel\MapContainer
-     * @return  void
-     * @throws  \RuntimeException
-     */
-    private function forkTheFirstProcessing(MapContainer $mapContainer, $token)
-    {
-        foreach ($mapContainer->getFirstArgs() as $args) {
-            try {
-                $childPid = $this->forkChild($token, $mapContainer->getFirstMap()->getCallable(), $args);
-            } catch (\RuntimeException $e) {
-                throw $e;
-            }
-            $mapContainer->getFirstMap()->countTheForked();
-            $mapContainer->getFirstMap()->addChildPid($childPid);
-        }
-    }
-
-    /**
-     * waits and connects the process of map container
-     *
-     * @param   \Ackintosh\Snidel\MapContainer
-     * @return  void
-     * @throws  \RuntimeException
-     */
-    private function waitsAndConnectsProcess(MapContainer $mapContainer)
-    {
-        if ($this->joined) {
-            return;
-        }
-
-        while ($mapContainer->isProcessing()) {
-            try {
-                $result = $this->container->waitForChild();
-            } catch (SharedMemoryControlException $e) {
-                throw $e;
-            }
-
-            $childPid = $result->getFork()->getPid();
-            if ($result->isFailure()) {
-                $message = 'an error has occurred in child process. pid: ' . $childPid;
-                $this->log->error($message);
-                throw new \RuntimeException($message);
-            }
-
-            if ($nextMap = $mapContainer->nextMap($childPid)) {
-                try {
-                    $nextMapPid = $this->forkChild(
-                        $nextMap->getToken(),
-                        $nextMap->getCallable(),
-                        $result
-                    );
-                } catch (\RuntimeException $e) {
-                    throw $e;
-                }
-                $message = sprintf('processing is connected from [%d] to [%d]', $childPid, $nextMapPid);
-                $this->log->info($message);
-                $nextMap->countTheForked();
-                $nextMap->addChildPid($nextMapPid);
-            }
-            $mapContainer->countTheCompleted($childPid);
-        }
-
-        $this->joined = true;
-    }
-
-    /**
-     * gets results of map container
-     *
-     * @param   \Ackintosh\Snidel\MapContainer
-     * @return  array
-     */
-    private function getResultsOf(MapContainer $mapContainer)
-    {
-        $results = array();
-        foreach ($mapContainer->getLastMapPids() as $pid) {
-            $results[] = $this->container->get($pid)->getReturn();
-        }
-
-        return $results;
     }
 
     public function __destruct()
@@ -412,14 +200,8 @@ class Snidel
             $this->log->error($message);
             $this->log->info('destruct processes are started.');
 
-            $this->log->info('--> sending a signal to children.');
-            $this->sendSignalToChildren(SIGTERM);
-
             $this->log->info('--> deleting all shared memory.');
             $this->deleteAllData();
-
-            $this->log->info('--> deleting token.');
-            unset($this->token);
 
             $this->log->info('--> destruct processes are finished successfully.');
             throw new \LogicException($message);
