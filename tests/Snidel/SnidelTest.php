@@ -262,6 +262,21 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }
 
+    /**
+     * @test
+     */
+    public function setReceivedSignal()
+    {
+        $expect = 1;
+        $snidel = new Snidel();
+        $snidel->setReceivedSignal($expect);
+
+        $prop = new \ReflectionProperty($snidel, 'receivedSignal');
+        $prop->setAccessible(true);
+
+        $this->assertSame($expect, $prop->getValue($snidel));
+    }
+
     private function isSame($result, $expect)
     {
         if (!is_array($result)) {
