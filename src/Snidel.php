@@ -164,21 +164,6 @@ class Snidel
     {
         $this->receivedSignal = $sig;
     }
-    /**
-     * delete shared memory
-     *
-     * @return  void
-     * @throws  \Ackintosh\Snidel\Exception\SharedMemoryControlException
-     */
-    private function deleteAllData()
-    {
-        $dataRepository = new DataRepository();
-        try {
-            $dataRepository->deleteAll();
-        } catch (SharedMemoryControlException $e) {
-            throw $e;
-        }
-    }
 
     public function __destruct()
     {
@@ -198,12 +183,6 @@ class Snidel
         } elseif ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
             $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
             $this->log->error($message);
-            $this->log->info('destruct processes are started.');
-
-            $this->log->info('--> deleting all shared memory.');
-            $this->deleteAllData();
-
-            $this->log->info('--> destruct processes are finished successfully.');
             throw new \LogicException($message);
         }
     }
