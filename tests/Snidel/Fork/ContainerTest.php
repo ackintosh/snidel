@@ -35,8 +35,7 @@ class ContainerTest extends TestCase
      */
     public function forkThrowsExceptionWhenFailed()
     {
-
-        $pcntl = $this->getMockBuilder(Pcntl::class)
+        $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
             ->setMethods(array('fork'))
             ->getMock();
 
@@ -49,7 +48,7 @@ class ContainerTest extends TestCase
         $prop->setAccessible(true);
         $prop->setValue($container, $pcntl);
 
-        $method = new \ReflectionMethod(Container::class, 'fork');
+        $method = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'fork');
         $method->setAccessible(true);
 
         $method->invoke($container);
