@@ -26,20 +26,4 @@ class Pcntl
     {
         return pcntl_waitpid($pid, $status, $options);
     }
-
-    /**
-     * @see pcntl_wifexited
-     */
-    public function wifexited($status)
-    {
-        return pcntl_wifexited($status);
-    }
-
-    /**
-     * @see pcntl_wexitstatus()
-     */
-    public function wexitstatus($status)
-    {
-        return pcntl_wexitstatus($status);
-    }
 }
