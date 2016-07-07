@@ -123,7 +123,7 @@ $snidel->fork($func, 'foo');
 ### Connect the functions in parallel
 
 *** ***This feature will be delete in next version.*** ***  
-***It will reborn as a single library.***  
+***It will reborn as a independent library.***  
 ***I hope you'll be looking forward to it!***  
 
 ```php
