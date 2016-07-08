@@ -204,8 +204,8 @@ class Container
             return $worker;
         } else {
             // worker
-            $this->log->info('has forked. pid: ' . getmypid());
             // @codeCoverageIgnoreStart
+            $this->log->info('has forked. pid: ' . getmypid());
 
             foreach ($this->signals as $sig) {
                 $this->pcntl->signal($sig, SIG_DFL, true);
