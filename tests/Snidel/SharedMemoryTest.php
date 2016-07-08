@@ -20,7 +20,7 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
         $ref = new \ReflectionProperty($this->shm, 'key');
         $ref->setAccessible(true);
         $originalSegmentId = $ref->getValue($this->shm);
-        $ref->setValue($this->shm, INF);
+        $ref->setValue($this->shm, -1);
 
         try {
             $this->shm->open();
@@ -42,7 +42,7 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
         $ref = new \ReflectionProperty($this->shm, 'segmentId');
         $ref->setAccessible(true);
         $originalSegmentId = $ref->getValue($this->shm);
-        $ref->setValue($this->shm, INF);
+        $ref->setValue($this->shm, -1);
 
         try {
             $this->shm->write('foo');
@@ -65,7 +65,7 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
         $ref = new \ReflectionProperty($this->shm, 'segmentId');
         $ref->setAccessible(true);
         $originalSegmentId = $ref->getValue($this->shm);
-        $ref->setValue($this->shm, INF);
+        $ref->setValue($this->shm, -1);
 
         try {
             $this->shm->read();
@@ -87,7 +87,7 @@ class SharedMemoryTest extends \PHPUnit_Framework_TestCase
         $ref = new \ReflectionProperty($this->shm, 'segmentId');
         $ref->setAccessible(true);
         $originalSegmentId = $ref->getValue($this->shm);
-        $ref->setValue($this->shm, INF);
+        $ref->setValue($this->shm, -1);
 
         try {
             $this->shm->delete();
