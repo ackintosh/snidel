@@ -19,5 +19,5 @@ before_script:
 script:
   - vendor/bin/phpunit
 
-after_script:
-  - vendor/bin/coveralls -v
+after_success:
+  - travis_retry php vendor/bin/coveralls -v
