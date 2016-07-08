@@ -53,4 +53,29 @@ class ContainerTest extends TestCase
 
         $method->invoke($container);
     }
+
+    /**
+     * @test
+     * @expectedException \RuntimeException
+     */
+    public function forkWorkerThrowsExceptionWhenFailed()
+    {
+        $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
+            ->setMethods(array('fork'))
+            ->getMock();
+
+        $pcntl->expects($this->once())
+            ->method('fork')
+            ->will($this->returnValue(-1));
+
+        $container = $this->makeForkContainer();
+        $prop = new \ReflectionProperty($container, 'pcntl');
+        $prop->setAccessible(true);
+        $prop->setValue($container, $pcntl);
+
+        $method = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'forkWorker');
+        $method->setAccessible(true);
+
+        $method->invoke($container, $this->makeTask());
+    }
 }
