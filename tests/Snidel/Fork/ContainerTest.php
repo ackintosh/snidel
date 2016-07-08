@@ -78,4 +78,19 @@ class ContainerTest extends TestCase
 
         $method->invoke($container, $this->makeTask());
     }
+
+    /**
+     * @test
+     */
+    public function sendSignalToMaster()
+    {
+        $container = $this->makeForkContainer();
+        $masterPid = $container->forkMaster();
+
+        $container->sendSignalToMaster(SIGTERM);
+
+        // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.
+        $status = null;
+        $this->assertSame(-1, pcntl_waitpid($masterPid, $status, WUNTRACED));
+    }
 }
