@@ -83,7 +83,7 @@ class Snidel
      * @return  void
      * @codeCoverageIgnore
      */
-    public function setLoggingDestination($resource)
+    public function setLogDestination($resource)
     {
         $this->log->setDestination($resource);
     }

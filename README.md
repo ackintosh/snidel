@@ -107,7 +107,7 @@ $snidel = new Snidel($concurrency = 3);
 
 ```php
 $fp = fopen('php://stdout', 'w');
-$snidel->setLoggingDestination($fp);
+$snidel->setLogDestination($fp);
 
 // logs are output to the `php://stdout`
 $snidel->fork($func, 'foo');
