@@ -81,6 +81,28 @@ class ContainerTest extends TestCase
 
     /**
      * @test
+     * @expectedException \RuntimeException
+     */
+    public function forkMasterThrowsExceptionWhenFailed()
+    {
+        $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
+            ->setMethods(array('fork'))
+            ->getMock();
+
+        $pcntl->expects($this->once())
+            ->method('fork')
+            ->will($this->returnValue(-1));
+
+        $container = $this->makeForkContainer();
+        $prop = new \ReflectionProperty($container, 'pcntl');
+        $prop->setAccessible(true);
+        $prop->setValue($container, $pcntl);
+
+        $container->forkMaster();
+    }
+
+    /**
+     * @test
      */
     public function sendSignalToMaster()
     {
