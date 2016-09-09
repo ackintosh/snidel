@@ -3,7 +3,6 @@ namespace Ackintosh\Snidel\Fork;
 
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Queue as ResultQueue;
@@ -26,9 +25,6 @@ class Container
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
-
-    /** @var \Ackintosh\Snidel\DataRepository */
-    private $dataRepository;
 
     /** @var \Ackintosh\Snidel\Error */
     private $error;
@@ -60,7 +56,6 @@ class Container
         $this->log              = $log;
         $this->concurrency      = $concurrency;
         $this->pcntl            = new Pcntl();
-        $this->dataRepository   = new DataRepository();
         $this->taskQueue        = new TaskQueue($this->ownerPid);
         $this->resultQueue      = new ResultQueue($this->ownerPid);
         $this->error            = new Error();
