@@ -14,9 +14,6 @@ use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Snidel
 {
-    /** @var string */
-    const VERSION = '0.6.5';
-
     /** @var \Ackintosh\Snidel\Fork\Container */
     private $container;
 
