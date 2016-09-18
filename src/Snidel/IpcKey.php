@@ -9,6 +9,9 @@ class IpcKey
     /** @var string */
     private $prefix;
 
+    /** @var string */
+    private $pathname;
+
     /**
      * @param   int     $ownerPid
      * @param   string  $prefix
@@ -16,7 +19,8 @@ class IpcKey
     public function __construct($ownerPid, $prefix = '')
     {
         $this->ownerPid = $ownerPid;
-        $this->prefix = $prefix;
+        $this->prefix   = $prefix;
+        $this->pathname = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $this->prefix . $this->ownerPid;
     }
 
     /**
@@ -26,12 +30,11 @@ class IpcKey
      */
     public function generate()
     {
-        $pathname = '/tmp/' . $this->prefix . $this->ownerPid;
-        if (!file_exists($pathname)) {
-            touch($pathname);
+        if (!file_exists($this->pathname)) {
+            touch($this->pathname);
         }
 
-        return ftok($pathname, 'S');
+        return ftok($this->pathname, 'S');
     }
 
     /**
@@ -52,8 +55,8 @@ class IpcKey
      */
     public function delete()
     {
-        if (file_exists('/tmp/' . $this->prefix . $this->ownerPid)) {
-            unlink('/tmp/' . $this->prefix . $this->ownerPid);
+        if (file_exists($this->pathname)) {
+            unlink($this->pathname);
         }
     }
 }
