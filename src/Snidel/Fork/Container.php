@@ -5,6 +5,7 @@ use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
+use Ackintosh\Snidel\QueueFactory;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Queue as ResultQueue;
 use Ackintosh\Snidel\Result\Collection;
@@ -48,6 +49,8 @@ class Container
     /** @var \Ackintosh\Snidel\Config */
     private $config;
 
+    private $queueFactory;
+
     /**
      * @param   int     $ownerPid
      */
@@ -57,9 +60,10 @@ class Container
         $this->log              = $log;
         $this->config           = $config;
         $this->pcntl            = new Pcntl();
-        $this->taskQueue        = new TaskQueue($this->ownerPid);
-        $this->resultQueue      = new ResultQueue($this->ownerPid);
         $this->error            = new Error();
+        $this->queueFactory     = new QueueFactory($config);
+        $this->taskQueue        = $this->queueFactory->createTaskQueue();
+        $this->resultQueue      = $this->queueFactory->createResultQueue();
     }
 
     /**
@@ -141,7 +145,7 @@ class Container
             return $this->masterPid;
         } else {
             // master
-            $taskQueue          = new TaskQueue($this->ownerPid);
+            $taskQueue          = $this->queueFactory->createTaskQueue();
             $activeWorkerSet    = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
@@ -208,7 +212,7 @@ class Container
                 $this->pcntl->signal($sig, SIG_DFL, true);
             }
 
-            $worker->setResultQueue(new ResultQueue($this->ownerPid));
+            $worker->setResultQueue($this->queueFactory->createResultQueue());
 
             $resultHasQueued = false;
             register_shutdown_function(function () use (&$resultHasQueued, $worker) {

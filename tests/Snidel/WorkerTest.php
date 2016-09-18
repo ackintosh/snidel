@@ -34,9 +34,7 @@ class WorkerTest extends TestCase
 
         $this->assertNull($reflection->getValue($this->worker));
 
-        $queue = new Queue(getmypid());
-        $this->worker->setResultQueue($queue);
-
+        $this->worker->setResultQueue($this->makeResultQueue());
         $this->assertInstanceOf('\Ackintosh\Snidel\Result\Queue', $reflection->getValue($this->worker));
     }
 
@@ -53,7 +51,7 @@ class WorkerTest extends TestCase
      */
     public function runTask()
     {
-        $queue = new Queue(getmypid());
+        $queue = $this->makeResultQueue();
         $this->worker->setResultQueue($queue);
 
         $this->worker->run();
@@ -88,7 +86,7 @@ class WorkerTest extends TestCase
      */
     public function runThrowsExceptionWhenExceptionOccurredInQueue()
     {
-        $queue = new Queue(getmypid());
+        $queue = $this->makeResultQueue();
         $property = new \ReflectionProperty('\Ackintosh\Snidel\Result\Queue', 'stat');
         $property->setAccessible(true);
         $stat   = $property->getValue($queue);
@@ -104,7 +102,7 @@ class WorkerTest extends TestCase
      */
     public function error()
     {
-        $queue = new Queue(getmypid());
+        $queue = $this->makeResultQueue();
         $this->worker->setResultQueue($queue);
 
         $this->worker->error();
@@ -119,7 +117,7 @@ class WorkerTest extends TestCase
      */
     public function errorThrowsException()
     {
-        $queue = new Queue(getmypid());
+        $queue = $this->makeResultQueue();
         $property = new \ReflectionProperty('\Ackintosh\Snidel\Result\Queue', 'stat');
         $property->setAccessible(true);
         $stat   = $property->getValue($queue);

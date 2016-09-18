@@ -3,18 +3,19 @@ use Ackintosh\Snidel\Result\Queue;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Task\Task;
+use Ackintosh\Snidel\TestCase;
 
 /**
  * @runTestsInSeparateProcesses
  */
-class ResultQueueTest extends \PHPUnit_Framework_TestCase
+class ResultQueueTest extends TestCase
 {
     /** @var Ackintosh\Snidel\Result\Queue */
     private $queue;
 
     public function setUp()
     {
-        $this->queue = new Queue(getmypid());
+        $this->queue = $this->makeResultQueue();
     }
 
     /**

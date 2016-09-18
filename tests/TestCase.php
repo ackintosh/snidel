@@ -6,6 +6,8 @@ use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Worker;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Result\Result;
+use Ackintosh\Snidel\Result\Queue as ResultQueue;
+use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Fork\Container;
 
@@ -40,6 +42,22 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         $result->setTask($this->makeTask());
 
         return $result;
+    }
+
+    /**
+     * @return \Ackintosh\Snidel\Result\Queue
+     */
+    protected function makeResultQueue()
+    {
+        return new ResultQueue($this->makeDefaultConfig());
+    }
+
+    /**
+     * @return \Ackintosh\Snidel\Task\Queue
+     */
+    protected function makeTaskQueue()
+    {
+        return new TaskQueue($this->makeDefaultConfig());
     }
 
     /**

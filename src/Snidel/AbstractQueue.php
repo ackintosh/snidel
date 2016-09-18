@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\IpcKey;
 
 abstract class AbstractQueue
@@ -23,9 +24,9 @@ abstract class AbstractQueue
     /** @var int */
     protected $dequeuedCount = 0;
 
-    public function __construct($ownerPid)
+    public function __construct(Config $config)
     {
-        $this->ownerPid = $ownerPid;
+        $this->ownerPid = $config->get('ownerPid');
         $this->ipcKey   = new IpcKey($this->ownerPid, str_replace('\\', '_', get_class($this)));
         $this->id       = msg_get_queue($this->ipcKey->generate());
         $this->stat     = msg_stat_queue($this->id);

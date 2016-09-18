@@ -48,7 +48,9 @@ class Snidel
     public function __construct($concurrency = 5)
     {
         $this->ownerPid         = getmypid();
-        $this->config           = new Config(array('concurrency' => $concurrency));
+        $this->config           = new Config(array(
+            'concurrency'   => $concurrency,
+        ));
         $this->log              = new Log($this->ownerPid);
         $this->pcntl            = new Pcntl();
         $this->container        = new Container($this->ownerPid, $this->log, $this->config);
