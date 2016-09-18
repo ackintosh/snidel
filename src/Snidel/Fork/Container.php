@@ -29,10 +29,10 @@ class Container
     /** @var \Ackintosh\Snidel\Error */
     private $error;
 
-    /** @var \Ackintosh\Snidel\Task\Queue */
+    /** @var \Ackintosh\Snidel\Task\QueueInterface */
     private $taskQueue;
 
-    /** @var \Ackintosh\Snidel\Result\Queue */
+    /** @var \Ackintosh\Snidel\Result\QueueInterface */
     private $resultQueue;
 
     /** @var \Ackintosh\Snidel\Log */

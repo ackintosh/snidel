@@ -3,6 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result\Result;
+use Ackintosh\Snidel\Result\QueueInterface;
 
 class Worker
 {
@@ -12,7 +13,7 @@ class Worker
     /** @var \Ackintosh\Snidel\Fork\Fork */
     private $fork;
 
-    /** @var \Ackintosh\Snidel\Result\Queue */
+    /** @var \Ackintosh\Snidel\Result\QueueInterface */
     private $resultQueue;
 
     /** @var \Ackintosh\Snidel\Pcntl */
@@ -30,10 +31,10 @@ class Worker
     }
 
     /**
-     * @param   \Ackintosh\Snidel\Result\Queue
+     * @param   \Ackintosh\Snidel\Result\QueueInterface
      * @return  void
      */
-    public function setResultQueue($queue)
+    public function setResultQueue(QueueInterface $queue)
     {
         $this->resultQueue = $queue;
     }

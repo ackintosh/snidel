@@ -4,8 +4,9 @@ namespace Ackintosh\Snidel\Result;
 use Ackintosh\Snidel\AbstractQueue;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
+use Ackintosh\Snidel\Result\QueueInterface;
 
-class Queue extends AbstractQueue
+class Queue extends AbstractQueue implements QueueInterface
 {
     /**
      * @param   \Ackintosh\Snidel\Result\Result
