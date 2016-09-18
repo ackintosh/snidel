@@ -5,11 +5,12 @@ use Ackintosh\Snidel;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\Fork\Container;
 use Ackintosh\Snidel\Exception\SharedMemoryControlException;
+use Ackintosh\Snidel\TestCase;
 
 /**
  * @runTestsInSeparateProcesses
  */
-class SnidelTest extends \PHPUnit_Framework_TestCase
+class SnidelTest extends TestCase
 {
     /**
      * @test
@@ -36,7 +37,7 @@ class SnidelTest extends \PHPUnit_Framework_TestCase
         $log = $ref->getValue($snidel);
 
         $container = $this->getMockBuilder('Ackintosh\Snidel\Fork\Container')
-            ->setConstructorArgs(array(getmypid(), $log))
+            ->setConstructorArgs(array(getmypid(), $log, $this->makeDefaultConfig()))
             ->setMethods(array('enqueue'))
             ->getMock();
         $container->method('enqueue')

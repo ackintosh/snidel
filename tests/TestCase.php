@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Worker;
 use Ackintosh\Snidel\Fork\Fork;
@@ -49,7 +50,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
         return new Container(
             getmypid(),
             new Log(getmypid()),
-            3
+            $this->makeDefaultConfig()
         );
     }
 
@@ -64,5 +65,10 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             new Fork($pid),
             $this->makeTask()
         );
+    }
+
+    protected function makeDefaultConfig()
+    {
+        return new Config(array('concurrency' => 5));
     }
 }

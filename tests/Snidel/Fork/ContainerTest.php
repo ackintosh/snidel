@@ -16,7 +16,7 @@ class ContainerTest extends TestCase
      */
     public function enqueueThrowsExceptionWhenFailed()
     {
-        $container = new Container(getmypid(), new Log(getmypid()));
+        $container = $this->makeForkContainer();
         $task = new Task(
             function ($args) {
                 return $args;

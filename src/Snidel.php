@@ -3,6 +3,7 @@ declare(ticks = 1);
 
 namespace Ackintosh;
 
+use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Fork\Container;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Log;
@@ -14,14 +15,14 @@ use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Snidel
 {
+    /** @var \Ackintosh\Snidel\Config */
+    private $config;
+
     /** @var \Ackintosh\Snidel\Fork\Container */
     private $container;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
-
-    /** @var int */
-    private $concurrency;
 
     /** @var \Ackintosh\Snidel\Log */
     private $log;
@@ -47,10 +48,10 @@ class Snidel
     public function __construct($concurrency = 5)
     {
         $this->ownerPid         = getmypid();
-        $this->concurrency      = $concurrency;
+        $this->config           = new Config(array('concurrency' => $concurrency));
         $this->log              = new Log($this->ownerPid);
         $this->pcntl            = new Pcntl();
-        $this->container        = new Container($this->ownerPid, $this->log, $this->concurrency);
+        $this->container        = new Container($this->ownerPid, $this->log, $this->config);
 
         $log    = $this->log;
         $self   = $this;

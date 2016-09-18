@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel\Fork;
 
+use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
@@ -44,17 +45,17 @@ class Container
         SIGINT,
     );
 
-    /** @var int */
-    private $concurrency;
+    /** @var \Ackintosh\Snidel\Config */
+    private $config;
 
     /**
      * @param   int     $ownerPid
      */
-    public function __construct($ownerPid, $log, $concurrency = 5)
+    public function __construct($ownerPid, $log, Config $config)
     {
         $this->ownerPid         = $ownerPid;
         $this->log              = $log;
-        $this->concurrency      = $concurrency;
+        $this->config           = $config;
         $this->pcntl            = new Pcntl();
         $this->taskQueue        = new TaskQueue($this->ownerPid);
         $this->resultQueue      = new ResultQueue($this->ownerPid);
@@ -160,9 +161,10 @@ class Container
                 });
             }
 
+            $concurrency = (int)$this->config->get('concurrency');
             while ($task = $taskQueue->dequeue()) {
                 $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
-                if ($activeWorkerSet->count() >= $this->concurrency) {
+                if ($activeWorkerSet->count() >= $concurrency) {
                     $status = null;
                     $workerPid = $this->pcntl->waitpid(-1, $status);
                     $activeWorkerSet->delete($workerPid);
