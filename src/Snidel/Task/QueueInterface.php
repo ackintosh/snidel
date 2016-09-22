@@ -1,8 +1,15 @@
 <?php
 namespace Ackintosh\Snidel\Task;
 
+use Ackintosh\Snidel\Config;
+
 interface QueueInterface
 {
+    /**
+     * @param   \Ackintosh\Snidel\Config
+     */
+    public function __construct(Config $config);
+
     /**
      * @param   \Ackintosh\Snidel\Task  $task
      * @return  void
@@ -15,4 +22,14 @@ interface QueueInterface
      * @throws  \RuntimeException
      */
     public function dequeue();
+
+    /**
+     * @return  int
+     */
+    public function queuedCount();
+
+    /**
+     * @return  int
+     */
+    public function dequeuedCount();
 }
