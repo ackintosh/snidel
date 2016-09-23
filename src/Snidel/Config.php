@@ -9,18 +9,22 @@ class Config
     /**
      * @param   array   $params
      */
-    public function __construct($params)
+    public function __construct($params = array())
     {
-        $this->params = $params;
+        $default = array(
+            'concurrency'   => 5,
+            'taskQueue'     => array(
+                'className'         => '\Ackintosh\Snidel\Task\Queue',
+                'constructorArgs'   => null,
+            ),
+            'resultQueue'   => array(
+                'className'         => '\Ackintosh\Snidel\Result\Queue',
+                'constructorArgs'   => null,
+            ),
+        );
+
+        $this->params = array_merge($default, $params);
         $this->params['ownerPid'] = getmypid();
-        $this->params['taskQueue'] = array(
-            'className'         => '\Ackintosh\Snidel\Task\Queue',
-            'constructorArgs'   => null,
-        );
-        $this->params['resultQueue'] = array(
-            'className'         => '\Ackintosh\Snidel\Result\Queue',
-            'constructorArgs'   => null,
-        );
     }
 
     /**

@@ -45,12 +45,25 @@ class Snidel
     /** @var bool */
     private $exceptionHasOccured = false;
 
-    public function __construct($concurrency = 5)
+    /**
+     * @param   mixed $parameter
+     * @throws  \InvalidArgumentException
+     */
+    public function __construct($parameter = null)
     {
+        if (is_null($parameter)) {
+            $this->config = new Config();
+        } elseif (is_int($parameter) && $parameter >= 1) {
+            $this->config = new Config(
+                array('concurrency' => $parameter)
+            );
+        } elseif (is_array($parameter)) {
+            $this->config = new Config($parameter);
+        } else {
+            throw new \InvalidArgumentException();
+        }
+
         $this->ownerPid         = getmypid();
-        $this->config           = new Config(array(
-            'concurrency'   => $concurrency,
-        ));
         $this->log              = new Log($this->ownerPid);
         $this->pcntl            = new Pcntl();
         $this->container        = new Container($this->ownerPid, $this->log, $this->config);
