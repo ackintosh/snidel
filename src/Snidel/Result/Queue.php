@@ -5,6 +5,7 @@ use Ackintosh\Snidel\AbstractQueue;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 use Ackintosh\Snidel\Result\QueueInterface;
+use Ackintosh\Snidel\Result\Result;
 
 class Queue extends AbstractQueue implements QueueInterface
 {
@@ -12,7 +13,7 @@ class Queue extends AbstractQueue implements QueueInterface
      * @param   \Ackintosh\Snidel\Result\Result
      * @throws  \RuntimeException
      */
-    public function enqueue($result)
+    public function enqueue(Result $result)
     {
         if (
             $this->isExceedsLimit($serialized = ResultFormatter::serialize($result))

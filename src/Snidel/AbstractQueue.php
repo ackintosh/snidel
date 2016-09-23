@@ -82,9 +82,6 @@ abstract class AbstractQueue
         return $this->dequeuedCount;
     }
 
-    abstract public function enqueue($something);
-    abstract public function dequeue();
-
     public function __destruct()
     {
         if ($this->ipcKey->isOwner(getmypid())) {
