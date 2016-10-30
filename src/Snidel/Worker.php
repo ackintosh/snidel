@@ -5,6 +5,7 @@ use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
 use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
+use Ackintosh\Snidel\Task\Task;
 
 class Worker
 {
@@ -87,7 +88,7 @@ class Worker
     {
         $result = new Result();
         $result->setError(error_get_last());
-        $result->setTask($this->task);
+        $result->setTask(new Task('echo', array(), null));
         $result->setFork($this->fork);
 
         try {

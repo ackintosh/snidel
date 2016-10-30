@@ -11,16 +11,7 @@ class WorkerTest extends TestCase
 {
     public function setUp()
     {
-        $this->worker = new Worker(
-            new Fork(getmypid()),
-            new Task(
-                function ($arg) {
-                    return 'foo' . $arg;
-                },
-                'bar',
-                null
-            )
-        );
+        $this->worker = new Worker(new Fork(getmypid()));
     }
 
     /**
@@ -51,13 +42,16 @@ class WorkerTest extends TestCase
      */
     public function runTask()
     {
-        $queue = $this->makeResultQueue();
-        $this->worker->setResultQueue($queue);
+        $resultQueue = $this->makeResultQueue();
+        $taskQueue = $this->makeTaskQueue();
+        $this->worker->setResultQueue($resultQueue);
+        $this->worker->setTaskQueue($taskQueue);
+        $taskQueue->enqueue($this->makeTask());
 
         $this->worker->run();
 
-        $result = $queue->dequeue();
-        $this->assertSame('foobar', $result->getReturn());
+        $result = $resultQueue->dequeue();
+        $this->assertSame('foo', $result->getReturn());
     }
 
     /**
@@ -66,16 +60,19 @@ class WorkerTest extends TestCase
      */
     public function runThrowsExceptionWhenExceptionOccurredInTask()
     {
-        $this->worker = new Worker(
-            new Fork(getmypid()),
-            new Task(
-                function ($arg) {
-                    throw new RuntimeException('test');
-                },
-                'bar',
-                null
-            )
+        $this->worker = new Worker(new Fork(getmypid()));
+        $resultQueue = $this->makeResultQueue();
+        $taskQueue = $this->makeTaskQueue();
+        $this->worker->setResultQueue($resultQueue);
+        $this->worker->setTaskQueue($taskQueue);
+        $task = new Task(
+            function ($arg) {
+                throw new RuntimeException('test');
+            },
+            'bar',
+            null
         );
+        $taskQueue->enqueue($task);
 
         $this->worker->run();
     }
@@ -94,6 +91,9 @@ class WorkerTest extends TestCase
         $property->setValue($queue, $stat);
 
         $this->worker->setResultQueue($queue);
+        $taskQueue = $this->makeTaskQueue();
+        $this->worker->setTaskQueue($taskQueue);
+        $taskQueue->enqueue($this->makeTask());
         $this->worker->run();
     }
 
@@ -141,16 +141,8 @@ class WorkerTest extends TestCase
 
         $refMethod = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'forkWorker');
         $refMethod->setAccessible(true);
-        $task = new Task(
-                function ($arg) {
-                    sleep(10);
-                    return 'foo' . $arg;
-                },
-                'bar',
-                null
-            );
-        $worker = $refMethod->invokeArgs($container, array($task));
 
+        $worker = $refMethod->invokeArgs($container, array());
         $worker->terminate(SIGTERM);
 
         // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.
