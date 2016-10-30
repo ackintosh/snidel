@@ -346,7 +346,7 @@ class Container
     }
 
     /**
-     * @return  \Ackintosh\Sniden\Error
+     * @return  \Ackintosh\Snidel\Error
      */
     public function getError()
     {
