@@ -1,6 +1,7 @@
 <?php
 namespace Ackintosh\Snidel\Result;
 
+use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Result\Result;
 
 interface QueueInterface

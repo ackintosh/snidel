@@ -3,7 +3,8 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Result\QueueInterface;
+use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
+use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
 
 class Worker
 {
@@ -13,6 +14,9 @@ class Worker
     /** @var \Ackintosh\Snidel\Fork\Fork */
     private $fork;
 
+    /** @var \Ackintosh\Snidel\Task\QueueInterface */
+    private $taskQueue;
+
     /** @var \Ackintosh\Snidel\Result\QueueInterface */
     private $resultQueue;
 
@@ -21,20 +25,27 @@ class Worker
 
     /**
      * @param   \Ackintosh\Snidel\Fork\Fork $fork
-     * @param   \Ackintosh\Snidel\Task\Task
      */
-    public function __construct($fork, $task)
+    public function __construct($fork)
     {
         $this->pcntl    = new Pcntl();
         $this->fork     = $fork;
-        $this->task     = $task;
+    }
+
+    /**
+     * @param   \Ackintosh\Snidel\Task\QueueInterface
+     * @return  void
+     */
+    public function setTaskQueue(TaskQueueInterface $queue)
+    {
+        $this->taskQueue = $queue;
     }
 
     /**
      * @param   \Ackintosh\Snidel\Result\QueueInterface
      * @return  void
      */
-    public function setResultQueue(QueueInterface $queue)
+    public function setResultQueue(ResultQueueInterface $queue)
     {
         $this->resultQueue = $queue;
     }
@@ -54,7 +65,7 @@ class Worker
     public function run()
     {
         try {
-            $result = $this->task->execute();
+            $result = $this->taskQueue->dequeue()->execute();
         } catch (\RuntimeException $e) {
             throw $e;
         }
