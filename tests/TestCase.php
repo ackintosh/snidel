@@ -79,10 +79,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         $pid = $pid ?: getmypid();
 
-        return new Worker(
-            new Fork($pid),
-            $this->makeTask()
-        );
+        return new Worker(new Fork($pid));
     }
 
     protected function makeDefaultConfig()

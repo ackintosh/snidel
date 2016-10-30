@@ -81,16 +81,8 @@ class ActiveWorkerSetTest extends TestCase
 
         $refMethod = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'forkWorker');
         $refMethod->setAccessible(true);
-        $task = new Task(
-                function ($arg) {
-                    sleep(10);
-                    return 'foo' . $arg;
-                },
-                'bar',
-                null
-            );
-        $worker1 = $refMethod->invokeArgs($container, array($task));
-        $worker2 = $refMethod->invokeArgs($container, array($task));
+        $worker1 = $refMethod->invokeArgs($container, array());
+        $worker2 = $refMethod->invokeArgs($container, array());
         $this->activeWorkerSet->add($worker1);
         $this->activeWorkerSet->add($worker2);
 
