@@ -4,6 +4,9 @@ use Ackintosh\Snidel\ActiveWorkerSet;
 
 class ActiveWorkerSetTest extends TestCase
 {
+    /** @var \Ackintosh\Snidel\ActiveWorkerSet */
+    private $activeWorkerSet;
+
     public function setUp()
     {
         $this->activeWorkerSet = new ActiveWorkerSet();
