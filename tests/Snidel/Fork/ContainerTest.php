@@ -6,6 +6,7 @@ class ContainerTest extends TestCase
 {
     /**
      * @test
+     * @runInSeparateProcess
      * @expectedException \RuntimeException
      */
     public function enqueueThrowsExceptionWhenFailed()
