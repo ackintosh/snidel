@@ -134,15 +134,8 @@ class WorkerTest extends TestCase
     public function terminate()
     {
         $container = $this->makeForkContainer();
-
-        $refProp = new \ReflectionProperty('\Ackintosh\Snidel\Fork\Container', 'masterPid');
-        $refProp->setAccessible(true);
-        $refProp->setValue($container, getmypid());
-
-        $refMethod = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'forkWorker');
-        $refMethod->setAccessible(true);
-
-        $worker = $refMethod->invokeArgs($container, array());
+        $container->masterPid = getmypid();
+        $worker = $container->forkWorker();
         $worker->terminate(SIGTERM);
 
         // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.
