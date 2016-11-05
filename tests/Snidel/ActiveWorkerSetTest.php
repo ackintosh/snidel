@@ -79,5 +79,8 @@ class ActiveWorkerSetTest extends TestCase
         $status = null;
         $this->assertSame(-1, pcntl_waitpid($worker1->getPid(), $status, WUNTRACED));
         $this->assertSame(-1, pcntl_waitpid($worker2->getPid(), $status, WUNTRACED));
+        unset($worker1);
+        unset($worker2);
+        unset($container);
     }
 }
