@@ -1,13 +1,7 @@
 <?php
-use Ackintosh\Snidel\TestCase;
-use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Log;
-use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Task\Task;
+use Ackintosh\Snidel\TestCase;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class ContainerTest extends TestCase
 {
     /**
