@@ -1,18 +1,9 @@
 <?php
 use Ackintosh\Snidel\TestCase;
-use Ackintosh\Snidel\Worker;
-use Ackintosh\Snidel\Result\Queue;
-use Ackintosh\Snidel\Fork\Fork;
-use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\ActiveWorkerSet;
-use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Log;
 
 class ActiveWorkerSetTest extends TestCase
 {
-    /** @var \Ackintosh\Snidel\ActiveWorkerSet */
-    private $activeWorderSet;
-
     public function setUp()
     {
         $this->activeWorkerSet = new ActiveWorkerSet();
