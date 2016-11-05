@@ -3,13 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel;
 use Ackintosh\Snidel\DataRepository;
-use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Exception\SharedMemoryControlException;
-use Ackintosh\Snidel\TestCase;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class SnidelTest extends TestCase
 {
     /**
@@ -259,6 +253,7 @@ class SnidelTest extends TestCase
     public function getErrorReturnsInstanceOfSnidelError()
     {
         $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
         $snidel->wait();
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }
