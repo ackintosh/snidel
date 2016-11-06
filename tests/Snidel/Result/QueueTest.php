@@ -5,9 +5,6 @@ use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\TestCase;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class ResultQueueTest extends TestCase
 {
     /** @var Ackintosh\Snidel\Result\Queue */
@@ -67,6 +64,7 @@ class ResultQueueTest extends TestCase
     /**
      * @test
      * @expectedException \RuntimeException
+     * @runInSeparateProcess
      */
     public function dequeueThrowsException()
     {
