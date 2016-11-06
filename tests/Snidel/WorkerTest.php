@@ -1,12 +1,12 @@
 <?php
 use Ackintosh\Snidel\TestCase;
 use Ackintosh\Snidel\Worker;
-use Ackintosh\Snidel\Result\Queue;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Task\Task;
-use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Log;
 
+/**
+ * @runTestsInSeparateProcesses
+ */
 class WorkerTest extends TestCase
 {
     public function setUp()
