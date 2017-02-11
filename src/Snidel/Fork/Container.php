@@ -1,4 +1,5 @@
 <?php
+declare(ticks = 1);
 namespace Ackintosh\Snidel\Fork;
 
 use Ackintosh\Snidel\Config;
