@@ -23,6 +23,12 @@ class Worker
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
 
+    /** @var bool */
+    private $isExecutedTask = false;
+
+    /** @var bool */
+    private $isEnqueuedResult = false;
+
     /**
      * @param   \Ackintosh\Snidel\Fork\Fork $fork
      */
@@ -66,6 +72,7 @@ class Worker
     {
         try {
             $result = $this->taskQueue->dequeue()->execute();
+            $this->isExecutedTask = true;
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -74,6 +81,7 @@ class Worker
 
         try {
             $this->resultQueue->enqueue($result);
+            $this->isEnqueuedResult = true;
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -106,5 +114,13 @@ class Worker
         posix_kill($this->fork->getPid(), $sig);
         $status = null;
         $this->pcntl->waitpid($this->fork->getPid(), $status);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFailedToEnqueueResult()
+    {
+        return $this->isExecutedTask && !$this->isEnqueuedResult;
     }
 }

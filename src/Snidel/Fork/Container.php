@@ -224,9 +224,8 @@ class Container
             $worker->setTaskQueue($this->queueFactory->createTaskQueue());
             $worker->setResultQueue($this->queueFactory->createResultQueue());
 
-            $resultHasQueued = false;
-            register_shutdown_function(function () use (&$resultHasQueued, $worker) {
-                if (!$resultHasQueued && $this->receivedSignal === null) {
+            register_shutdown_function(function () use ($worker) {
+                if ($worker->isFailedToEnqueueResult() && $this->receivedSignal === null) {
                     $worker->error();
                 }
             });
@@ -240,7 +239,6 @@ class Container
             }
             $this->log->info('<---- completed the function.');
 
-            $resultHasQueued = true;
             $this->log->info('queued the result and exit.');
             exit;
             // @codeCoverageIgnoreEnd
