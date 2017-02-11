@@ -4,6 +4,9 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel;
 use Ackintosh\Snidel\DataRepository;
 
+/**
+ * @runTestsInSeparateProcesses
+ */
 class SnidelTest extends TestCase
 {
     /**
@@ -21,7 +24,6 @@ class SnidelTest extends TestCase
 
     /**
      * @test
-     * @runInSeparateProcess
      * @expectedException \RuntimeException
      */
     public function throwsExceptionWhenFailedToFork()

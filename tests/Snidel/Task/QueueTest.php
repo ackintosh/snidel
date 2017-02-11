@@ -3,9 +3,6 @@ use Ackintosh\Snidel\Task\Queue;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\TestCase;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class TaskQueueTest extends TestCase
 {
     /** @var \Ackintosh\Snidel\Task\Queue */
@@ -48,6 +45,7 @@ class TaskQueueTest extends TestCase
     /**
      * @test
      * @expectedException \RuntimeException
+     * @runInSeparateProcess
      */
     public function enqueueThrowsExceptionWhenFailedToSendMessage()
     {
@@ -74,6 +72,7 @@ class TaskQueueTest extends TestCase
     /**
      * @test
      * @expectedException \RuntimeException
+     * @runInSeparateProcess
      */
     public function dequeueThrowsException()
     {
