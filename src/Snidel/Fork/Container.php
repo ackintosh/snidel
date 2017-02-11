@@ -88,6 +88,10 @@ class Container
      */
     public function queuedCount()
     {
+        if (is_null($this->taskQueue)) {
+            return 0;
+        }
+
         return $this->taskQueue->queuedCount();
     }
 
@@ -104,6 +108,10 @@ class Container
      */
     public function dequeuedCount()
     {
+        if (is_null($this->resultQueue)) {
+            return 0;
+        }
+
         return $this->resultQueue->dequeuedCount();
     }
 
