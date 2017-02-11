@@ -24,9 +24,6 @@ class Worker
     private $pcntl;
 
     /** @var bool */
-    private $isExecutedTask = false;
-
-    /** @var bool */
     private $isEnqueuedResult = false;
 
     /**
@@ -72,7 +69,6 @@ class Worker
     {
         try {
             $result = $this->taskQueue->dequeue()->execute();
-            $this->isExecutedTask = true;
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -121,6 +117,6 @@ class Worker
      */
     public function isFailedToEnqueueResult()
     {
-        return $this->isExecutedTask && !$this->isEnqueuedResult;
+        return !$this->isEnqueuedResult;
     }
 }
