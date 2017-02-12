@@ -1,5 +1,4 @@
 <?php
-use Ackintosh\Snidel\Task\Queue;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\TestCase;
 

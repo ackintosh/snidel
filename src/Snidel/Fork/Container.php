@@ -3,15 +3,10 @@ declare(ticks = 1);
 namespace Ackintosh\Snidel\Fork;
 
 use Ackintosh\Snidel\Config;
-use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\QueueFactory;
-use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Result\Queue as ResultQueue;
 use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Error;
-use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 use Ackintosh\Snidel\Worker;
 use Ackintosh\Snidel\ActiveWorkerSet;
 

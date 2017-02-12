@@ -5,13 +5,11 @@ namespace Ackintosh;
 
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\DataRepository;
 use Ackintosh\Snidel\MapContainer;
 use Ackintosh\Snidel\Task\Task;
-use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 
 class Snidel
 {

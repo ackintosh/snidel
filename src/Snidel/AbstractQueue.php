@@ -3,9 +3,6 @@ declare(ticks=1);
 
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Config;
-use Ackintosh\Snidel\IpcKey;
-
 abstract class AbstractQueue
 {
     /** @var int */

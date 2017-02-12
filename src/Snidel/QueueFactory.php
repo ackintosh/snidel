@@ -1,8 +1,6 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Config;
-
 class QueueFactory
 {
     /** @var \Ackintosh\Snidel\Config */

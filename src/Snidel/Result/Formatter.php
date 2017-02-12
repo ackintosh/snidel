@@ -1,7 +1,6 @@
 <?php
 namespace Ackintosh\Snidel\Result;
 
-use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Fork\Formatter as ForkFormatter;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 
