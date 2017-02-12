@@ -12,9 +12,7 @@ $ composer require ackintosh/snidel
 
 ## Architecture
 
-![Master - Worker Architecture](images/master_worker.png)
-
-This image was made with <a href="https://cacoo.com/" target="_blank">cacoo</a>.
+![Master - Worker Architecture](images/0.8_pluggable_queue.png)
 
 ## Usage
 
