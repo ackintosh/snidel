@@ -156,10 +156,12 @@ class Container
             $activeWorkerSet = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
+            // for php5.3
             $log = $this->log;
+            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorkerSet) {
-                    $this->receivedSignal = $sig;
+                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorkerSet, $receivedSignal) {
+                    $receivedSignal = $sig;
                     $log->info('received signal: ' . $sig);
 
                     if ($activeWorkerSet->count() === 0) {
@@ -217,9 +219,11 @@ class Container
             // @codeCoverageIgnoreStart
             $this->log->info('has forked. pid: ' . getmypid());
 
+            // for php5.3
+            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) {
-                    $this->receivedSignal = $sig;
+                $this->pcntl->signal($sig, function ($sig) use ($receivedSignal) {
+                    $receivedSignal = $sig;
                     exit;
                 }, false);
             }
