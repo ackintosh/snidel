@@ -149,6 +149,13 @@ foreach ($snidel->getError() as $pid => $e) {
 // }
 ```
 
+## With Amazon SQS
+
+[ackintosh/snidel-queue-sqs](https://github.com/ackintosh/snidel-queue-sqs)
+
+![with amazon sqs](images/snidel-queue-sqs.png)
+
+
 ## Requirements
 
 Snidel works with PHP 5.3 or higher.
