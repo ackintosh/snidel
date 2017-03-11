@@ -1,8 +1,6 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Log;
-
 class LogTest extends \PHPUnit_Framework_TestCase
 {
     /** @var \Ackintosh\Snidel\Log */

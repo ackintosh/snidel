@@ -3,9 +3,6 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel;
 use Ackintosh\Snidel\DataRepository;
-use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Exception\SharedMemoryControlException;
-use Ackintosh\Snidel\TestCase;
 
 /**
  * @runTestsInSeparateProcesses
@@ -32,22 +29,9 @@ class SnidelTest extends TestCase
     public function throwsExceptionWhenFailedToFork()
     {
         $snidel = new Snidel();
-        $ref = new \ReflectionProperty($snidel, 'log');
-        $ref->setAccessible(true);
-        $log = $ref->getValue($snidel);
-
-        $container = $this->getMockBuilder('Ackintosh\Snidel\Fork\Container')
-            ->setConstructorArgs(array(getmypid(), $log, $this->makeDefaultConfig()))
-            ->setMethods(array('enqueue'))
-            ->getMock();
-        $container->method('enqueue')
-            ->will($this->throwException(new \RuntimeException()));
-
-        $ref = new \ReflectionProperty($snidel, 'container');
-        $ref->setAccessible(true);
-        $ref->setValue($snidel, $container);
 
         try {
+            require_once(__DIR__ . '/../pcntl_fork.php');
             $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
         } catch (\RuntimeException $e) {
             $snidel->wait();
@@ -259,6 +243,7 @@ class SnidelTest extends TestCase
     public function getErrorReturnsInstanceOfSnidelError()
     {
         $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
         $snidel->wait();
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }

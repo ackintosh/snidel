@@ -1,16 +1,12 @@
 <?php
+declare(ticks = 1);
 namespace Ackintosh\Snidel\Fork;
 
 use Ackintosh\Snidel\Config;
-use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\QueueFactory;
-use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Result\Queue as ResultQueue;
 use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Error;
-use Ackintosh\Snidel\Exception\SharedMemoryControlException;
 use Ackintosh\Snidel\Worker;
 use Ackintosh\Snidel\ActiveWorkerSet;
 
@@ -49,7 +45,11 @@ class Container
     /** @var \Ackintosh\Snidel\Config */
     private $config;
 
+    /** @var \Ackintosh\Snidel\QueueFactory  */
     private $queueFactory;
+
+    /** @var  int */
+    private $receivedSignal;
 
     /**
      * @param   int     $ownerPid
@@ -62,8 +62,6 @@ class Container
         $this->pcntl            = new Pcntl();
         $this->error            = new Error();
         $this->queueFactory     = new QueueFactory($config);
-        $this->taskQueue        = $this->queueFactory->createTaskQueue();
-        $this->resultQueue      = $this->queueFactory->createResultQueue();
     }
 
     /**
@@ -85,6 +83,10 @@ class Container
      */
     public function queuedCount()
     {
+        if (is_null($this->taskQueue)) {
+            return 0;
+        }
+
         return $this->taskQueue->queuedCount();
     }
 
@@ -101,6 +103,10 @@ class Container
      */
     public function dequeuedCount()
     {
+        if (is_null($this->resultQueue)) {
+            return 0;
+        }
+
         return $this->resultQueue->dequeuedCount();
     }
 
@@ -141,17 +147,21 @@ class Container
         if (getmypid() === $this->ownerPid) {
             // owner
             $this->log->info('pid: ' . getmypid());
+            $this->taskQueue    = $this->queueFactory->createTaskQueue();
+            $this->resultQueue  = $this->queueFactory->createResultQueue();
 
             return $this->masterPid;
         } else {
             // master
-            $taskQueue          = $this->queueFactory->createTaskQueue();
-            $activeWorkerSet    = new ActiveWorkerSet();
+            $activeWorkerSet = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
+            // for php5.3
             $log = $this->log;
+            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorkerSet) {
+                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorkerSet, $receivedSignal) {
+                    $receivedSignal = $sig;
                     $log->info('received signal: ' . $sig);
 
                     if ($activeWorkerSet->count() === 0) {
@@ -166,16 +176,18 @@ class Container
             }
 
             $concurrency = (int)$this->config->get('concurrency');
-            while ($task = $taskQueue->dequeue()) {
-                $this->log->info('dequeued task #' . $taskQueue->dequeuedCount());
-                if ($activeWorkerSet->count() >= $concurrency) {
-                    $status = null;
-                    $workerPid = $this->pcntl->waitpid(-1, $status);
-                    $activeWorkerSet->delete($workerPid);
+            for ($i = 0; $i < $concurrency; $i++) {
+                $activeWorkerSet->add($this->forkWorker());
+            }
+            $status = null;
+            while (($workerPid = $this->pcntl->waitpid(-1, $status, WNOHANG)) !== -1) {
+                if ($workerPid === true || $workerPid === 0) {
+                    usleep(100000);
+                    continue;
                 }
-                $activeWorkerSet->add(
-                    $this->forkWorker($task)
-                );
+                $activeWorkerSet->delete($workerPid);
+                $activeWorkerSet->add($this->forkWorker());
+                $status = null;
             }
             exit;
         }
@@ -184,11 +196,10 @@ class Container
     /**
      * fork worker process
      *
-     * @param   \Ackintosh\Snidel\Task
      * @return  \Ackintosh\Snidel\Worker
      * @throws  \RuntimeException
      */
-    private function forkWorker($task)
+    private function forkWorker()
     {
         try {
             $fork = $this->fork();
@@ -197,7 +208,7 @@ class Container
             throw $e;
         }
 
-        $worker = new Worker($fork, $task);
+        $worker = new Worker($fork);
 
         if (getmypid() === $this->masterPid) {
             // master
@@ -208,15 +219,20 @@ class Container
             // @codeCoverageIgnoreStart
             $this->log->info('has forked. pid: ' . getmypid());
 
+            // for php5.3
+            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, SIG_DFL, true);
+                $this->pcntl->signal($sig, function ($sig) use ($receivedSignal) {
+                    $receivedSignal = $sig;
+                    exit;
+                }, false);
             }
 
+            $worker->setTaskQueue($this->queueFactory->createTaskQueue());
             $worker->setResultQueue($this->queueFactory->createResultQueue());
 
-            $resultHasQueued = false;
-            register_shutdown_function(function () use (&$resultHasQueued, $worker) {
-                if (!$resultHasQueued) {
+            register_shutdown_function(function () use ($worker, $receivedSignal) {
+                if ($worker->isFailedToEnqueueResult() && $receivedSignal === null) {
                     $worker->error();
                 }
             });
@@ -230,7 +246,6 @@ class Container
             }
             $this->log->info('<---- completed the function.');
 
-            $resultHasQueued = true;
             $this->log->info('queued the result and exit.');
             exit;
             // @codeCoverageIgnoreEnd
@@ -256,9 +271,10 @@ class Container
         posix_kill($this->masterPid, $sig);
         $this->log->info('<---- sent signal.');
 
+        $this->log->info('----> waiting for master shutdown.');
         $status = null;
         $this->pcntl->waitpid($this->masterPid, $status);
-        $this->log->info('. status: ' . $status);
+        $this->log->info('<---- master shutdown. status: ' . $status);
         $this->masterPid = null;
     }
 
@@ -336,7 +352,7 @@ class Container
     }
 
     /**
-     * @return  \Ackintosh\Sniden\Error
+     * @return  \Ackintosh\Snidel\Error
      */
     public function getError()
     {

@@ -65,11 +65,11 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      */
     protected function makeForkContainer()
     {
-        return new Container(
+        return \ClassProxy::on(new Container(
             getmypid(),
             new Log(getmypid()),
             $this->makeDefaultConfig()
-        );
+        ));
     }
 
     /**
@@ -79,10 +79,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         $pid = $pid ?: getmypid();
 
-        return new Worker(
-            new Fork($pid),
-            $this->makeTask()
-        );
+        return new Worker(new Fork($pid));
     }
 
     protected function makeDefaultConfig()

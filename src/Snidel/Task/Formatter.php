@@ -1,9 +1,6 @@
 <?php
 namespace Ackintosh\Snidel\Task;
 
-use Ackintosh\Snidel\Task\TaskInterface;
-use Ackintosh\Snidel\Task\Task;
-use Ackintosh\Snidel\Task\MinifiedTask;
 use Opis\Closure\SerializableClosure;
 
 class Formatter

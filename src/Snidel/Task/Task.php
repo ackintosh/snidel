@@ -2,8 +2,6 @@
 namespace Ackintosh\Snidel\Task;
 
 use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Task\TaskInterface;
-use Ackintosh\Snidel\Task\MinifiedTask;
 
 class Task implements TaskInterface
 {

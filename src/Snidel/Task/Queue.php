@@ -2,13 +2,11 @@
 namespace Ackintosh\Snidel\Task;
 
 use Ackintosh\Snidel\AbstractQueue;
-use Ackintosh\Snidel\Task\Formatter;
-use Ackintosh\Snidel\Task\QueueInterface;
 
 class Queue extends AbstractQueue implements QueueInterface
 {
     /**
-     * @param   \Ackintosh\Snidel\Task  $task
+     * @param   \Ackintosh\Snidel\Task\Task  $task
      * @return  void
      * @throws  RuntimeException
      */

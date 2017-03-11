@@ -1,8 +1,7 @@
 <?php
-namespace Ackintosh\Snidel;
+declare(ticks=1);
 
-use Ackintosh\Snidel\Config;
-use Ackintosh\Snidel\IpcKey;
+namespace Ackintosh\Snidel;
 
 abstract class AbstractQueue
 {

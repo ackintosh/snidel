@@ -1,22 +1,19 @@
 <?php
-use Ackintosh\Snidel\TestCase;
-use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Log;
-use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Task\Task;
+use Ackintosh\Snidel\TestCase;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class ContainerTest extends TestCase
 {
     /**
      * @test
+     * @runInSeparateProcess
      * @expectedException \RuntimeException
      */
     public function enqueueThrowsExceptionWhenFailed()
     {
         $container = $this->makeForkContainer();
+        $container->taskQueue = $this->makeTaskQueue();
+
         $task = new Task(
             function ($args) {
                 return $args;
@@ -44,14 +41,8 @@ class ContainerTest extends TestCase
             ->will($this->returnValue(-1));
 
         $container = $this->makeForkContainer();
-        $prop = new \ReflectionProperty($container, 'pcntl');
-        $prop->setAccessible(true);
-        $prop->setValue($container, $pcntl);
-
-        $method = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'fork');
-        $method->setAccessible(true);
-
-        $method->invoke($container);
+        $container->pcntl = $pcntl;
+        $container->fork();
     }
 
     /**
@@ -69,14 +60,8 @@ class ContainerTest extends TestCase
             ->will($this->returnValue(-1));
 
         $container = $this->makeForkContainer();
-        $prop = new \ReflectionProperty($container, 'pcntl');
-        $prop->setAccessible(true);
-        $prop->setValue($container, $pcntl);
-
-        $method = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'forkWorker');
-        $method->setAccessible(true);
-
-        $method->invoke($container, $this->makeTask());
+        $container->pcntl = $pcntl;
+        $container->forkWorker();
     }
 
     /**
@@ -94,10 +79,7 @@ class ContainerTest extends TestCase
             ->will($this->returnValue(-1));
 
         $container = $this->makeForkContainer();
-        $prop = new \ReflectionProperty($container, 'pcntl');
-        $prop->setAccessible(true);
-        $prop->setValue($container, $pcntl);
-
+        $container->pcntl = $pcntl;
         $container->forkMaster();
     }
 
@@ -108,7 +90,6 @@ class ContainerTest extends TestCase
     {
         $container = $this->makeForkContainer();
         $masterPid = $container->forkMaster();
-
         $container->sendSignalToMaster(SIGTERM);
 
         // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.

@@ -27,6 +27,7 @@ class IpcKey
      * generate IPC key
      *
      * @return  int
+     * @throws \RuntimeException
      */
     public function generate()
     {
@@ -34,7 +35,11 @@ class IpcKey
             touch($this->pathname);
         }
 
-        return ftok($this->pathname, 'S');
+        if (($key = ftok($this->pathname, 'S')) === -1) {
+            throw new \RuntimeException('failed to create System V IPC key');
+        }
+
+        return $key;
     }
 
     /**

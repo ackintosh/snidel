@@ -1,17 +1,11 @@
 <?php
 use Ackintosh\Snidel\TestCase;
-use Ackintosh\Snidel\Worker;
-use Ackintosh\Snidel\Result\Queue;
-use Ackintosh\Snidel\Fork\Fork;
-use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\ActiveWorkerSet;
-use Ackintosh\Snidel\Fork\Container;
-use Ackintosh\Snidel\Log;
 
 class ActiveWorkerSetTest extends TestCase
 {
     /** @var \Ackintosh\Snidel\ActiveWorkerSet */
-    private $activeWorderSet;
+    private $activeWorkerSet;
 
     public function setUp()
     {
@@ -74,31 +68,19 @@ class ActiveWorkerSetTest extends TestCase
     public function terminate()
     {
         $container = $this->makeForkContainer();
-
-        $refProp = new \ReflectionProperty('\Ackintosh\Snidel\Fork\Container', 'masterPid');
-        $refProp->setAccessible(true);
-        $refProp->setValue($container, getmypid());
-
-        $refMethod = new \ReflectionMethod('\Ackintosh\Snidel\Fork\Container', 'forkWorker');
-        $refMethod->setAccessible(true);
-        $task = new Task(
-                function ($arg) {
-                    sleep(10);
-                    return 'foo' . $arg;
-                },
-                'bar',
-                null
-            );
-        $worker1 = $refMethod->invokeArgs($container, array($task));
-        $worker2 = $refMethod->invokeArgs($container, array($task));
+        $container->masterPid = getmypid();
+        $worker1 = $container->forkWorker();
+        $worker2 = $container->forkWorker();
         $this->activeWorkerSet->add($worker1);
         $this->activeWorkerSet->add($worker2);
-
         $this->activeWorkerSet->terminate(SIGTERM);
 
         // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.
         $status = null;
         $this->assertSame(-1, pcntl_waitpid($worker1->getPid(), $status, WUNTRACED));
         $this->assertSame(-1, pcntl_waitpid($worker2->getPid(), $status, WUNTRACED));
+        unset($worker1);
+        unset($worker2);
+        unset($container);
     }
 }

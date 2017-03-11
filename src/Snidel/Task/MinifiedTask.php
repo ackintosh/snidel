@@ -1,8 +1,6 @@
 <?php
 namespace Ackintosh\Snidel\Task;
 
-use Ackintosh\Snidel\Task\TaskInterface;
-
 class MinifiedTask implements TaskInterface
 {
     /** @var string */
