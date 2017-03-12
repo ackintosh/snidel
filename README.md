@@ -169,12 +169,13 @@ Akihito Nakano
 
 blog entries by author about snidel. (japanese)
 
-- http://ackintosh.github.io/blog/2015/09/29/snidel/
-- http://ackintosh.github.io/blog/2015/11/08/snidel_0_2_0/
-- http://ackintosh.github.io/blog/2016/04/04/snidel_0_4_0
-- http://ackintosh.github.io/blog/2016/04/04/snidel_0_5_0
-- http://ackintosh.github.io/blog/2016/05/04/snidel_0_6_0
-- http://ackintosh.github.io/blog/2016/09/09/snidel_0_7_0/
+- https://ackintosh.github.io/blog/2015/09/29/snidel/
+- https://ackintosh.github.io/blog/2015/11/08/snidel_0_2_0/
+- https://ackintosh.github.io/blog/2016/04/04/snidel_0_4_0/
+- https://ackintosh.github.io/blog/2016/04/04/snidel_0_5_0/
+- https://ackintosh.github.io/blog/2016/05/04/snidel_0_6_0/
+- https://ackintosh.github.io/blog/2016/09/09/snidel_0_7_0/
+- https://ackintosh.github.io/blog/2017/03/10/snidel_0_8_0/
 
 ## License
 
