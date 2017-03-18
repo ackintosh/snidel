@@ -158,10 +158,15 @@ foreach ($snidel->getError() as $pid => $e) {
 
 ## Requirements
 
-Snidel works with PHP 5.3 or higher.
-
 - [PCNTL functions](http://php.net/manual/en/ref.pcntl.php)
 - [Semaphore functions](http://php.net/manual/en/ref.sem.php)
+
+### Version Guidance
+
+| Version   | PHP Version |
+|:----------|:------------|
+| 0.1 ~ [0.8](https://github.com/ackintosh/snidel/releases/tag/0.8.0)    | >= 5.3      |
+| 0.9 ([under development](https://github.com/ackintosh/snidel/pull/16)) | >= 5.6      |
 
 ## Author
 
