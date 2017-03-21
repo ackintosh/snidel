@@ -38,9 +38,6 @@ class Snidel
     /** @var int */
     private $receivedSignal;
 
-    /** @var bool */
-    private $exceptionHasOccured = false;
-
     /**
      * @param   mixed $parameter
      * @throws  \InvalidArgumentException
@@ -185,11 +182,7 @@ class Snidel
             unset($this->container);
         }
 
-        if ($this->exceptionHasOccured) {
-            $this->log->info('destruct processes are started.(exception has occured)');
-            $this->log->info('--> deleting all shared memory.');
-            $this->deleteAllData();
-        } elseif ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
+        if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
             $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
             $this->log->error($message);
             throw new \LogicException($message);
