@@ -4,7 +4,7 @@ namespace Ackintosh\Snidel\Result;
 class Collection implements \ArrayAccess, \Iterator
 {
     /** @var \Ackintosh\Snidel\Result\Result[] */
-    private $results = array();
+    private $results = [];
 
     /** @var int */
     private $position;

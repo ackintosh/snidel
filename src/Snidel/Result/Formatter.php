@@ -14,11 +14,11 @@ class Formatter
         $cloned->setTask(null);
         $cloned->setFork(null);
 
-        return serialize(array(
+        return serialize([
             'serializedTask'     => $serializedTask,
             'serializedFork'    => $serializedFork,
             'result'            => $cloned,
-        ));
+        ]);
     }
 
     public static function minifyAndSerialize(Result $result)
@@ -30,11 +30,11 @@ class Formatter
         $cloned->setTask(null);
         $cloned->setFork(null);
 
-        return serialize(array(
+        return serialize([
             'serializedTask'     => $serializedTask,
             'serializedFork'    => $serializedFork,
             'result'            => $cloned,
-        ));
+        ]);
     }
 
     public static function unserialize($serializedResult)

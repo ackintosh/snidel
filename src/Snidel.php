@@ -30,10 +30,10 @@ class Snidel
     private $ownerPid;
 
     /** @var array */
-    private $signals = array(
+    private $signals = [
         SIGTERM,
         SIGINT,
-    );
+    ];
 
     /** @var int */
     private $receivedSignal;
@@ -48,7 +48,7 @@ class Snidel
             $this->config = new Config();
         } elseif (is_int($parameter) && $parameter >= 1) {
             $this->config = new Config(
-                array('concurrency' => $parameter)
+                ['concurrency' => $parameter]
             );
         } elseif (is_array($parameter)) {
             $this->config = new Config($parameter);
@@ -101,7 +101,7 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    public function fork($callable, $args = array(), $tag = null)
+    public function fork($callable, $args = [], $tag = null)
     {
         $this->joined = false;
 

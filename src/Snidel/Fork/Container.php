@@ -19,7 +19,7 @@ class Container
     private $masterPid;
 
     /** @var \Ackintosh\Snidel\Result\Result[] */
-    private $results = array();
+    private $results = [];
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
@@ -37,10 +37,10 @@ class Container
     private $log;
 
     /** @var array */
-    private $signals = array(
+    private $signals = [
         SIGTERM,
         SIGINT,
-    );
+    ];
 
     /** @var \Ackintosh\Snidel\Config */
     private $config;
@@ -312,7 +312,7 @@ class Container
     {
         if ($tag === null) {
             $collection = new Collection($this->results);
-            $this->results = array();
+            $this->results = [];
 
             return $collection;
         }
@@ -328,7 +328,7 @@ class Container
      */
     private function getCollectionWithTag($tag)
     {
-        $results = array();
+        $results = [];
         foreach ($this->results as $r) {
             if ($r->getTask()->getTag() !== $tag) {
                 continue;

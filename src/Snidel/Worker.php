@@ -96,7 +96,7 @@ class Worker
     {
         $result = new Result();
         $result->setError(error_get_last());
-        $result->setTask(new Task('echo', array(), null));
+        $result->setTask(new Task('echo', [], null));
         $result->setFork($this->fork);
 
         try {
