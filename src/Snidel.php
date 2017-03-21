@@ -7,8 +7,6 @@ use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Fork\Container;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\DataRepository;
-use Ackintosh\Snidel\MapContainer;
 use Ackintosh\Snidel\Task\Task;
 
 class Snidel
