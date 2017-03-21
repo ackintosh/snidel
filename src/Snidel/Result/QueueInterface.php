@@ -14,4 +14,9 @@ interface QueueInterface
      * @throws  \RuntimeException
      */
     public function dequeue();
+
+    /**
+     * @return  int
+     */
+    public function dequeuedCount();
 }
