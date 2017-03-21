@@ -11,14 +11,14 @@ interface QueueInterface
     public function __construct(Config $config);
 
     /**
-     * @param   \Ackintosh\Snidel\Task  $task
+     * @param   \Ackintosh\Snidel\Task\Task  $task
      * @return  void
-     * @throws  RuntimeException
+     * @throws  \RuntimeException
      */
     public function enqueue($task);
 
     /**
-     * @return  \Ackintosh\Snidel\Task
+     * @return  \Ackintosh\Snidel\Task\Task
      * @throws  \RuntimeException
      */
     public function dequeue();
