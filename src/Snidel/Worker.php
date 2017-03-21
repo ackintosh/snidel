@@ -1,8 +1,8 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
+use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
 use Ackintosh\Snidel\Task\Task;
 

@@ -2,13 +2,13 @@
 declare(ticks = 1);
 namespace Ackintosh\Snidel\Fork;
 
+use Ackintosh\Snidel\ActiveWorkerSet;
 use Ackintosh\Snidel\Config;
+use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\QueueFactory;
 use Ackintosh\Snidel\Result\Collection;
-use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Worker;
-use Ackintosh\Snidel\ActiveWorkerSet;
 
 class Container
 {
