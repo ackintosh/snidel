@@ -91,7 +91,7 @@ class Container
     }
 
     /**
-     * @return  \Ackintosh\Snidel\Fork\Fork
+     * @return  \Ackintosh\Snidel\Result\Result
      */
     private function dequeue()
     {

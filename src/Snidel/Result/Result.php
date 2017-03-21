@@ -3,16 +3,16 @@ namespace Ackintosh\Snidel\Result;
 
 class Result
 {
-    /** @var mix */
+    /** @var mixed */
     private $return;
 
     /** @var string */
     private $output;
 
-    /** @var Ackintosh\Snidel\Fork\Fork */
+    /** @var \Ackintosh\Snidel\Fork\Fork */
     private $fork;
 
-    /** @var Ackintosh\Snidel\Task\Task */
+    /** @var \Ackintosh\Snidel\Task\Task */
     private $task;
 
     /** @var bool */
@@ -24,7 +24,7 @@ class Result
     /**
      * set return
      *
-     * @param   mix     $return
+     * @param   mixed     $return
      * @return  void
      */
     public function setReturn($return)
@@ -35,7 +35,7 @@ class Result
     /**
      * return return value
      *
-     * @return  mix
+     * @return  mixed
      */
     public function getReturn()
     {
@@ -64,7 +64,7 @@ class Result
     }
 
     /**
-     * @param   Ackintosh\Snidel\Fork\Fork
+     * @param   \Ackintosh\Snidel\Fork\Fork
      * @return  void
      */
     public function setFork($fork)
@@ -73,7 +73,7 @@ class Result
     }
 
     /**
-     * @return  Ackintosh\Snidel\Fork\Fork
+     * @return  \Ackintosh\Snidel\Fork\Fork
      */
     public function getFork()
     {
@@ -81,7 +81,7 @@ class Result
     }
 
     /**
-     * @param   Ackintosh\Snidel\Task\Task
+     * @param   \Ackintosh\Snidel\Task\Task
      * @return  void
      */
     public function setTask($task)
@@ -90,7 +90,7 @@ class Result
     }
 
     /**
-     * @return  Ackintosh\Snidel\Task\Task
+     * @return  \Ackintosh\Snidel\Task\Task
      */
     public function getTask()
     {

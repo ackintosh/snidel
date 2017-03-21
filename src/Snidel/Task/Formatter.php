@@ -6,7 +6,7 @@ use Opis\Closure\SerializableClosure;
 class Formatter
 {
     /**
-     * @param   Ackintosh\Snidel\TaskInterface  $task
+     * @param   \Ackintosh\Snidel\Task\TaskInterface  $task
      * @return  string
      */
     public static function serialize(TaskInterface $task)
@@ -21,7 +21,7 @@ class Formatter
     }
 
     /**
-     * @param   Ackintosh\Snidel\TaskInterface  $task
+     * @param   \Ackintosh\Snidel\Task\TaskInterface  $task
      * @return  string
      */
     public static function minifyAndSerialize(TaskInterface $task)
@@ -30,8 +30,8 @@ class Formatter
     }
 
     /**
-     * @param   Ackintosh\Snidel\TaskInterface  $task
-     * @return  Ackintosh\Snidel\MinifiedTask
+     * @param   \Ackintosh\Snidel\Task\TaskInterface  $task
+     * @return  \Ackintosh\Snidel\Task\MinifiedTask
      */
     private static function minify(TaskInterface $task)
     {
@@ -42,7 +42,7 @@ class Formatter
 
     /**
      * @param   string  $serializedTask
-     * @return  \Ackintosh\Snidel\TaskInterface
+     * @return  \Ackintosh\Snidel\Task\TaskInterface
      */
     public static function unserialize($serializedTask)
     {

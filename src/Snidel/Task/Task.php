@@ -51,7 +51,7 @@ class Task implements TaskInterface
     }
 
     /**
-     * @return  Ackintosh\Snidel\Result\Result
+     * @return  \Ackintosh\Snidel\Result\Result
      */
     public function execute()
     {

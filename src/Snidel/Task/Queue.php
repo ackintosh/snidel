@@ -8,7 +8,7 @@ class Queue extends AbstractQueue implements QueueInterface
     /**
      * @param   \Ackintosh\Snidel\Task\Task  $task
      * @return  void
-     * @throws  RuntimeException
+     * @throws  \RuntimeException
      */
     public function enqueue($task)
     {
@@ -25,7 +25,7 @@ class Queue extends AbstractQueue implements QueueInterface
     }
 
     /**
-     * @return  \Ackintosh\Snidel\Task
+     * @return  \Ackintosh\Snidel\Task\Task
      * @throws  \RuntimeException
      */
     public function dequeue()
