@@ -66,18 +66,16 @@ class Snidel
         $this->pcntl            = new Pcntl();
         $this->container        = new Container($this->ownerPid, $this->log, $this->config);
 
-        $log    = $this->log;
-        $self   = $this;
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
                 $sig,
-                function ($sig) use($log, $self) {
-                    $log->info('received signal. signo: ' . $sig);
-                    $self->setReceivedSignal($sig);
+                function ($sig)  {
+                    $this->log->info('received signal. signo: ' . $sig);
+                    $this->setReceivedSignal($sig);
 
-                    $log->info('--> sending a signal " to children.');
-                    $self->container->sendSignalToMaster($sig);
-                    $log->info('<-- signal handling has been completed successfully.');
+                    $this->log->info('--> sending a signal " to children.');
+                    $this->container->sendSignalToMaster($sig);
+                    $this->log->info('<-- signal handling has been completed successfully.');
                     exit;
                 },
                 false

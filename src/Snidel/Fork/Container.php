@@ -156,20 +156,18 @@ class Container
             $activeWorkerSet = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
-            // for php5.3
-            $log = $this->log;
             $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorkerSet, $receivedSignal) {
+                $this->pcntl->signal($sig, function ($sig) use ($activeWorkerSet, $receivedSignal) {
                     $receivedSignal = $sig;
-                    $log->info('received signal: ' . $sig);
+                    $this->log->info('received signal: ' . $sig);
 
                     if ($activeWorkerSet->count() === 0) {
-                        $log->info('no worker is active.');
+                        $this->log->info('no worker is active.');
                     } else {
-                        $log->info('------> sending signal to workers. signal: ' . $sig);
+                        $this->log->info('------> sending signal to workers. signal: ' . $sig);
                         $activeWorkerSet->terminate($sig);
-                        $log->info('<------ sent signal');
+                        $this->log->info('<------ sent signal');
                     }
                     exit;
                 });
