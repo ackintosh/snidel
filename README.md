@@ -101,19 +101,30 @@ $snidel = new Snidel($concurrency = 3);
 
 ```
 
-### Output log
+### With Logger
+
+Snidel supports logging with logger which implements [PSR-3: Logger Interface](http://www.php-fig.org/psr/psr-3/).
 
 ```php
-$fp = fopen('php://stdout', 'w');
-$snidel->setLogDestination($fp);
+// e.g. MonoLog
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
-// logs are output to the `php://stdout`
-$snidel->fork($func, 'foo');
+$monolog = new Logger('sample');
+$stream = new StreamHandler('php://stdout', Logger::DEBUG);
+$stream->setFormatter(new LineFormatter("%datetime% > %level_name% > %message% %context%\n"));
+$monolog->pushHandler($stream);
 
-// [2015-12-01 00:00:00][info][26304(p)] created child process. pid: 26306
-// [2015-12-01 00:00:00][info][26306(c)] --> waiting for the token to come around.
-// [2015-12-01 00:00:00][info][26306(c)] ----> started the function.
-// [2015-12-01 00:00:00][info][26306(c)] <-- return token.
+$snidel = new Snidel(['logger' => $monolog]);
+$snidel->fork($f);
+
+// 2017-03-22 13:13:43 > DEBUG > forked worker. pid: 60018 {"role":"master","pid":60017}
+// 2017-03-22 13:13:43 > DEBUG > forked worker. pid: 60019 {"role":"master","pid":60017}
+// 2017-03-22 13:13:43 > DEBUG > has forked. pid: 60018 {"role":"worker","pid":60018}
+// 2017-03-22 13:13:43 > DEBUG > has forked. pid: 60019 {"role":"worker","pid":60019}
+// 2017-03-22 13:13:44 > DEBUG > ----> started the function. {"role":"worker","pid":60018}
+// 2017-03-22 13:13:44 > DEBUG > ----> started the function. {"role":"worker","pid":60019}
 // ...
 
 ```
