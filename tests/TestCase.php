@@ -1,9 +1,6 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Config;
-use Ackintosh\Snidel\Log;
-use Ackintosh\Snidel\Worker;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Queue as ResultQueue;
