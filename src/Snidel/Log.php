@@ -62,17 +62,6 @@ class Log
     }
 
     /**
-     * decorates message
-     *
-     * @param  string $message
-     * @return string
-     */
-    private function decorate($message)
-    {
-        return '[{role}] [{pid}] ' . $message;
-    }
-
-    /**
      * info
      *
      * @param   string  $message
@@ -84,7 +73,7 @@ class Log
             return;
         }
 
-        $this->logger->debug($this->decorate($message), $this->context());
+        $this->logger->debug($message, $this->context());
     }
 
     /**
@@ -99,6 +88,6 @@ class Log
             return;
         }
 
-        $this->logger->error($this->decorate($message), $this->context());
+        $this->logger->error($message, $this->context());
     }
 }

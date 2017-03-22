@@ -16,7 +16,7 @@ class LogTest extends \PHPUnit_Framework_TestCase
         $logger->expects($this->once())
             ->method('debug')
             ->with(
-                $this->stringContains('[{role}] [{pid}] '),
+                $this->equalTo('test'),
                 $this->equalTo(
                     ['role' => 'owner', 'pid' => getmypid()]
                 )
@@ -38,7 +38,7 @@ class LogTest extends \PHPUnit_Framework_TestCase
         $logger->expects($this->once())
             ->method('error')
             ->with(
-                $this->stringContains('[{role}] [{pid}] '),
+                $this->equalTo('test'),
                 $this->equalTo(
                     ['role' => 'owner', 'pid' => getmypid()]
                 )
