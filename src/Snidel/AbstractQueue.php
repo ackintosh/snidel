@@ -83,7 +83,7 @@ abstract class AbstractQueue
 
     public function __destruct()
     {
-        if ($this->ipcKey->isOwner(getmypid())) {
+        if (isset($this->ipcKey) && $this->ipcKey->isOwner(getmypid())) {
             $this->ipcKey->delete();
             return msg_remove_queue($this->id);
         }
