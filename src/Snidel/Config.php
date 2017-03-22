@@ -21,6 +21,7 @@ class Config
                 'className'         => '\Ackintosh\Snidel\Result\Queue',
                 'constructorArgs'   => null,
             ],
+            'logger'        => null,
         ];
 
         $this->params = array_merge($default, $params);

@@ -57,9 +57,9 @@ class Snidel
         }
 
         $this->ownerPid         = getmypid();
-        $this->log              = new Log($this->ownerPid);
-        $this->pcntl            = new Pcntl();
+        $this->log              = new Log($this->ownerPid, $this->config->get('logger'));
         $this->container        = new Container($this->ownerPid, $this->log, $this->config);
+        $this->pcntl            = new Pcntl();
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
@@ -78,18 +78,6 @@ class Snidel
         }
 
         $this->log->info('parent pid: ' . $this->ownerPid);
-    }
-
-    /**
-     * sets the resource for the log.
-     *
-     * @param   resource    $resource
-     * @return  void
-     * @codeCoverageIgnore
-     */
-    public function setLogDestination($resource)
-    {
-        $this->log->setDestination($resource);
     }
 
     /**

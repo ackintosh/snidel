@@ -1,6 +1,8 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Psr\Log\LoggerInterface;
+
 date_default_timezone_set('UTC');
 
 class Log
@@ -11,89 +13,92 @@ class Log
     /** @var int */
     private $masterPid;
 
-    /** @var resource */
-    private $destination;
+    /** @var  \Psr\Log\LoggerInterface */
+    private $logger;
 
     /**
-     * @param   int     $ownerPid
+     * @param   int                     $ownerPid
+     * @param   LoggerInterface | null  $logger
      */
-    public function __construct($ownerPid)
+    public function __construct($ownerPid, $logger)
     {
         $this->ownerPid = $ownerPid;
+        $this->logger = $logger;
     }
 
+    /**
+     * @param int $pid
+     * @return void
+     */
     public function setMasterPid($pid)
     {
         $this->masterPid = $pid;
     }
 
     /**
-     * sets the resource for the log.
+     * creates context
      *
-     * @param   resource    $resource
-     * @return  void
+     * @return array
      */
-    public function setDestination($resource)
+    private function context()
     {
-        $this->destination = $resource;
+        $pid  = getmypid();
+        switch ($pid) {
+            case $this->ownerPid:
+                $role = 'owner';
+                break;
+            case $this->masterPid:
+                $role = 'master';
+                break;
+            default:
+                $role = 'worker';
+                break;
+        }
+
+        return [
+            'role' => $role,
+            'pid'  => $pid,
+        ];
     }
 
     /**
-     * writes log
+     * decorates message
      *
-     * @param   string  $type
-     * @param   string  $message
-     * @return  void
+     * @param  string $message
+     * @return string
      */
-    private function write($type, $message)
+    private function decorate($message)
     {
-        if ($this->destination === null) {
-            return;
-        }
-        $pid = getmypid();
-        switch (true) {
-        case $this->ownerPid === $pid:
-            $role = 'owner';
-            break;
-        case $this->masterPid === $pid:
-            $role = 'master';
-            break;
-        default:
-            $role = 'worker';
-            break;
-        }
-        fputs(
-            $this->destination,
-            sprintf(
-                '[%s][%s][%d(%s)] %s',
-                date('Y-m-d H:i:s'),
-                $type,
-                $pid,
-                $role,
-                $message . PHP_EOL
-            )
-        );
+        return '[{role}] [{pid}] ' . $message;
     }
 
     /**
-     * writes log
+     * info
      *
      * @param   string  $message
      * @return  void
      */
     public function info($message)
     {
-        $this->write('info', $message);
+        if ($this->logger === null) {
+            return;
+        }
+
+        $this->logger->debug($this->decorate($message), $this->context());
     }
 
     /**
-     * writes log
+     * error
      *
      * @param   string  $message
      * @return  void
      */
     public function error($message)
     {
-        $this->write('error', $message);
+        if ($this->logger === null) {
+            return;
+        }
+
+        $this->logger->error($this->decorate($message), $this->context());
     }
 }

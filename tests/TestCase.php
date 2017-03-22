@@ -67,7 +67,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         return \ClassProxy::on(new Container(
             getmypid(),
-            new Log(getmypid()),
+            new Log(getmypid(), null),
             $this->makeDefaultConfig()
         ));
     }
