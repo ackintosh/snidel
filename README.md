@@ -60,6 +60,21 @@ echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 // 3sec elapsed.
 ```
 
+### Constructor parameters
+
+```php
+new Snidel([
+    'concurrency' => 2,
+    'logger' => $monolog,
+    'taskQueue'   => [
+        'className' => '\Ackintosh\Snidel\Queue\Sqs\Task',
+    ],
+    'resultQueue' => [
+        'className' => '\Ackintosh\Snidel\Queue\Sqs\Result',
+    ],
+]);
+```
+
 ### Same argument as `call_user_func_array`
 
 ```php
