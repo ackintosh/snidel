@@ -263,6 +263,23 @@ class SnidelTest extends TestCase
         $this->assertSame($expect, $prop->getValue($snidel));
     }
 
+    /**
+     * @test
+     */
+    public function generator()
+    {
+        $snidel = new Snidel();
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+
+        $results = [];
+        foreach ($snidel->generator() as $r) {
+            $results[] = $r;
+        }
+
+        $this->isSame(['foo', 'bar'], $results);
+    }
+
     private function isSame($result, $expect)
     {
         if (!is_array($result)) {

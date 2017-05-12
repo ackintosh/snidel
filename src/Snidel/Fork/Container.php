@@ -342,6 +342,23 @@ class Container
     }
 
     /**
+     * @return \Generator
+     */
+    public function generator()
+    {
+        for (; $this->queuedCount() > $this->dequeuedCount();) {
+            $result = $this->dequeue();
+
+            if ($result->isFailure()) {
+                $pid = $result->getFork()->getPid();
+                $this->error[$pid] = $result;
+            } else {
+                yield $result;
+            }
+        }
+    }
+
+    /**
      * @return  bool
      */
     public function hasError()

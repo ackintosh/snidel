@@ -152,6 +152,20 @@ class Snidel
         return $this->container->getCollection($tag);
     }
 
+    /**
+     * returns generator which returns a result
+     *
+     * @return \Generator
+     */
+    public function generator()
+    {
+        foreach($this->container->generator() as $r) {
+            yield $r;
+        }
+
+        $this->joined = true;
+    }
+
     public function setReceivedSignal($sig)
     {
         $this->receivedSignal = $sig;
