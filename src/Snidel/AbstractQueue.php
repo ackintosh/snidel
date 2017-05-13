@@ -91,7 +91,7 @@ abstract class AbstractQueue
     public function delete()
     {
         $this->ipcKey->delete();
-        return $this->semaphore->removeQueue($this->id);
+        return msg_remove_queue($this->id);
     }
 
     public function __destruct()
