@@ -24,23 +24,6 @@ class SnidelTest extends TestCase
 
     /**
      * @test
-     * @expectedException \RuntimeException
-     */
-    public function throwsExceptionWhenFailedToFork()
-    {
-        $snidel = new Snidel();
-
-        try {
-            require_once(__DIR__ . '/../pcntl_fork.php');
-            $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        } catch (\RuntimeException $e) {
-            $snidel->wait();
-            throw $e;
-        }
-    }
-
-    /**
-     * @test
      */
     public function omitTheSecondArgumentOfFork()
     {
