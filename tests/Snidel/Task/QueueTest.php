@@ -9,7 +9,14 @@ class TaskQueueTest extends TestCase
 
     public function setUp()
     {
+        parent::setUp();
         $this->queue = $this->makeTaskQueue();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $this->queue->delete();
     }
 
     /**
