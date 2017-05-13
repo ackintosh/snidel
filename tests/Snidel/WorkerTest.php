@@ -4,14 +4,27 @@ use Ackintosh\Snidel\Worker;
 use Ackintosh\Snidel\Fork\Fork;
 use Ackintosh\Snidel\Task\Task;
 
-/**
- * @runTestsInSeparateProcesses
- */
 class WorkerTest extends TestCase
 {
+    /** @var \Ackintosh\Snidel\Result\Queue */
+    private $resultQueue;
+
+    /** @var \Ackintosh\Snidel\Task\Queue */
+    private $taskQueue;
+
     public function setUp()
     {
+        parent::setUp();
         $this->worker = new Worker(new Fork(getmypid()));
+        $this->resultQueue = $this->makeResultQueue();
+        $this->taskQueue = $this->makeTaskQueue();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $this->resultQueue->delete();
+        $this->taskQueue->delete();
     }
 
     /**
@@ -25,7 +38,7 @@ class WorkerTest extends TestCase
 
         $this->assertNull($reflection->getValue($this->worker));
 
-        $this->worker->setResultQueue($this->makeResultQueue());
+        $this->worker->setResultQueue($this->resultQueue);
         $this->assertInstanceOf('\Ackintosh\Snidel\Result\Queue', $reflection->getValue($this->worker));
     }
 
@@ -42,15 +55,13 @@ class WorkerTest extends TestCase
      */
     public function runTask()
     {
-        $resultQueue = $this->makeResultQueue();
-        $taskQueue = $this->makeTaskQueue();
-        $this->worker->setResultQueue($resultQueue);
-        $this->worker->setTaskQueue($taskQueue);
-        $taskQueue->enqueue($this->makeTask());
+        $this->worker->setResultQueue($this->resultQueue);
+        $this->worker->setTaskQueue($this->taskQueue);
+        $this->taskQueue->enqueue($this->makeTask());
 
         $this->worker->run();
 
-        $result = $resultQueue->dequeue();
+        $result = $this->resultQueue->dequeue();
         $this->assertSame('foo', $result->getReturn());
     }
 
@@ -61,10 +72,8 @@ class WorkerTest extends TestCase
     public function runThrowsExceptionWhenExceptionOccurredInTask()
     {
         $this->worker = new Worker(new Fork(getmypid()));
-        $resultQueue = $this->makeResultQueue();
-        $taskQueue = $this->makeTaskQueue();
-        $this->worker->setResultQueue($resultQueue);
-        $this->worker->setTaskQueue($taskQueue);
+        $this->worker->setResultQueue($this->resultQueue);
+        $this->worker->setTaskQueue($this->taskQueue);
         $task = new Task(
             function ($arg) {
                 throw new RuntimeException('test');
@@ -72,7 +81,7 @@ class WorkerTest extends TestCase
             'bar',
             null
         );
-        $taskQueue->enqueue($task);
+        $this->taskQueue->enqueue($task);
 
         $this->worker->run();
     }
@@ -83,17 +92,15 @@ class WorkerTest extends TestCase
      */
     public function runThrowsExceptionWhenExceptionOccurredInQueue()
     {
-        $queue = $this->makeResultQueue();
         $property = new \ReflectionProperty('\Ackintosh\Snidel\Result\Queue', 'stat');
         $property->setAccessible(true);
-        $stat   = $property->getValue($queue);
+        $stat   = $property->getValue($this->resultQueue);
         $stat['msg_qbytes'] = 1;
-        $property->setValue($queue, $stat);
+        $property->setValue($this->resultQueue, $stat);
 
-        $this->worker->setResultQueue($queue);
-        $taskQueue = $this->makeTaskQueue();
-        $this->worker->setTaskQueue($taskQueue);
-        $taskQueue->enqueue($this->makeTask());
+        $this->worker->setResultQueue($this->resultQueue);
+        $this->worker->setTaskQueue($this->taskQueue);
+        $this->taskQueue->enqueue($this->makeTask());
         $this->worker->run();
     }
 
@@ -102,12 +109,11 @@ class WorkerTest extends TestCase
      */
     public function error()
     {
-        $queue = $this->makeResultQueue();
-        $this->worker->setResultQueue($queue);
+        $this->worker->setResultQueue($this->resultQueue);
 
         $this->worker->error();
 
-        $result = $queue->dequeue();
+        $result = $this->resultQueue->dequeue();
         $this->assertTrue($result->isFailure());
     }
 
@@ -117,14 +123,13 @@ class WorkerTest extends TestCase
      */
     public function errorThrowsException()
     {
-        $queue = $this->makeResultQueue();
         $property = new \ReflectionProperty('\Ackintosh\Snidel\Result\Queue', 'stat');
         $property->setAccessible(true);
-        $stat   = $property->getValue($queue);
+        $stat   = $property->getValue($this->resultQueue);
         $stat['msg_qbytes'] = 1;
-        $property->setValue($queue, $stat);
+        $property->setValue($this->resultQueue, $stat);
 
-        $this->worker->setResultQueue($queue);
+        $this->worker->setResultQueue($this->resultQueue);
         $this->worker->error();
     }
 
