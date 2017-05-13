@@ -287,6 +287,10 @@ class SnidelTest extends TestCase
         }
 
         foreach ($result as $r) {
+            if ($r === null || $r === '') {
+                throw new \Exception('wrong results: ' . json_encode($result));
+            }
+
             if ($keys = array_keys($expect, $r, true)) {
                 unset($expect[$keys[0]]);
             } else {
