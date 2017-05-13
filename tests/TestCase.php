@@ -85,16 +85,16 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @param \Ackintosh\Snidel\AbstractQueue $queue
+     * @param mixed $target
      * @param \Ackintosh\Snidel\Semaphore $semaphore
      * @return \Ackintosh\Snidel\AbstractQueue
      */
-    protected function setSemaphore($queue, $semaphore)
+    protected function setSemaphore($target, $semaphore)
     {
-        $prop = new \ReflectionProperty($queue, 'semaphore');
+        $prop = new \ReflectionProperty($target, 'semaphore');
         $prop->setAccessible(true);
-        $prop->setValue($queue, $semaphore);
+        $prop->setValue($target, $semaphore);
 
-        return $queue;
+        return $target;
     }
 }

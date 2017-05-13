@@ -31,4 +31,9 @@ class Semaphore
     {
         return call_user_func_array('msg_remove_queue', $args);
     }
+
+    public function ftok(...$args)
+    {
+        return call_user_func_array('ftok', $args);
+    }
 }
