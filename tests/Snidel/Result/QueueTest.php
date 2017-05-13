@@ -12,7 +12,14 @@ class ResultQueueTest extends TestCase
 
     public function setUp()
     {
+        parent::setUp();
         $this->queue = $this->makeResultQueue();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $this->queue->delete();
     }
 
     /**

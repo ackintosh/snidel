@@ -81,11 +81,19 @@ abstract class AbstractQueue
         return $this->dequeuedCount;
     }
 
+    /**
+     * @return bool
+     */
+    public function delete()
+    {
+        $this->ipcKey->delete();
+        return msg_remove_queue($this->id);
+    }
+
     public function __destruct()
     {
         if (isset($this->ipcKey) && $this->ipcKey->isOwner(getmypid())) {
-            $this->ipcKey->delete();
-            return msg_remove_queue($this->id);
+            $this->delete();
         }
     }// @codeCoverageIgnore
 }
