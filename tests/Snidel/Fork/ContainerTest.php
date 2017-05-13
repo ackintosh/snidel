@@ -6,13 +6,19 @@ class ContainerTest extends TestCase
 {
     /**
      * @test
-     * @runInSeparateProcess
      * @expectedException \RuntimeException
      */
     public function enqueueThrowsExceptionWhenFailed()
     {
+        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
+            ->setMethods(['sendMessage'])
+            ->getMock();
+        $semaphore->expects($this->once())
+            ->method('sendMessage')
+            ->willReturn(false);
+
         $container = $this->makeForkContainer();
-        $container->taskQueue = $this->makeTaskQueue();
+        $container->taskQueue = $this->setSemaphore($this->makeTaskQueue(), $semaphore);
 
         $task = new Task(
             function ($args) {
@@ -22,7 +28,6 @@ class ContainerTest extends TestCase
             null
         );
 
-        require_once(__DIR__ . '/../../msg_send.php');
         $container->enqueue($task);
     }
 
