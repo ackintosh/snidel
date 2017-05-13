@@ -83,4 +83,18 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         return new Config(array('concurrency' => 5));
     }
+
+    /**
+     * @param \Ackintosh\Snidel\AbstractQueue $queue
+     * @param \Ackintosh\Snidel\Semaphore $semaphore
+     * @return \Ackintosh\Snidel\AbstractQueue
+     */
+    protected function setSemaphore($queue, $semaphore)
+    {
+        $prop = new \ReflectionProperty($queue, 'semaphore');
+        $prop->setAccessible(true);
+        $prop->setValue($queue, $semaphore);
+
+        return $queue;
+    }
 }

@@ -51,12 +51,18 @@ class TaskQueueTest extends TestCase
     /**
      * @test
      * @expectedException \RuntimeException
-     * @runInSeparateProcess
      */
     public function enqueueThrowsExceptionWhenFailedToSendMessage()
     {
-        require_once(__DIR__ . '/../../msg_send.php');
-        $this->queue->enqueue(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
+        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
+            ->setMethods(['sendMessage'])
+            ->getMock();
+        $semaphore->expects($this->once())
+            ->method('sendMessage')
+            ->willReturn(false);
+
+        $queue = $this->setSemaphore($this->queue, $semaphore);
+        $queue->enqueue(new Task('receivesArgumentsAndReturnsIt', ['foo'], null));
     }
 
     /**
@@ -78,13 +84,19 @@ class TaskQueueTest extends TestCase
     /**
      * @test
      * @expectedException \RuntimeException
-     * @runInSeparateProcess
      */
     public function dequeueThrowsException()
     {
         $this->queue->enqueue(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
 
-        require_once(__DIR__ . '/../../msg_receive.php');
-        $this->queue->dequeue();
+        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
+            ->setMethods(['receiveMessage'])
+            ->getMock();
+        $semaphore->expects($this->once())
+            ->method('receiveMessage')
+            ->willReturn(false);
+
+        $queue = $this->setSemaphore($this->queue, $semaphore);
+        $queue->dequeue();
     }
 }
