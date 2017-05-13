@@ -16,9 +16,9 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * @return \Ackintosh\Snidel\Fork\Fork
      */
-    protected function makeFork()
+    protected function makeFork($pid = null)
     {
-        return new Fork(getmypid());
+        return new Fork($pid ? $pid : getmypid());
     }
 
     /**

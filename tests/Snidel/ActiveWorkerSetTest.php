@@ -67,20 +67,24 @@ class ActiveWorkerSetTest extends TestCase
      */
     public function terminate()
     {
-        $container = $this->makeForkContainer();
-        $container->masterPid = getmypid();
-        $worker1 = $container->forkWorker();
-        $worker2 = $container->forkWorker();
+        $worker1 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
+            ->setConstructorArgs([$this->makeFork(1)])
+            ->setMethods(['terminate'])
+            ->getMock();
+        $worker1->expects($this->once())
+            ->method('terminate')
+            ->with(SIGTERM);
+
+        $worker2 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
+            ->setConstructorArgs([$this->makeFork(2)])
+            ->setMethods(['terminate'])
+            ->getMock();
+        $worker2->expects($this->once())
+            ->method('terminate')
+            ->with(SIGTERM);
+
         $this->activeWorkerSet->add($worker1);
         $this->activeWorkerSet->add($worker2);
         $this->activeWorkerSet->terminate(SIGTERM);
-
-        // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.
-        $status = null;
-        $this->assertSame(-1, pcntl_waitpid($worker1->getPid(), $status, WUNTRACED));
-        $this->assertSame(-1, pcntl_waitpid($worker2->getPid(), $status, WUNTRACED));
-        unset($worker1);
-        unset($worker2);
-        unset($container);
     }
 }
