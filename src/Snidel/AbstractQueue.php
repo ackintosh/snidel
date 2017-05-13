@@ -29,7 +29,7 @@ abstract class AbstractQueue
     public function __construct(Config $config)
     {
         $this->ownerPid = $config->get('ownerPid');
-        $this->ipcKey   = new IpcKey($this->ownerPid, str_replace('\\', '_', get_class($this)));
+        $this->ipcKey   = new IpcKey($this->ownerPid, spl_object_hash($config) . str_replace('\\', '_', get_class($this)));
         $this->semaphore = new Semaphore();
         $this->id       = $this->semaphore->getQueue($this->ipcKey->generate());
         $this->stat     = $this->semaphore->statQueue($this->id);
