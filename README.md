@@ -33,10 +33,10 @@ $snidel->fork($func, 'foo');
 $snidel->fork($func, 'bar');
 $snidel->fork($func, 'baz');
 
-// Snidel::get() returns instance of Snidel\Result\Collection
+// wait until all processes are completed, and get instance of `\Snidel\Result\Collection`.
 $collection = $snidel->get();
 
-// Snidel\Result\Collection implements \Iterator
+// `\Snidel\Result\Collection` implements `\Iterator`
 foreach ($collection as $result) {
     echo $result->getFork()->getPid();
     echo $result->getOutput();
@@ -107,11 +107,16 @@ $snidel->get('unknown_tags');
 // InvalidArgumentException: There is no tags: unknown_tags
 ```
 
-### Concurrency
+### Generator
 
 ```php
-$snidel = new Snidel($concurrency = 3);
+$snidel->fork($func);
+$snidel->fork($func);
+$snidel->fork($func);
 
+foreach ($snidel->generator() as $result) {
+	echo $result->getReturn();
+}
 ```
 
 ### With Logger
