@@ -186,7 +186,7 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('abnormalExit');
-        $snidel->wait();
+        $snidel->get();
 
         $this->assertTrue($snidel->hasError());
     }
@@ -194,27 +194,15 @@ class SnidelTest extends TestCase
     /**
      * @test
      */
-    public function waitSetsErrorWhenChildTerminatesAbnormally()
+    public function getSetsErrorWhenChildTerminatesAbnormally()
     {
         $snidel = new Snidel();
         $snidel->fork(function () {
             exit(1);
         });
 
-        $snidel->wait();
+        $snidel->get();
         $this->assertTrue($snidel->hasError());
-    }
-
-    /**
-     * @test
-     */
-    public function waitDoNothingIfAlreadyJoined()
-    {
-        $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $snidel->wait();
-        $ret =  $snidel->wait();
-        $this->assertNull($ret);
     }
 
     /**
@@ -224,7 +212,7 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $snidel->wait();
+        $snidel->get();
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }
 

@@ -111,7 +111,7 @@ class Snidel
      *
      * @return  void
      */
-    public function wait()
+    private function wait()
     {
         $this->container->wait();
         $this->joined = true;
