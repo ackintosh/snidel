@@ -344,7 +344,7 @@ class Container
     /**
      * @return \Generator
      */
-    public function generator()
+    public function results()
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             $result = $this->dequeue();

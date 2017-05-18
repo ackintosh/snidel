@@ -234,14 +234,14 @@ class SnidelTest extends TestCase
     /**
      * @test
      */
-    public function generator()
+    public function results()
     {
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
         $results = [];
-        foreach ($snidel->generator() as $r) {
+        foreach ($snidel->results() as $r) {
             $results[] = $r;
         }
 

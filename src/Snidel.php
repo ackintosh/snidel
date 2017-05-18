@@ -157,9 +157,9 @@ class Snidel
      *
      * @return \Generator
      */
-    public function generator()
+    public function results()
     {
-        foreach($this->container->generator() as $r) {
+        foreach($this->container->results() as $r) {
             yield $r;
         }
 
