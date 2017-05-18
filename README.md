@@ -33,8 +33,6 @@ $snidel->fork($func, 'foo');
 $snidel->fork($func, 'bar');
 $snidel->fork($func, 'baz');
 
-$snidel->wait();// optional
-
 // Snidel::get() returns instance of Snidel\Result\Collection
 $collection = $snidel->get();
 
@@ -150,7 +148,7 @@ $snidel->fork($f);
 $snidel->fork(function ($arg1, $arg2) {
     exit(1);
 }, ['foo', 'bar']);
-$snidel->wait();
+$snidel->get();
 
 var_dump($snidel->getError());
 // class Ackintosh\Snidel\Error#4244 (1) {
