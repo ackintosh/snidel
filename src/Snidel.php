@@ -23,9 +23,6 @@ class Snidel
     /** @var \Ackintosh\Snidel\Log */
     private $log;
 
-    /** @var bool */
-    private $joined = false;
-
     /** @var array */
     private $signals = [
         SIGTERM,
@@ -75,8 +72,6 @@ class Snidel
      */
     public function fork($callable, $args = [], $tag = null)
     {
-        $this->joined = false;
-
         if (!$this->container->existsMaster()) {
             $this->container->forkMaster();
         }
@@ -98,7 +93,6 @@ class Snidel
     public function wait()
     {
         $this->container->wait();
-        $this->joined = true;
     }
 
     /**
@@ -111,8 +105,6 @@ class Snidel
         foreach($this->container->results() as $r) {
             yield $r;
         }
-
-        $this->joined = true;
     }
 
     /**
@@ -139,18 +131,13 @@ class Snidel
     public function __destruct()
     {
         if ($this->config->get('ownerPid') === getmypid()) {
+            $this->wait();
             if ($this->container->existsMaster()) {
                 $this->log->info('shutdown master process.');
                 $this->container->sendSignalToMaster();
             }
 
             unset($this->container);
-        }
-
-        if ($this->config->get('ownerPid') === getmypid() && !$this->joined && $this->receivedSignal === null) {
-            $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
-            $this->log->error($message);
-            throw new \LogicException($message);
         }
     }
 }
