@@ -16,9 +16,9 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * @return \Ackintosh\Snidel\Fork\Fork
      */
-    protected function makeFork()
+    protected function makeFork($pid = null)
     {
-        return new Fork(getmypid());
+        return new Fork($pid ? $pid : getmypid());
     }
 
     /**
@@ -63,9 +63,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function makeForkContainer()
     {
         return \ClassProxy::on(new Container(
-            getmypid(),
-            new Log(getmypid(), null),
-            $this->makeDefaultConfig()
+            $this->makeDefaultConfig(),
+            new Log(getmypid(), null)
         ));
     }
 
@@ -82,5 +81,19 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function makeDefaultConfig()
     {
         return new Config(array('concurrency' => 5));
+    }
+
+    /**
+     * @param mixed $target
+     * @param \Ackintosh\Snidel\Semaphore $semaphore
+     * @return \Ackintosh\Snidel\AbstractQueue
+     */
+    protected function setSemaphore($target, $semaphore)
+    {
+        $prop = new \ReflectionProperty($target, 'semaphore');
+        $prop->setAccessible(true);
+        $prop->setValue($target, $semaphore);
+
+        return $target;
     }
 }

@@ -26,9 +26,6 @@ class Snidel
     /** @var bool */
     private $joined = false;
 
-    /** @var int */
-    private $ownerPid;
-
     /** @var array */
     private $signals = [
         SIGTERM,
@@ -56,10 +53,9 @@ class Snidel
             throw new \InvalidArgumentException();
         }
 
-        $this->ownerPid         = getmypid();
-        $this->log              = new Log($this->ownerPid, $this->config->get('logger'));
-        $this->container        = new Container($this->ownerPid, $this->log, $this->config);
-        $this->pcntl            = new Pcntl();
+        $this->log       = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
+        $this->container = new Container($this->config, $this->log);
+        $this->pcntl     = new Pcntl();
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
@@ -77,7 +73,7 @@ class Snidel
             );
         }
 
-        $this->log->info('parent pid: ' . $this->ownerPid);
+        $this->log->info('parent pid: ' . $this->config->get('ownerPid'));
     }
 
     /**
@@ -118,6 +114,20 @@ class Snidel
     }
 
     /**
+     * returns generator which returns a result
+     *
+     * @return \Generator
+     */
+    public function results()
+    {
+        foreach($this->container->results() as $r) {
+            yield $r;
+        }
+
+        $this->joined = true;
+    }
+
+    /**
      * @return  bool
      */
     public function hasError()
@@ -133,25 +143,6 @@ class Snidel
         return $this->container->getError();
     }
 
-    /**
-     * gets results
-     *
-     * @param   string  $tag
-     * @return  \Ackintosh\Snidel\Result\Collection
-     * @throws  \InvalidArgumentException
-     */
-    public function get($tag = null)
-    {
-        if (!$this->joined) {
-            $this->wait();
-        }
-        if ($tag !== null && !$this->container->hasTag($tag)) {
-            throw new \InvalidArgumentException('unknown tag: ' . $tag);
-        }
-
-        return $this->container->getCollection($tag);
-    }
-
     public function setReceivedSignal($sig)
     {
         $this->receivedSignal = $sig;
@@ -159,7 +150,7 @@ class Snidel
 
     public function __destruct()
     {
-        if ($this->ownerPid === getmypid()) {
+        if ($this->config->get('ownerPid') === getmypid()) {
             if ($this->container->existsMaster()) {
                 $this->log->info('shutdown master process.');
                 $this->container->sendSignalToMaster();
@@ -168,7 +159,7 @@ class Snidel
             unset($this->container);
         }
 
-        if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
+        if ($this->config->get('ownerPid') === getmypid() && !$this->joined && $this->receivedSignal === null) {
             $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
             $this->log->error($message);
             throw new \LogicException($message);

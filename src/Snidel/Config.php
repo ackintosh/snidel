@@ -26,6 +26,7 @@ class Config
 
         $this->params = array_merge($default, $params);
         $this->params['ownerPid'] = getmypid();
+        $this->params['id'] = spl_object_hash($this);
     }
 
     /**

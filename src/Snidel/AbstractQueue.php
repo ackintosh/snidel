@@ -11,6 +11,9 @@ abstract class AbstractQueue
     /** @var \Ackintosh\Snidel\IpcKey */
     protected $ipcKey;
 
+    /** @var \Ackintosh\Snidel\Semaphore */
+    protected $semaphore;
+
     /** @var resource */
     protected $id;
 
@@ -26,9 +29,10 @@ abstract class AbstractQueue
     public function __construct(Config $config)
     {
         $this->ownerPid = $config->get('ownerPid');
-        $this->ipcKey   = new IpcKey($this->ownerPid, str_replace('\\', '_', get_class($this)));
-        $this->id       = msg_get_queue($this->ipcKey->generate());
-        $this->stat     = msg_stat_queue($this->id);
+        $this->ipcKey   = new IpcKey($this->ownerPid, $config->get('id') . str_replace('\\', '_', get_class($this)));
+        $this->semaphore = new Semaphore();
+        $this->id       = $this->semaphore->getQueue($this->ipcKey->generate());
+        $this->stat     = $this->semaphore->statQueue($this->id);
     }
 
     /**
@@ -36,7 +40,7 @@ abstract class AbstractQueue
      */
     protected function sendMessage($message)
     {
-        return msg_send($this->id, 1, $message, false);
+        return $this->semaphore->sendMessage($this->id, 1, $message, false);
     }
 
     /**
@@ -48,7 +52,7 @@ abstract class AbstractQueue
         $msgtype = $message = null;
 
         // argument #3: specify the maximum number of bytes allowsed in one message queue.
-        $success = msg_receive($this->id, 1, $msgtype, $this->stat['msg_qbytes'], $message, false);
+        $success = $this->semaphore->receiveMessage($this->id, 1, $msgtype, $this->stat['msg_qbytes'], $message, false);
         if (!$success) {
             throw new \RuntimeException('failed to receive message.');
         }
@@ -81,11 +85,19 @@ abstract class AbstractQueue
         return $this->dequeuedCount;
     }
 
+    /**
+     * @return bool
+     */
+    public function delete()
+    {
+        $this->ipcKey->delete();
+        return msg_remove_queue($this->id);
+    }
+
     public function __destruct()
     {
         if (isset($this->ipcKey) && $this->ipcKey->isOwner(getmypid())) {
-            $this->ipcKey->delete();
-            return msg_remove_queue($this->id);
+            $this->delete();
         }
     }// @codeCoverageIgnore
 }

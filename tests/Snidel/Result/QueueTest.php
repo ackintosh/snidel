@@ -12,7 +12,14 @@ class ResultQueueTest extends TestCase
 
     public function setUp()
     {
+        parent::setUp();
         $this->queue = $this->makeResultQueue();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $this->queue->delete();
     }
 
     /**
@@ -64,7 +71,6 @@ class ResultQueueTest extends TestCase
     /**
      * @test
      * @expectedException \RuntimeException
-     * @runInSeparateProcess
      */
     public function dequeueThrowsException()
     {
@@ -73,7 +79,14 @@ class ResultQueueTest extends TestCase
         $result->setTask(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
         $this->queue->enqueue($result);
 
-        require_once(__DIR__ . '/../../msg_receive.php');
-        $this->queue->dequeue();
+        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
+            ->setMethods(['receiveMessage'])
+            ->getMock();
+        $semaphore->expects($this->once())
+            ->method('receiveMessage')
+            ->willReturn(false);
+
+        $queue = $this->setSemaphore($this->queue, $semaphore);
+        $queue->dequeue();
     }
 }

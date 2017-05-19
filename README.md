@@ -22,39 +22,26 @@ $ composer require ackintosh/snidel
 <?php
 use Ackintosh\Snidel;
 
-$func = function ($str) {
+$f = function ($str) {
     sleep(3);
     return $str;
 };
 
 $s = time();
 $snidel = new Snidel();
-$snidel->fork($func, 'foo');
-$snidel->fork($func, 'bar');
-$snidel->fork($func, 'baz');
+$snidel->fork($f, 'foo');
+$snidel->fork($f, 'bar');
+$snidel->fork($f, 'baz');
 
-$snidel->wait();// optional
-
-// Snidel::get() returns instance of Snidel\Result\Collection
-$collection = $snidel->get();
-
-// Snidel\Result\Collection implements \Iterator
-foreach ($collection as $result) {
-    echo $result->getFork()->getPid();
-    echo $result->getOutput();
-    echo $result->getReturn();
+// `Snidel::results()` returns `\Generator`
+foreach ($snidel->results() as $r) {
+    echo $r->getFork()->getPid();
+    echo $r->getOutput();
+    echo $r->getReturn();
 }
 
-var_dump($collection->toArray());
-// * the order of results is not guaranteed. *
-// array(3) {
-//   [0]=>
-//   string(3) "bar"
-//   [1]=>
-//   string(3) "foo"
-//   [2]=>
-//   string(3) "baz"
-// }
+// If you don't need the results, let's use `Snidel::wait()`
+// $snidel->wait();
 
 echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 // 3sec elapsed.
@@ -79,7 +66,7 @@ new Snidel([
 
 ```php
 // multiple arguments
-$snidel->fork($func, ['foo', 'bar']);
+$snidel->fork($f, ['foo', 'bar']);
 
 // global function
 $snidel->fork('myfunction');
@@ -89,31 +76,16 @@ $snidel->fork([$instance, 'method']);
 
 ```
 
-### Get results with tags
+### Tag the task
 
 ```php
-$snidel->fork($func, 'foo', 'tag1');
-$snidel->fork($func, 'bar', 'tag1');
-$snidel->fork($func, 'baz', 'tag2');
+$snidel->fork($f, 'foo', 'tag1');
+$snidel->fork($f, 'bar', 'tag1');
+$snidel->fork($f, 'baz', 'tag2');
 
-var_dump($snidel->get('tag1')->toArray());
-// array(2) {
-//   [0]=>
-//   string(3) "foo"
-//   [1]=>
-//   string(3) "bar"
-// }
-
-// throws InvalidArgumentException when passed unknown tags.
-$snidel->get('unknown_tags');
-// InvalidArgumentException: There is no tags: unknown_tags
-```
-
-### Concurrency
-
-```php
-$snidel = new Snidel($concurrency = 3);
-
+foreach ($snidel->results as $r) {
+    echo $r->getTask()->getTag();
+}
 ```
 
 ### With Logger
@@ -150,7 +122,7 @@ $snidel->fork($f);
 $snidel->fork(function ($arg1, $arg2) {
     exit(1);
 }, ['foo', 'bar']);
-$snidel->wait();
+$snidel->get();
 
 var_dump($snidel->getError());
 // class Ackintosh\Snidel\Error#4244 (1) {
