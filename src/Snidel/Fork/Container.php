@@ -12,9 +12,6 @@ use Ackintosh\Snidel\Worker;
 class Container
 {
     /** @var int */
-    private $ownerPid;
-
-    /** @var int */
     private $masterPid;
 
     /** @var \Ackintosh\Snidel\Pcntl */
@@ -52,7 +49,6 @@ class Container
      */
     public function __construct(Config $config, $log)
     {
-        $this->ownerPid         = $config->get('ownerPid');
         $this->log              = $log;
         $this->config           = $config;
         $this->pcntl            = new Pcntl();
@@ -140,7 +136,7 @@ class Container
         $this->masterPid = $fork->getPid();
         $this->log->setMasterPid($this->masterPid);
 
-        if (getmypid() === $this->ownerPid) {
+        if (getmypid() === $this->config->get('ownerPid')) {
             // owner
             $this->log->info('pid: ' . getmypid());
             $this->taskQueue    = $this->queueFactory->createTaskQueue();
