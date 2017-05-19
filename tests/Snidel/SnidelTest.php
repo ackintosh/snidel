@@ -82,39 +82,6 @@ class SnidelTest extends TestCase
     /**
      * @test
      */
-    public function getReturnsResultCollection()
-    {
-        $snidel = new Snidel();
-        $snidel->fork(function () {
-            return 'foo';
-        });
-
-        $this->assertInstanceOf('\Ackintosh\Snidel\Result\Collection', $snidel->get());
-    }
-
-    /**
-     * @test
-     */
-    public function getReturnsEachResult()
-    {
-        $snidel = new Snidel();
-
-        $snidel->fork(function () {
-            return 'foo';
-        });
-        $collection = $snidel->get();
-        $this->assertSame('foo', $collection[0]->getReturn());
-
-        $snidel->fork(function () {
-            return 'bar';
-        });
-        $collection = $snidel->get();
-        $this->assertSame('bar', $collection[0]->getReturn());
-    }
-
-    /**
-     * @test
-     */
     public function runInstanceMethod()
     {
         $snidel = new Snidel();
@@ -148,23 +115,6 @@ class SnidelTest extends TestCase
     /**
      * @test
      */
-    public function getResultsWithTag()
-    {
-        $snidel = new Snidel();
-        $test = new \TestClass();
-
-        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar1', 'tag1');
-        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar2', 'tag1');
-        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar3', 'tag2');
-        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar4', 'tag2');
-
-        $this->assertTrue($this->isSame($snidel->get('tag1')->toArray(), array('bar1', 'bar2')));
-        $this->assertTrue($this->isSame($snidel->get('tag2')->toArray(), array('bar3', 'bar4')));
-    }
-
-    /**
-     * @test
-     */
     public function getOutput()
     {
         $snidel = new Snidel();
@@ -175,19 +125,6 @@ class SnidelTest extends TestCase
         foreach ($snidel->results() as $r) {
             $this->assertSame('foobar', $r->getOutput());
         }
-    }
-
-    /**
-     * @test
-     * @expectedException \InvalidArgumentException
-     */
-    public function throwsExceptionWhenPassedUnknownTag()
-    {
-        $snidel = new Snidel();
-        $test = new \TestClass();
-
-        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar', 'tag');
-        $snidel->get('unknown_tag');
     }
 
     /**

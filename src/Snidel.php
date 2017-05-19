@@ -134,25 +134,6 @@ class Snidel
     }
 
     /**
-     * gets results
-     *
-     * @param   string  $tag
-     * @return  \Ackintosh\Snidel\Result\Collection
-     * @throws  \InvalidArgumentException
-     */
-    public function get($tag = null)
-    {
-        if (!$this->joined) {
-            $this->wait();
-        }
-        if ($tag !== null && !$this->container->hasTag($tag)) {
-            throw new \InvalidArgumentException('unknown tag: ' . $tag);
-        }
-
-        return $this->container->getCollection($tag);
-    }
-
-    /**
      * returns generator which returns a result
      *
      * @return \Generator
