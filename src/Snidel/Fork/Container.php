@@ -7,7 +7,6 @@ use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\QueueFactory;
-use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Worker;
 
 class Container
@@ -306,39 +305,6 @@ class Container
                 $this->error[$pid] = $result;
             }
         }
-    }
-
-    public function getCollection($tag = null)
-    {
-        if ($tag === null) {
-            $collection = new Collection($this->results);
-            $this->results = [];
-
-            return $collection;
-        }
-
-        return $this->getCollectionWithTag($tag);
-    }
-
-    /**
-     * return results
-     *
-     * @param   string  $tag
-     * @return  \Ackintosh\Snidel\Result\Collection
-     */
-    private function getCollectionWithTag($tag)
-    {
-        $results = [];
-        foreach ($this->results as $r) {
-            if ($r->getTask()->getTag() !== $tag) {
-                continue;
-            }
-
-            $results[] = $r;
-            unset($this->results[$r->getFork()->getPid()]);
-        }
-
-        return new Collection($results);
     }
 
     /**
