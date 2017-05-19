@@ -148,10 +148,9 @@ class Container
             $activeWorkerSet = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->masterPid);
 
-            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($activeWorkerSet, $receivedSignal) {
-                    $receivedSignal = $sig;
+                $this->pcntl->signal($sig, function ($sig) use ($activeWorkerSet) {
+                    $this->receivedSignal = $sig;
                     $this->log->info('received signal: ' . $sig);
 
                     if ($activeWorkerSet->count() === 0) {
