@@ -16,7 +16,9 @@ class SnidelTest extends TestCase
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
+        foreach ($snidel->results() as $r) {
+            $this->assertContains($r->getReturn(), ['foo', 'bar']);
+        }
     }
 
     /**
@@ -26,9 +28,10 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('returnsFoo');
-        $result = $snidel->get()->toArray();
 
-        $this->assertSame(array_shift($result), 'foo');
+        foreach ($snidel->results() as $r) {
+            $this->assertSame('foo', $r->getReturn());
+        }
     }
 
     /**
@@ -38,9 +41,10 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', 'foo');
-        $result = $snidel->get()->toArray();
 
-        $this->assertSame(array_shift($result), 'foo');
+        foreach ($snidel->results() as $r) {
+            $this->assertSame('foo', $r->getReturn());
+        }
     }
 
     /**
@@ -50,9 +54,10 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo', 'bar'));
-        $result = $snidel->get()->toArray();
 
-        $this->assertSame(array_shift($result), 'foobar');
+        foreach ($snidel->results() as $r) {
+            $this->assertSame('foobar', $r->getReturn());
+        }
     }
 
     /**
@@ -68,7 +73,7 @@ class SnidelTest extends TestCase
         $snidel->fork('sleepsTwoSeconds');
         $snidel->fork('sleepsTwoSeconds');
         $snidel->fork('sleepsTwoSeconds');
-        $snidel->get();
+        $snidel->wait();
         $elapsed = time() - $start;
 
         $this->assertEquals(4, $elapsed, '', 1);
@@ -118,7 +123,9 @@ class SnidelTest extends TestCase
         $snidel->fork(array($test, 'returnsFoo'));
         $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar');
 
-        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
+        foreach ($snidel->results() as $r) {
+            $this->assertContains($r->getReturn(), ['foo', 'bar']);
+        }
     }
 
     /**
@@ -133,7 +140,9 @@ class SnidelTest extends TestCase
         $snidel->fork($func);
         $snidel->fork($func, 'bar');
 
-        $this->assertTrue($this->isSame($snidel->get()->toArray(), array('foo', 'bar')));
+        foreach ($snidel->results() as $r) {
+            $this->assertContains($r->getReturn(), ['foo', 'bar']);
+        }
     }
 
     /**
@@ -162,8 +171,10 @@ class SnidelTest extends TestCase
         $snidel->fork(function () {
             echo 'foobar';
         });
-        $collection = $snidel->get();
-        $this->assertSame('foobar', $collection[0]->getOutput());
+
+        foreach ($snidel->results() as $r) {
+            $this->assertSame('foobar', $r->getOutput());
+        }
     }
 
     /**
@@ -186,7 +197,7 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('abnormalExit');
-        $snidel->get();
+        $snidel->wait();
 
         $this->assertTrue($snidel->hasError());
     }
@@ -201,7 +212,7 @@ class SnidelTest extends TestCase
             exit(1);
         });
 
-        $snidel->get();
+        $snidel->wait();
         $this->assertTrue($snidel->hasError());
     }
 
@@ -212,7 +223,7 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
-        $snidel->get();
+        $snidel->wait();
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }
 
