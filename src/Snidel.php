@@ -26,9 +26,6 @@ class Snidel
     /** @var bool */
     private $joined = false;
 
-    /** @var int */
-    private $ownerPid;
-
     /** @var array */
     private $signals = [
         SIGTERM,
@@ -56,9 +53,8 @@ class Snidel
             throw new \InvalidArgumentException();
         }
 
-        $this->ownerPid         = getmypid();
-        $this->log              = new Log($this->ownerPid, $this->config->get('logger'));
-        $this->container        = new Container($this->ownerPid, $this->log, $this->config);
+        $this->log              = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
+        $this->container        = new Container($this->config->get('ownerPid'), $this->log, $this->config);
         $this->pcntl            = new Pcntl();
 
         foreach ($this->signals as $sig) {
@@ -77,7 +73,7 @@ class Snidel
             );
         }
 
-        $this->log->info('parent pid: ' . $this->ownerPid);
+        $this->log->info('parent pid: ' . $this->config->get('ownerPid'));
     }
 
     /**
@@ -154,7 +150,7 @@ class Snidel
 
     public function __destruct()
     {
-        if ($this->ownerPid === getmypid()) {
+        if ($this->config->get('ownerPid') === getmypid()) {
             if ($this->container->existsMaster()) {
                 $this->log->info('shutdown master process.');
                 $this->container->sendSignalToMaster();
@@ -163,7 +159,7 @@ class Snidel
             unset($this->container);
         }
 
-        if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
+        if ($this->config->get('ownerPid') === getmypid() && !$this->joined && $this->receivedSignal === null) {
             $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
             $this->log->error($message);
             throw new \LogicException($message);
