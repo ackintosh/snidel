@@ -43,10 +43,6 @@ class Snidel
     {
         if (is_null($parameter)) {
             $this->config = new Config();
-        } elseif (is_int($parameter) && $parameter >= 1) {
-            $this->config = new Config(
-                ['concurrency' => $parameter]
-            );
         } elseif (is_array($parameter)) {
             $this->config = new Config($parameter);
         } else {

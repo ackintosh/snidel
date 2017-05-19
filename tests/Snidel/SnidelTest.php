@@ -65,8 +65,7 @@ class SnidelTest extends TestCase
      */
     public function concurrency()
     {
-        $concurrency = 3;
-        $snidel = new Snidel($concurrency);
+        $snidel = new Snidel(['concurrency' => 3]);
 
         $start = time();
         $snidel->fork('sleepsTwoSeconds');
