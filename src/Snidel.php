@@ -54,7 +54,7 @@ class Snidel
         }
 
         $this->log              = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
-        $this->container        = new Container($this->config->get('ownerPid'), $this->log, $this->config);
+        $this->container        = new Container($this->config, $this->log);
         $this->pcntl            = new Pcntl();
 
         foreach ($this->signals as $sig) {

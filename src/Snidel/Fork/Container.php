@@ -50,9 +50,9 @@ class Container
     /**
      * @param   int     $ownerPid
      */
-    public function __construct($ownerPid, $log, Config $config)
+    public function __construct(Config $config, $log)
     {
-        $this->ownerPid         = $ownerPid;
+        $this->ownerPid         = $config->get('ownerPid');
         $this->log              = $log;
         $this->config           = $config;
         $this->pcntl            = new Pcntl();

@@ -63,9 +63,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function makeForkContainer()
     {
         return \ClassProxy::on(new Container(
-            getmypid(),
-            new Log(getmypid(), null),
-            $this->makeDefaultConfig()
+            $this->makeDefaultConfig(),
+            new Log(getmypid(), null)
         ));
     }
 
