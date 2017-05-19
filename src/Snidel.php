@@ -53,9 +53,9 @@ class Snidel
             throw new \InvalidArgumentException();
         }
 
-        $this->log              = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
-        $this->container        = new Container($this->config, $this->log);
-        $this->pcntl            = new Pcntl();
+        $this->log       = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
+        $this->container = new Container($this->config, $this->log);
+        $this->pcntl     = new Pcntl();
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
@@ -114,6 +114,20 @@ class Snidel
     }
 
     /**
+     * returns generator which returns a result
+     *
+     * @return \Generator
+     */
+    public function results()
+    {
+        foreach($this->container->results() as $r) {
+            yield $r;
+        }
+
+        $this->joined = true;
+    }
+
+    /**
      * @return  bool
      */
     public function hasError()
@@ -127,20 +141,6 @@ class Snidel
     public function getError()
     {
         return $this->container->getError();
-    }
-
-    /**
-     * returns generator which returns a result
-     *
-     * @return \Generator
-     */
-    public function results()
-    {
-        foreach($this->container->results() as $r) {
-            yield $r;
-        }
-
-        $this->joined = true;
     }
 
     public function setReceivedSignal($sig)
