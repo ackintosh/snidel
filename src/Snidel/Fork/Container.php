@@ -213,11 +213,9 @@ class Container
             // @codeCoverageIgnoreStart
             $this->log->info('has forked. pid: ' . getmypid());
 
-            // for php5.3
-            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($receivedSignal) {
-                    $receivedSignal = $sig;
+                $this->pcntl->signal($sig, function ($sig) {
+                    $this->receivedSignal = $sig;
                     exit;
                 }, false);
             }
@@ -225,8 +223,8 @@ class Container
             $worker->setTaskQueue($this->queueFactory->createTaskQueue());
             $worker->setResultQueue($this->queueFactory->createResultQueue());
 
-            register_shutdown_function(function () use ($worker, $receivedSignal) {
-                if ($worker->isFailedToEnqueueResult() && $receivedSignal === null) {
+            register_shutdown_function(function () use ($worker) {
+                if ($worker->isFailedToEnqueueResult() && $this->receivedSignal === null) {
                     $worker->error();
                 }
             });
