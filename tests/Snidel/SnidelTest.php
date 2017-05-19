@@ -13,8 +13,8 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
 
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', ['foo']);
+        $snidel->fork('receivesArgumentsAndReturnsIt', ['bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);
@@ -53,7 +53,7 @@ class SnidelTest extends TestCase
     public function passMultipleArguments()
     {
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('foo', 'bar'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', ['foo', 'bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertSame('foobar', $r->getReturn());
@@ -87,8 +87,8 @@ class SnidelTest extends TestCase
         $snidel = new Snidel();
         $test = new \TestClass();
 
-        $snidel->fork(array($test, 'returnsFoo'));
-        $snidel->fork(array($test, 'receivesArgumentsAndReturnsIt'), 'bar');
+        $snidel->fork([$test, 'returnsFoo']);
+        $snidel->fork([$test, 'receivesArgumentsAndReturnsIt'], 'bar');
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);
@@ -159,7 +159,7 @@ class SnidelTest extends TestCase
     public function getErrorReturnsInstanceOfSnidelError()
     {
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', ['bar']);
         $snidel->wait();
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }
@@ -185,8 +185,8 @@ class SnidelTest extends TestCase
     public function results()
     {
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
-        $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
+        $snidel->fork('receivesArgumentsAndReturnsIt', ['foo']);
+        $snidel->fork('receivesArgumentsAndReturnsIt', ['bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);

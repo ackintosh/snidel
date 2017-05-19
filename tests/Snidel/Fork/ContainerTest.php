@@ -38,7 +38,7 @@ class ContainerTest extends TestCase
     public function forkThrowsExceptionWhenFailed()
     {
         $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('fork'))
+            ->setMethods(['fork'])
             ->getMock();
 
         $pcntl->expects($this->once())
@@ -57,7 +57,7 @@ class ContainerTest extends TestCase
     public function forkWorkerThrowsExceptionWhenFailed()
     {
         $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('fork'))
+            ->setMethods(['fork'])
             ->getMock();
 
         $pcntl->expects($this->once())
@@ -76,7 +76,7 @@ class ContainerTest extends TestCase
     public function forkMasterThrowsExceptionWhenFailed()
     {
         $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('fork'))
+            ->setMethods(['fork'])
             ->getMock();
 
         $pcntl->expects($this->once())

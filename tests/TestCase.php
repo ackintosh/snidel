@@ -80,7 +80,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
     protected function makeDefaultConfig()
     {
-        return new Config(array('concurrency' => 5));
+        return new Config(['concurrency' => 5]);
     }
 
     /**

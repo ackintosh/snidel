@@ -21,13 +21,13 @@ class ActiveWorkerSetTest extends TestCase
         $ref->setAccessible(true);
         $workers = $ref->getValue($this->activeWorkerSet);
 
-        $this->assertSame(array(), $workers);
+        $this->assertSame([], $workers);
 
         $worker = $this->makeWorker();
         $this->activeWorkerSet->add($worker);
 
         $workers = $ref->getValue($this->activeWorkerSet);
-        $this->assertSame(array(getmypid() => $worker), $workers);
+        $this->assertSame([getmypid() => $worker], $workers);
     }
 
     /**
@@ -45,7 +45,7 @@ class ActiveWorkerSetTest extends TestCase
         $ref->setAccessible(true);
         $workers = $ref->getValue($this->activeWorkerSet);
 
-        $this->assertSame(array(2 => $worker2), $workers);
+        $this->assertSame([2 => $worker2], $workers);
     }
 
     /**
