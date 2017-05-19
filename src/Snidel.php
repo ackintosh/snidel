@@ -36,19 +36,11 @@ class Snidel
     private $receivedSignal;
 
     /**
-     * @param   mixed $parameter
-     * @throws  \InvalidArgumentException
+     * @param   array $parameter
      */
-    public function __construct($parameter = null)
+    public function __construct($parameter = [])
     {
-        if (is_null($parameter)) {
-            $this->config = new Config();
-        } elseif (is_array($parameter)) {
-            $this->config = new Config($parameter);
-        } else {
-            throw new \InvalidArgumentException();
-        }
-
+        $this->config    = new Config($parameter);
         $this->log       = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
         $this->container = new Container($this->config, $this->log);
         $this->pcntl     = new Pcntl();

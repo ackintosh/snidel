@@ -7,7 +7,7 @@ class Config
     private $params;
 
     /**
-     * @param   array   $params
+     * @param array $params
      */
     public function __construct($params = [])
     {
