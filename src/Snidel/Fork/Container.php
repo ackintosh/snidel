@@ -17,9 +17,6 @@ class Container
     /** @var int */
     private $masterPid;
 
-    /** @var \Ackintosh\Snidel\Result\Result[] */
-    private $results = [];
-
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
 
@@ -276,33 +273,14 @@ class Container
     }
 
     /**
-     *
-     * @param   string  $tag
-     * @return  bool
-     */
-    public function hasTag($tag)
-    {
-        foreach ($this->results as $result) {
-            if ($result->getTask()->getTag() === $tag) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @return void
      */
     public function wait()
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             $result = $this->dequeue();
-            $pid = $result->getFork()->getPid();
-            $this->results[$pid] = $result;
-
             if ($result->isFailure()) {
-                $this->error[$pid] = $result;
+                $this->error[$result->getFork()->getPid()] = $result;
             }
         }
     }
