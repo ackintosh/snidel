@@ -166,21 +166,6 @@ class SnidelTest extends TestCase
     /**
      * @test
      */
-    public function setReceivedSignal()
-    {
-        $expect = 1;
-        $snidel = new Snidel();
-        $snidel->setReceivedSignal($expect);
-
-        $prop = new \ReflectionProperty($snidel, 'receivedSignal');
-        $prop->setAccessible(true);
-
-        $this->assertSame($expect, $prop->getValue($snidel));
-    }
-
-    /**
-     * @test
-     */
     public function results()
     {
         $snidel = new Snidel();

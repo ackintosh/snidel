@@ -29,9 +29,6 @@ class Snidel
         SIGINT,
     ];
 
-    /** @var int */
-    private $receivedSignal;
-
     /**
      * @param   array $parameter
      */
@@ -47,8 +44,6 @@ class Snidel
                 $sig,
                 function ($sig)  {
                     $this->log->info('received signal. signo: ' . $sig);
-                    $this->setReceivedSignal($sig);
-
                     $this->log->info('--> sending a signal " to children.');
                     $this->container->sendSignalToMaster($sig);
                     $this->log->info('<-- signal handling has been completed successfully.');
@@ -121,11 +116,6 @@ class Snidel
     public function getError()
     {
         return $this->container->getError();
-    }
-
-    public function setReceivedSignal($sig)
-    {
-        $this->receivedSignal = $sig;
     }
 
     public function __destruct()
