@@ -188,32 +188,8 @@ class SnidelTest extends TestCase
         $snidel->fork('receivesArgumentsAndReturnsIt', array('foo'));
         $snidel->fork('receivesArgumentsAndReturnsIt', array('bar'));
 
-        $results = [];
         foreach ($snidel->results() as $r) {
-            $results[] = $r;
+            $this->assertContains($r->getReturn(), ['foo', 'bar']);
         }
-
-        $this->isSame(['foo', 'bar'], $results);
-    }
-
-    private function isSame($result, $expect)
-    {
-        if (!is_array($result)) {
-            return false;
-        }
-
-        foreach ($result as $r) {
-            if ($r === null || $r === '') {
-                throw new \Exception('wrong results: ' . json_encode($result));
-            }
-
-            if ($keys = array_keys($expect, $r, true)) {
-                unset($expect[$keys[0]]);
-            } else {
-                return false;
-            }
-        }
-
-        return true;
     }
 }
