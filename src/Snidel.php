@@ -65,7 +65,7 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    public function fork($callable, $args = [], $tag = null)
+    public function process($callable, $args = [], $tag = null)
     {
         if (!$this->container->existsMaster()) {
             $this->container->forkMaster();

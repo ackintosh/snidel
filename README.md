@@ -29,9 +29,9 @@ $f = function ($str) {
 
 $s = time();
 $snidel = new Snidel();
-$snidel->fork($f, 'foo');
-$snidel->fork($f, 'bar');
-$snidel->fork($f, 'baz');
+$snidel->process($f, 'foo');
+$snidel->process($f, 'bar');
+$snidel->process($f, 'baz');
 
 // `Snidel::results()` returns `\Generator`
 foreach ($snidel->results() as $r) {
@@ -66,22 +66,22 @@ new Snidel([
 
 ```php
 // multiple arguments
-$snidel->fork($f, ['foo', 'bar']);
+$snidel->process($f, ['foo', 'bar']);
 
 // global function
-$snidel->fork('myfunction');
+$snidel->process('myfunction');
 
 // instance method
-$snidel->fork([$instance, 'method']);
+$snidel->process([$instance, 'method']);
 
 ```
 
 ### Tag the task
 
 ```php
-$snidel->fork($f, 'foo', 'tag1');
-$snidel->fork($f, 'bar', 'tag1');
-$snidel->fork($f, 'baz', 'tag2');
+$snidel->process($f, 'foo', 'tag1');
+$snidel->process($f, 'bar', 'tag1');
+$snidel->process($f, 'baz', 'tag2');
 
 foreach ($snidel->results as $r) {
     echo $r->getTask()->getTag();
@@ -104,7 +104,7 @@ $stream->setFormatter(new LineFormatter("%datetime% > %level_name% > %message% %
 $monolog->pushHandler($stream);
 
 $snidel = new Snidel(['logger' => $monolog]);
-$snidel->fork($f);
+$snidel->process($f);
 
 // 2017-03-22 13:13:43 > DEBUG > forked worker. pid: 60018 {"role":"master","pid":60017}
 // 2017-03-22 13:13:43 > DEBUG > forked worker. pid: 60019 {"role":"master","pid":60017}
@@ -119,7 +119,7 @@ $snidel->fork($f);
 ### Error informations of children
 
 ```php
-$snidel->fork(function ($arg1, $arg2) {
+$snidel->process(function ($arg1, $arg2) {
     exit(1);
 }, ['foo', 'bar']);
 $snidel->get();

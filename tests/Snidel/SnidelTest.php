@@ -13,8 +13,8 @@ class SnidelTest extends TestCase
     {
         $snidel = new Snidel();
 
-        $snidel->fork('receivesArgumentsAndReturnsIt', ['foo']);
-        $snidel->fork('receivesArgumentsAndReturnsIt', ['bar']);
+        $snidel->process('receivesArgumentsAndReturnsIt', ['foo']);
+        $snidel->process('receivesArgumentsAndReturnsIt', ['bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);
@@ -27,7 +27,7 @@ class SnidelTest extends TestCase
     public function omitTheSecondArgumentOfFork()
     {
         $snidel = new Snidel();
-        $snidel->fork('returnsFoo');
+        $snidel->process('returnsFoo');
 
         foreach ($snidel->results() as $r) {
             $this->assertSame('foo', $r->getReturn());
@@ -40,7 +40,7 @@ class SnidelTest extends TestCase
     public function passTheValueOtherThanArray()
     {
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', 'foo');
+        $snidel->process('receivesArgumentsAndReturnsIt', 'foo');
 
         foreach ($snidel->results() as $r) {
             $this->assertSame('foo', $r->getReturn());
@@ -53,7 +53,7 @@ class SnidelTest extends TestCase
     public function passMultipleArguments()
     {
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', ['foo', 'bar']);
+        $snidel->process('receivesArgumentsAndReturnsIt', ['foo', 'bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertSame('foobar', $r->getReturn());
@@ -68,10 +68,10 @@ class SnidelTest extends TestCase
         $snidel = new Snidel(['concurrency' => 3]);
 
         $start = time();
-        $snidel->fork('sleepsTwoSeconds');
-        $snidel->fork('sleepsTwoSeconds');
-        $snidel->fork('sleepsTwoSeconds');
-        $snidel->fork('sleepsTwoSeconds');
+        $snidel->process('sleepsTwoSeconds');
+        $snidel->process('sleepsTwoSeconds');
+        $snidel->process('sleepsTwoSeconds');
+        $snidel->process('sleepsTwoSeconds');
         $snidel->wait();
         $elapsed = time() - $start;
 
@@ -86,8 +86,8 @@ class SnidelTest extends TestCase
         $snidel = new Snidel();
         $test = new \TestClass();
 
-        $snidel->fork([$test, 'returnsFoo']);
-        $snidel->fork([$test, 'receivesArgumentsAndReturnsIt'], 'bar');
+        $snidel->process([$test, 'returnsFoo']);
+        $snidel->process([$test, 'receivesArgumentsAndReturnsIt'], 'bar');
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);
@@ -103,8 +103,8 @@ class SnidelTest extends TestCase
         $func = function ($arg = 'foo') {
             return $arg;
         };
-        $snidel->fork($func);
-        $snidel->fork($func, 'bar');
+        $snidel->process($func);
+        $snidel->process($func, 'bar');
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);
@@ -117,7 +117,7 @@ class SnidelTest extends TestCase
     public function getOutput()
     {
         $snidel = new Snidel();
-        $snidel->fork(function () {
+        $snidel->process(function () {
             echo 'foobar';
         });
 
@@ -132,7 +132,7 @@ class SnidelTest extends TestCase
     public function abnormalExit()
     {
         $snidel = new Snidel();
-        $snidel->fork('abnormalExit');
+        $snidel->process('abnormalExit');
         $snidel->wait();
 
         $this->assertTrue($snidel->hasError());
@@ -144,7 +144,7 @@ class SnidelTest extends TestCase
     public function getSetsErrorWhenChildTerminatesAbnormally()
     {
         $snidel = new Snidel();
-        $snidel->fork(function () {
+        $snidel->process(function () {
             exit(1);
         });
 
@@ -158,7 +158,7 @@ class SnidelTest extends TestCase
     public function getErrorReturnsInstanceOfSnidelError()
     {
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', ['bar']);
+        $snidel->process('receivesArgumentsAndReturnsIt', ['bar']);
         $snidel->wait();
         $this->assertInstanceOf('Ackintosh\\Snidel\\Error', $snidel->getError());
     }
@@ -169,8 +169,8 @@ class SnidelTest extends TestCase
     public function results()
     {
         $snidel = new Snidel();
-        $snidel->fork('receivesArgumentsAndReturnsIt', ['foo']);
-        $snidel->fork('receivesArgumentsAndReturnsIt', ['bar']);
+        $snidel->process('receivesArgumentsAndReturnsIt', ['foo']);
+        $snidel->process('receivesArgumentsAndReturnsIt', ['bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);
