@@ -109,9 +109,17 @@ class WorkerTest extends TestCase
      */
     public function error()
     {
-        $this->worker->setResultQueue($this->resultQueue);
+        $worker = ClassProxy::on(new Worker(new Process(getmypid())));
+        $worker->setResultQueue($this->resultQueue);
+        $worker->task = new Task(
+            function ($arg) {
+                return $arg;
+            },
+            'test',
+            null
+        );
 
-        $this->worker->error();
+        $worker->error();
 
         $result = $this->resultQueue->dequeue();
         $this->assertTrue($result->isFailure());
@@ -129,8 +137,16 @@ class WorkerTest extends TestCase
         $stat['msg_qbytes'] = 1;
         $property->setValue($this->resultQueue, $stat);
 
-        $this->worker->setResultQueue($this->resultQueue);
-        $this->worker->error();
+        $worker = ClassProxy::on(new Worker(new Process(getmypid())));
+        $worker->task = new Task(
+            function ($arg) {
+                return $arg;
+            },
+            'test',
+            null
+        );
+        $worker->setResultQueue($this->resultQueue);
+        $worker->error();
     }
 
     /**

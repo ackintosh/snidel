@@ -8,6 +8,9 @@ use Ackintosh\Snidel\Task\Task;
 
 class Worker
 {
+    /** @var \Ackintosh\Snidel\Task\Task */
+    private $task;
+
     /** @var \Ackintosh\Snidel\Fork\Process */
     private $process;
 
@@ -68,9 +71,9 @@ class Worker
     public function run()
     {
         try {
-            $task = $this->taskQueue->dequeue();
+            $this->task = $this->taskQueue->dequeue();
             $this->isReceivedTask = true;
-            $result = $task->execute();
+            $result = $this->task->execute();
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -93,7 +96,7 @@ class Worker
     {
         $result = new Result();
         $result->setError(error_get_last());
-        $result->setTask(new Task('echo', [], null));
+        $result->setTask($this->task);
         $result->setProcess($this->process);
 
         try {
