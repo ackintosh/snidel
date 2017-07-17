@@ -11,7 +11,7 @@ class Worker
     /** @var \Ackintosh\Snidel\Task\Task */
     private $task;
 
-    /** @var \Ackintosh\Snidel\Fork\Fork */
+    /** @var \Ackintosh\Snidel\Fork\Process */
     private $fork;
 
     /** @var \Ackintosh\Snidel\Task\QueueInterface */
@@ -30,7 +30,7 @@ class Worker
     private $isEnqueuedResult = false;
 
     /**
-     * @param   \Ackintosh\Snidel\Fork\Fork $fork
+     * @param   \Ackintosh\Snidel\Fork\Process $fork
      */
     public function __construct($fork)
     {
@@ -78,7 +78,7 @@ class Worker
             throw $e;
         }
 
-        $result->setFork($this->fork);
+        $result->setProcess($this->fork);
 
         try {
             $this->resultQueue->enqueue($result);
@@ -97,7 +97,7 @@ class Worker
         $result = new Result();
         $result->setError(error_get_last());
         $result->setTask(new Task('echo', [], null));
-        $result->setFork($this->fork);
+        $result->setProcess($this->fork);
 
         try {
             $this->resultQueue->enqueue($result);

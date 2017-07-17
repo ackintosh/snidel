@@ -1,7 +1,7 @@
 <?php
 namespace Ackintosh\Snidel\Fork;
 
-class Fork
+class Process
 {
     /** @var int */
     private $pid;

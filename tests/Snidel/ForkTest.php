@@ -1,7 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Fork\Fork;
+use Ackintosh\Snidel\Fork\Process;
 
 class ForkTest extends \PHPUnit_Framework_TestCase
 {
@@ -10,7 +10,7 @@ class ForkTest extends \PHPUnit_Framework_TestCase
      */
     public function pid()
     {
-        $fork = new Fork(getmypid());
+        $fork = new Process(getmypid());
         $this->assertSame(getmypid(), $fork->getPid());
     }
 
@@ -19,7 +19,7 @@ class ForkTest extends \PHPUnit_Framework_TestCase
      */
     public function status()
     {
-        $fork = new Fork(getmypid());
+        $fork = new Process(getmypid());
 
         $expect = 1;
         $fork->setStatus($expect);

@@ -4,20 +4,20 @@ namespace Ackintosh\Snidel\Fork;
 class Formatter
 {
     /**
-     * @param   \Ackintosh\Snidel\Fork\Fork  $fork
+     * @param   \Ackintosh\Snidel\Fork\Process  $process
      * @return  string
      */
-    public static function serialize($fork)
+    public static function serialize($process)
     {
-        return serialize($fork);
+        return serialize($process);
     }
 
     /**
-     * @param   string  $serializedFork
-     * @return  \Ackintosh\Snidel\Fork\Fork
+     * @param   string  $serializedProcess
+     * @return  \Ackintosh\Snidel\Fork\Process
      */
-    public static function unserialize($serializedFork)
+    public static function unserialize($serializedProcess)
     {
-        return unserialize($serializedFork);
+        return unserialize($serializedProcess);
     }
 }

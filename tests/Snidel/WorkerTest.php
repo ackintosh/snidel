@@ -1,7 +1,7 @@
 <?php
 use Ackintosh\Snidel\TestCase;
 use Ackintosh\Snidel\Worker;
-use Ackintosh\Snidel\Fork\Fork;
+use Ackintosh\Snidel\Fork\Process;
 use Ackintosh\Snidel\Task\Task;
 
 class WorkerTest extends TestCase
@@ -15,7 +15,7 @@ class WorkerTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->worker = new Worker(new Fork(getmypid()));
+        $this->worker = new Worker(new Process(getmypid()));
         $this->resultQueue = $this->makeResultQueue();
         $this->taskQueue = $this->makeTaskQueue();
     }
@@ -71,7 +71,7 @@ class WorkerTest extends TestCase
      */
     public function runThrowsExceptionWhenExceptionOccurredInTask()
     {
-        $this->worker = new Worker(new Fork(getmypid()));
+        $this->worker = new Worker(new Process(getmypid()));
         $this->worker->setResultQueue($this->resultQueue);
         $this->worker->setTaskQueue($this->taskQueue);
         $task = new Task(

@@ -105,7 +105,7 @@ class Container
     /**
      * fork process
      *
-     * @return  \Ackintosh\Snidel\Fork\Fork
+     * @return  \Ackintosh\Snidel\Fork\Process
      * @throws  \RuntimeException
      */
     private function fork()
@@ -117,7 +117,7 @@ class Container
 
         $pid = ($pid === 0) ? getmypid() : $pid;
 
-        return new Fork($pid);
+        return new Process($pid);
     }
 
     /**
@@ -273,7 +273,7 @@ class Container
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             $result = $this->dequeue();
             if ($result->isFailure()) {
-                $this->error[$result->getFork()->getPid()] = $result;
+                $this->error[$result->getProcess()->getPid()] = $result;
             }
         }
     }
@@ -287,7 +287,7 @@ class Container
             $result = $this->dequeue();
 
             if ($result->isFailure()) {
-                $pid = $result->getFork()->getPid();
+                $pid = $result->getProcess()->getPid();
                 $this->error[$pid] = $result;
             } else {
                 yield $result;

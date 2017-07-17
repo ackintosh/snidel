@@ -1,7 +1,7 @@
 <?php
 namespace Ackintosh\Snidel\Result;
 
-use Ackintosh\Snidel\Fork\Formatter as ForkFormatter;
+use Ackintosh\Snidel\Fork\Formatter as ProcessFormatter;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 
 class Formatter
@@ -10,13 +10,13 @@ class Formatter
     {
         $cloned = clone $result;
         $serializedTask = TaskFormatter::serialize($cloned->getTask());
-        $serializedFork = ForkFormatter::serialize($cloned->getFork());
+        $serializedProcess = ProcessFormatter::serialize($cloned->getProcess());
         $cloned->setTask(null);
-        $cloned->setFork(null);
+        $cloned->setProcess(null);
 
         return serialize([
-            'serializedTask'     => $serializedTask,
-            'serializedFork'    => $serializedFork,
+            'serializedTask'    => $serializedTask,
+            'serializedProcess' => $serializedProcess,
             'result'            => $cloned,
         ]);
     }
@@ -26,14 +26,14 @@ class Formatter
         $cloned = clone $result;
 
         $serializedTask = TaskFormatter::minifyAndSerialize($cloned->getTask());
-        $serializedFork = ForkFormatter::serialize($cloned->getFork());
+        $serializedProcess = ProcessFormatter::serialize($cloned->getProcess());
         $cloned->setTask(null);
-        $cloned->setFork(null);
+        $cloned->setProcess(null);
 
         return serialize([
             'serializedTask'     => $serializedTask,
-            'serializedFork'    => $serializedFork,
-            'result'            => $cloned,
+            'serializedProcess'  => $serializedProcess,
+            'result'             => $cloned,
         ]);
     }
 
@@ -41,7 +41,7 @@ class Formatter
     {
         $unserialized = unserialize($serializedResult);
         $unserialized['result']->setTask(TaskFormatter::unserialize($unserialized['serializedTask']));
-        $unserialized['result']->setFork(ForkFormatter::unserialize($unserialized['serializedFork']));
+        $unserialized['result']->setProcess(ProcessFormatter::unserialize($unserialized['serializedProcess']));
 
         return $unserialized['result'];
     }

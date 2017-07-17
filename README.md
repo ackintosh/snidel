@@ -35,7 +35,7 @@ $snidel->process($f, 'baz');
 
 // `Snidel::results()` returns `\Generator`
 foreach ($snidel->results() as $r) {
-    echo $r->getFork()->getPid();
+    echo $r->getProcess()->getPid();
     echo $r->getOutput();
     echo $r->getReturn();
 }

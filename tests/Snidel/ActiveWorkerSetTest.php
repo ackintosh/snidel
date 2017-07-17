@@ -68,7 +68,7 @@ class ActiveWorkerSetTest extends TestCase
     public function terminate()
     {
         $worker1 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
-            ->setConstructorArgs([$this->makeFork(1)])
+            ->setConstructorArgs([$this->makeProcess(1)])
             ->setMethods(['terminate'])
             ->getMock();
         $worker1->expects($this->once())
@@ -76,7 +76,7 @@ class ActiveWorkerSetTest extends TestCase
             ->with(SIGTERM);
 
         $worker2 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
-            ->setConstructorArgs([$this->makeFork(2)])
+            ->setConstructorArgs([$this->makeProcess(2)])
             ->setMethods(['terminate'])
             ->getMock();
         $worker2->expects($this->once())

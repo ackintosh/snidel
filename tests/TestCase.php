@@ -1,7 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Fork\Fork;
+use Ackintosh\Snidel\Fork\Process;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Queue as ResultQueue;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
@@ -14,11 +14,11 @@ use Ackintosh\Snidel\Fork\Container;
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @return \Ackintosh\Snidel\Fork\Fork
+     * @return \Ackintosh\Snidel\Fork\Process
      */
-    protected function makeFork($pid = null)
+    protected function makeProcess($pid = null)
     {
-        return new Fork($pid ? $pid : getmypid());
+        return new Process($pid ? $pid : getmypid());
     }
 
     /**
@@ -35,7 +35,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function makeResult()
     {
         $result = new Result();
-        $result->setFork($this->makeFork());
+        $result->setProcess($this->makeProcess());
         $result->setTask($this->makeTask());
 
         return $result;
@@ -75,7 +75,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         $pid = $pid ?: getmypid();
 
-        return new Worker(new Fork($pid));
+        return new Worker(new Process($pid));
     }
 
     protected function makeDefaultConfig()
