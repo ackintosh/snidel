@@ -8,9 +8,6 @@ use Ackintosh\Snidel\Task\Task;
 
 class Worker
 {
-    /** @var \Ackintosh\Snidel\Task\Task */
-    private $task;
-
     /** @var \Ackintosh\Snidel\Fork\Process */
     private $process;
 
