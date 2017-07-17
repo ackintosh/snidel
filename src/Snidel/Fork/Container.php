@@ -204,7 +204,11 @@ class Container
             $worker->setResultQueue($this->queueFactory->createResultQueue());
 
             register_shutdown_function(function () use ($worker) {
-                if ($worker->isFailedToEnqueueResult() && $this->receivedSignal === null) {
+                if (!$worker->hasTask()) {
+                    return;
+                }
+
+                if (!$worker->done() && $this->receivedSignal === null) {
                     $worker->error();
                 }
             });

@@ -4,7 +4,6 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
-use Ackintosh\Snidel\Task\Task;
 
 class Worker
 {
@@ -24,10 +23,7 @@ class Worker
     private $pcntl;
 
     /** @var bool */
-    private $isReceivedTask = false;
-
-    /** @var bool */
-    private $isEnqueuedResult = false;
+    private $done = false;
 
     /**
      * @param   \Ackintosh\Snidel\Fork\Process $process
@@ -72,7 +68,6 @@ class Worker
     {
         try {
             $this->task = $this->taskQueue->dequeue();
-            $this->isReceivedTask = true;
             $result = $this->task->execute();
         } catch (\RuntimeException $e) {
             throw $e;
@@ -82,7 +77,7 @@ class Worker
 
         try {
             $this->resultQueue->enqueue($result);
-            $this->isEnqueuedResult = true;
+            $this->done = true;
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -120,8 +115,16 @@ class Worker
     /**
      * @return bool
      */
-    public function isFailedToEnqueueResult()
+    public function hasTask()
     {
-        return $this->isReceivedTask && !$this->isEnqueuedResult;
+        return $this->task !== null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function done()
+    {
+        return $this->done;
     }
 }
