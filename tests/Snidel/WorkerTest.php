@@ -139,7 +139,7 @@ class WorkerTest extends TestCase
     public function terminate()
     {
         $container = $this->makeForkContainer();
-        $container->masterPid = getmypid();
+        $container->master = new Process(getmypid());
         $worker = $container->forkWorker();
         $worker->terminate(SIGTERM);
 

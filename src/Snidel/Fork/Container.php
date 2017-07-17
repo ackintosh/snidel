@@ -11,8 +11,8 @@ use Ackintosh\Snidel\Worker;
 
 class Container
 {
-    /** @var int */
-    private $masterPid;
+    /** @var Process */
+    private $master;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
@@ -105,20 +105,20 @@ class Container
     /**
      * fork master process
      *
-     * @return  int     $masterPid
+     * @return Process $master
+     * @throws \RuntimeException
      */
     public function forkMaster()
     {
         try {
-            $fork = $this->pcntl->fork();
+            $this->master = $this->pcntl->fork();
         } catch (\RuntimeException $e) {
             $message = 'failed to fork master: ' . $e->getMessage();
             $this->log->error($message);
             throw new \RuntimeException($message);
         }
 
-        $this->masterPid = $fork->getPid();
-        $this->log->setMasterPid($this->masterPid);
+        $this->log->setMasterPid($this->master->getPid());
 
         if (getmypid() === $this->config->get('ownerPid')) {
             // owner
@@ -126,11 +126,11 @@ class Container
             $this->taskQueue    = $this->queueFactory->createTaskQueue();
             $this->resultQueue  = $this->queueFactory->createResultQueue();
 
-            return $this->masterPid;
+            return $this->master;
         } else {
             // master
             $activeWorkerSet = new ActiveWorkerSet();
-            $this->log->info('pid: ' . $this->masterPid);
+            $this->log->info('pid: ' . $this->master->getPid());
 
             foreach ($this->signals as $sig) {
                 $this->pcntl->signal($sig, function ($sig) use ($activeWorkerSet) {
@@ -184,7 +184,7 @@ class Container
 
         $worker = new Worker($process);
 
-        if (getmypid() === $this->masterPid) {
+        if (getmypid() === $this->master->getPid()) {
             // master
             $this->log->info('forked worker. pid: ' . $worker->getPid());
             return $worker;
@@ -229,7 +229,7 @@ class Container
      */
     public function existsMaster()
     {
-        return $this->masterPid !== null;
+        return $this->master !== null;
     }
 
     /**
@@ -240,14 +240,14 @@ class Container
     public function sendSignalToMaster($sig = SIGTERM)
     {
         $this->log->info('----> sending signal to master. signal: ' . $sig);
-        posix_kill($this->masterPid, $sig);
+        posix_kill($this->master->getPid(), $sig);
         $this->log->info('<---- sent signal.');
 
         $this->log->info('----> waiting for master shutdown.');
         $status = null;
-        $this->pcntl->waitpid($this->masterPid, $status);
+        $this->pcntl->waitpid($this->master->getPid(), $status);
         $this->log->info('<---- master shutdown. status: ' . $status);
-        $this->masterPid = null;
+        $this->master = null;
     }
 
     /**
