@@ -75,7 +75,7 @@ class Container
      */
     public function queuedCount()
     {
-        if (is_null($this->taskQueue)) {
+        if (!isset($this->taskQueue) || is_null($this->taskQueue)) {
             return 0;
         }
 
@@ -95,29 +95,11 @@ class Container
      */
     public function dequeuedCount()
     {
-        if (is_null($this->resultQueue)) {
+        if (!isset($this->resultQueue) || is_null($this->resultQueue)) {
             return 0;
         }
 
         return $this->resultQueue->dequeuedCount();
-    }
-
-    /**
-     * fork process
-     *
-     * @return  \Ackintosh\Snidel\Fork\Process
-     * @throws  \RuntimeException
-     */
-    private function fork()
-    {
-        $pid = $this->pcntl->fork();
-        if ($pid === -1) {
-            throw new \RuntimeException('could not fork a new process');
-        }
-
-        $pid = ($pid === 0) ? getmypid() : $pid;
-
-        return new Process($pid);
     }
 
     /**
@@ -128,9 +110,11 @@ class Container
     public function forkMaster()
     {
         try {
-            $fork = $this->fork();
+            $fork = $this->pcntl->fork();
         } catch (\RuntimeException $e) {
-            throw $e;
+            $message = 'failed to fork master: ' . $e->getMessage();
+            $this->log->error($message);
+            throw new \RuntimeException($message);
         }
 
         $this->masterPid = $fork->getPid();
@@ -191,10 +175,11 @@ class Container
     private function forkWorker()
     {
         try {
-            $fork = $this->fork();
+            $fork = $this->pcntl->fork();
         } catch (\RuntimeException $e) {
-            $this->log->error($e->getMessage());
-            throw $e;
+            $message = 'failed to fork worker: ' . $e->getMessage();
+            $this->log->error($message);
+            throw new \RuntimeException($message);
         }
 
         $worker = new Worker($fork);
