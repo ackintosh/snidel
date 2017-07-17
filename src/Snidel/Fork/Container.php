@@ -175,14 +175,14 @@ class Container
     private function forkWorker()
     {
         try {
-            $fork = $this->pcntl->fork();
+            $process = $this->pcntl->fork();
         } catch (\RuntimeException $e) {
             $message = 'failed to fork worker: ' . $e->getMessage();
             $this->log->error($message);
             throw new \RuntimeException($message);
         }
 
-        $worker = new Worker($fork);
+        $worker = new Worker($process);
 
         if (getmypid() === $this->masterPid) {
             // master

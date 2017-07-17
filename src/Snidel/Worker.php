@@ -12,7 +12,7 @@ class Worker
     private $task;
 
     /** @var \Ackintosh\Snidel\Fork\Process */
-    private $fork;
+    private $process;
 
     /** @var \Ackintosh\Snidel\Task\QueueInterface */
     private $taskQueue;
@@ -30,12 +30,12 @@ class Worker
     private $isEnqueuedResult = false;
 
     /**
-     * @param   \Ackintosh\Snidel\Fork\Process $fork
+     * @param   \Ackintosh\Snidel\Fork\Process $process
      */
-    public function __construct($fork)
+    public function __construct($process)
     {
-        $this->pcntl    = new Pcntl();
-        $this->fork     = $fork;
+        $this->pcntl = new Pcntl();
+        $this->process = $process;
     }
 
     /**
@@ -61,7 +61,7 @@ class Worker
      */
     public function getPid()
     {
-        return $this->fork->getPid();
+        return $this->process->getPid();
     }
 
     /**
@@ -78,7 +78,7 @@ class Worker
             throw $e;
         }
 
-        $result->setProcess($this->fork);
+        $result->setProcess($this->process);
 
         try {
             $this->resultQueue->enqueue($result);
@@ -97,7 +97,7 @@ class Worker
         $result = new Result();
         $result->setError(error_get_last());
         $result->setTask(new Task('echo', [], null));
-        $result->setProcess($this->fork);
+        $result->setProcess($this->process);
 
         try {
             $this->resultQueue->enqueue($result);
@@ -112,9 +112,9 @@ class Worker
      */
     public function terminate($sig)
     {
-        posix_kill($this->fork->getPid(), $sig);
+        posix_kill($this->process->getPid(), $sig);
         $status = null;
-        $this->pcntl->waitpid($this->fork->getPid(), $status);
+        $this->pcntl->waitpid($this->process->getPid(), $status);
     }
 
     /**
