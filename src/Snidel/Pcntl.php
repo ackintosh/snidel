@@ -1,14 +1,24 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\Fork\Process;
+
 class Pcntl
 {
     /**
      * @see pcntl_fork
+     * @return Process
+     * @throws \RuntimeException
      */
     public function fork()
     {
-        return pcntl_fork();
+        $pid = pcntl_fork();
+        if ($pid === -1) {
+            throw new \RuntimeException(pcntl_strerror(pcntl_get_last_error()));
+        }
+
+        $pid = ($pid === 0) ? getmypid() : $pid;
+        return new Process($pid);
     }
 
     /**

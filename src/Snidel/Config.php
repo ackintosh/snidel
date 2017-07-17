@@ -7,24 +7,26 @@ class Config
     private $params;
 
     /**
-     * @param   array   $params
+     * @param array $params
      */
-    public function __construct($params = array())
+    public function __construct($params = [])
     {
-        $default = array(
+        $default = [
             'concurrency'   => 5,
-            'taskQueue'     => array(
+            'taskQueue'     => [
                 'className'         => '\Ackintosh\Snidel\Task\Queue',
                 'constructorArgs'   => null,
-            ),
-            'resultQueue'   => array(
+            ],
+            'resultQueue'   => [
                 'className'         => '\Ackintosh\Snidel\Result\Queue',
                 'constructorArgs'   => null,
-            ),
-        );
+            ],
+            'logger'        => null,
+        ];
 
         $this->params = array_merge($default, $params);
         $this->params['ownerPid'] = getmypid();
+        $this->params['id'] = spl_object_hash($this);
     }
 
     /**

@@ -12,6 +12,9 @@ class IpcKey
     /** @var string */
     private $pathname;
 
+    /** @var \Ackintosh\Snidel\Semaphore */
+    private $semaphore;
+
     /**
      * @param   int     $ownerPid
      * @param   string  $prefix
@@ -21,6 +24,7 @@ class IpcKey
         $this->ownerPid = $ownerPid;
         $this->prefix   = $prefix;
         $this->pathname = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $this->prefix . $this->ownerPid;
+        $this->semaphore = new Semaphore();
     }
 
     /**
@@ -35,7 +39,7 @@ class IpcKey
             touch($this->pathname);
         }
 
-        if (($key = ftok($this->pathname, 'S')) === -1) {
+        if (($key = $this->semaphore->ftok($this->pathname, 'S')) === -1) {
             throw new \RuntimeException('failed to create System V IPC key');
         }
 

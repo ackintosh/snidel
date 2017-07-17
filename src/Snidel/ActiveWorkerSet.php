@@ -4,7 +4,7 @@ namespace Ackintosh\Snidel;
 class ActiveWorkerSet
 {
     /** @var \Ackintosh\Snidel\Worker[] */
-    private $workers = array();
+    private $workers = [];
 
     /**
      * @param   \Ackintosh\Snidel\Worker

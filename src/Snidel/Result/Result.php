@@ -9,8 +9,8 @@ class Result
     /** @var string */
     private $output;
 
-    /** @var \Ackintosh\Snidel\Fork\Fork */
-    private $fork;
+    /** @var \Ackintosh\Snidel\Fork\Process */
+    private $process;
 
     /** @var \Ackintosh\Snidel\Task\Task */
     private $task;
@@ -64,20 +64,20 @@ class Result
     }
 
     /**
-     * @param   \Ackintosh\Snidel\Fork\Fork
+     * @param   \Ackintosh\Snidel\Fork\Process
      * @return  void
      */
-    public function setFork($fork)
+    public function setProcess($fork)
     {
-        $this->fork = $fork;
+        $this->process = $fork;
     }
 
     /**
-     * @return  \Ackintosh\Snidel\Fork\Fork
+     * @return  \Ackintosh\Snidel\Fork\Process
      */
-    public function getFork()
+    public function getProcess()
     {
-        return $this->fork;
+        return $this->process;
     }
 
     /**

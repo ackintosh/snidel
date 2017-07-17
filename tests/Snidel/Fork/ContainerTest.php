@@ -6,13 +6,19 @@ class ContainerTest extends TestCase
 {
     /**
      * @test
-     * @runInSeparateProcess
      * @expectedException \RuntimeException
      */
     public function enqueueThrowsExceptionWhenFailed()
     {
+        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
+            ->setMethods(['sendMessage'])
+            ->getMock();
+        $semaphore->expects($this->once())
+            ->method('sendMessage')
+            ->willReturn(false);
+
         $container = $this->makeForkContainer();
-        $container->taskQueue = $this->makeTaskQueue();
+        $container->taskQueue = $this->setSemaphore($this->makeTaskQueue(), $semaphore);
 
         $task = new Task(
             function ($args) {
@@ -22,27 +28,7 @@ class ContainerTest extends TestCase
             null
         );
 
-        require_once(__DIR__ . '/../../msg_send.php');
         $container->enqueue($task);
-    }
-
-    /**
-     * @test
-     * @expectedException \RuntimeException
-     */
-    public function forkThrowsExceptionWhenFailed()
-    {
-        $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('fork'))
-            ->getMock();
-
-        $pcntl->expects($this->once())
-            ->method('fork')
-            ->will($this->returnValue(-1));
-
-        $container = $this->makeForkContainer();
-        $container->pcntl = $pcntl;
-        $container->fork();
     }
 
     /**
@@ -52,12 +38,12 @@ class ContainerTest extends TestCase
     public function forkWorkerThrowsExceptionWhenFailed()
     {
         $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('fork'))
+            ->setMethods(['fork'])
             ->getMock();
 
         $pcntl->expects($this->once())
             ->method('fork')
-            ->will($this->returnValue(-1));
+            ->willThrowException(new \RuntimeException());
 
         $container = $this->makeForkContainer();
         $container->pcntl = $pcntl;
@@ -71,12 +57,12 @@ class ContainerTest extends TestCase
     public function forkMasterThrowsExceptionWhenFailed()
     {
         $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')
-            ->setMethods(array('fork'))
+            ->setMethods(['fork'])
             ->getMock();
 
         $pcntl->expects($this->once())
             ->method('fork')
-            ->will($this->returnValue(-1));
+            ->willThrowException(new \RuntimeException());
 
         $container = $this->makeForkContainer();
         $container->pcntl = $pcntl;
@@ -89,11 +75,11 @@ class ContainerTest extends TestCase
     public function sendSignalToMaster()
     {
         $container = $this->makeForkContainer();
-        $masterPid = $container->forkMaster();
+        $master = $container->forkMaster();
         $container->sendSignalToMaster(SIGTERM);
 
         // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.
         $status = null;
-        $this->assertSame(-1, pcntl_waitpid($masterPid, $status, WUNTRACED));
+        $this->assertSame(-1, pcntl_waitpid($master->getPid(), $status, WUNTRACED));
     }
 }

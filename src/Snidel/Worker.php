@@ -4,15 +4,14 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
-use Ackintosh\Snidel\Task\Task;
 
 class Worker
 {
     /** @var \Ackintosh\Snidel\Task\Task */
     private $task;
 
-    /** @var \Ackintosh\Snidel\Fork\Fork */
-    private $fork;
+    /** @var \Ackintosh\Snidel\Fork\Process */
+    private $process;
 
     /** @var \Ackintosh\Snidel\Task\QueueInterface */
     private $taskQueue;
@@ -24,18 +23,15 @@ class Worker
     private $pcntl;
 
     /** @var bool */
-    private $isReceivedTask = false;
-
-    /** @var bool */
-    private $isEnqueuedResult = false;
+    private $done = false;
 
     /**
-     * @param   \Ackintosh\Snidel\Fork\Fork $fork
+     * @param   \Ackintosh\Snidel\Fork\Process $process
      */
-    public function __construct($fork)
+    public function __construct($process)
     {
-        $this->pcntl    = new Pcntl();
-        $this->fork     = $fork;
+        $this->pcntl = new Pcntl();
+        $this->process = $process;
     }
 
     /**
@@ -61,7 +57,7 @@ class Worker
      */
     public function getPid()
     {
-        return $this->fork->getPid();
+        return $this->process->getPid();
     }
 
     /**
@@ -71,18 +67,17 @@ class Worker
     public function run()
     {
         try {
-            $task = $this->taskQueue->dequeue();
-            $this->isReceivedTask = true;
-            $result = $task->execute();
+            $this->task = $this->taskQueue->dequeue();
+            $result = $this->task->execute();
         } catch (\RuntimeException $e) {
             throw $e;
         }
 
-        $result->setFork($this->fork);
+        $result->setProcess($this->process);
 
         try {
             $this->resultQueue->enqueue($result);
-            $this->isEnqueuedResult = true;
+            $this->done = true;
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -96,8 +91,8 @@ class Worker
     {
         $result = new Result();
         $result->setError(error_get_last());
-        $result->setTask(new Task('echo', array(), null));
-        $result->setFork($this->fork);
+        $result->setTask($this->task);
+        $result->setProcess($this->process);
 
         try {
             $this->resultQueue->enqueue($result);
@@ -112,16 +107,24 @@ class Worker
      */
     public function terminate($sig)
     {
-        posix_kill($this->fork->getPid(), $sig);
+        posix_kill($this->process->getPid(), $sig);
         $status = null;
-        $this->pcntl->waitpid($this->fork->getPid(), $status);
+        $this->pcntl->waitpid($this->process->getPid(), $status);
     }
 
     /**
      * @return bool
      */
-    public function isFailedToEnqueueResult()
+    public function hasTask()
     {
-        return $this->isReceivedTask && !$this->isEnqueuedResult;
+        return $this->task !== null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function done()
+    {
+        return $this->done;
     }
 }

@@ -22,98 +22,96 @@ $ composer require ackintosh/snidel
 <?php
 use Ackintosh\Snidel;
 
-$func = function ($str) {
+$f = function ($str) {
     sleep(3);
     return $str;
 };
 
 $s = time();
 $snidel = new Snidel();
-$snidel->fork($func, 'foo');
-$snidel->fork($func, 'bar');
-$snidel->fork($func, 'baz');
+$snidel->process($f, 'foo');
+$snidel->process($f, 'bar');
+$snidel->process($f, 'baz');
 
-$snidel->wait();// optional
-
-// Snidel::get() returns instance of Snidel\Result\Collection
-$collection = $snidel->get();
-
-// Snidel\Result\Collection implements \Iterator
-foreach ($collection as $result) {
-    echo $result->getFork()->getPid();
-    echo $result->getOutput();
-    echo $result->getReturn();
+// `Snidel::results()` returns `\Generator`
+foreach ($snidel->results() as $r) {
+    echo $r->getProcess()->getPid();
+    echo $r->getOutput();
+    echo $r->getReturn();
 }
 
-var_dump($collection->toArray());
-// * the order of results is not guaranteed. *
-// array(3) {
-//   [0]=>
-//   string(3) "bar"
-//   [1]=>
-//   string(3) "foo"
-//   [2]=>
-//   string(3) "baz"
-// }
+// If you don't need the results, let's use `Snidel::wait()`
+// $snidel->wait();
 
 echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 // 3sec elapsed.
+```
+
+### Constructor parameters
+
+```php
+new Snidel([
+    'concurrency' => 2,
+    'logger' => $monolog,
+    'taskQueue'   => [
+        'className' => '\Ackintosh\Snidel\Queue\Sqs\Task',
+    ],
+    'resultQueue' => [
+        'className' => '\Ackintosh\Snidel\Queue\Sqs\Result',
+    ],
+]);
 ```
 
 ### Same argument as `call_user_func_array`
 
 ```php
 // multiple arguments
-$snidel->fork($func, ['foo', 'bar']);
+$snidel->process($f, ['foo', 'bar']);
 
 // global function
-$snidel->fork('myfunction');
+$snidel->process('myfunction');
 
 // instance method
-$snidel->fork([$instance, 'method']);
+$snidel->process([$instance, 'method']);
 
 ```
 
-### Get results with tags
+### Tag the task
 
 ```php
-$snidel->fork($func, 'foo', 'tag1');
-$snidel->fork($func, 'bar', 'tag1');
-$snidel->fork($func, 'baz', 'tag2');
+$snidel->process($f, 'foo', 'tag1');
+$snidel->process($f, 'bar', 'tag1');
+$snidel->process($f, 'baz', 'tag2');
 
-var_dump($snidel->get('tag1')->toArray());
-// array(2) {
-//   [0]=>
-//   string(3) "foo"
-//   [1]=>
-//   string(3) "bar"
-// }
-
-// throws InvalidArgumentException when passed unknown tags.
-$snidel->get('unknown_tags');
-// InvalidArgumentException: There is no tags: unknown_tags
+foreach ($snidel->results as $r) {
+    echo $r->getTask()->getTag();
+}
 ```
 
-### Concurrency
+### With Logger
+
+Snidel supports logging with logger which implements [PSR-3: Logger Interface](http://www.php-fig.org/psr/psr-3/).
 
 ```php
-$snidel = new Snidel($concurrency = 3);
+// e.g. MonoLog
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
 
-```
+$monolog = new Logger('sample');
+$stream = new StreamHandler('php://stdout', Logger::DEBUG);
+$stream->setFormatter(new LineFormatter("%datetime% > %level_name% > %message% %context%\n"));
+$monolog->pushHandler($stream);
 
-### Output log
+$snidel = new Snidel(['logger' => $monolog]);
+$snidel->process($f);
 
-```php
-$fp = fopen('php://stdout', 'w');
-$snidel->setLogDestination($fp);
-
-// logs are output to the `php://stdout`
-$snidel->fork($func, 'foo');
-
-// [2015-12-01 00:00:00][info][26304(p)] created child process. pid: 26306
-// [2015-12-01 00:00:00][info][26306(c)] --> waiting for the token to come around.
-// [2015-12-01 00:00:00][info][26306(c)] ----> started the function.
-// [2015-12-01 00:00:00][info][26306(c)] <-- return token.
+// 2017-03-22 13:13:43 > DEBUG > forked worker. pid: 60018 {"role":"master","pid":60017}
+// 2017-03-22 13:13:43 > DEBUG > forked worker. pid: 60019 {"role":"master","pid":60017}
+// 2017-03-22 13:13:43 > DEBUG > has forked. pid: 60018 {"role":"worker","pid":60018}
+// 2017-03-22 13:13:43 > DEBUG > has forked. pid: 60019 {"role":"worker","pid":60019}
+// 2017-03-22 13:13:44 > DEBUG > ----> started the function. {"role":"worker","pid":60018}
+// 2017-03-22 13:13:44 > DEBUG > ----> started the function. {"role":"worker","pid":60019}
 // ...
 
 ```
@@ -121,10 +119,10 @@ $snidel->fork($func, 'foo');
 ### Error informations of children
 
 ```php
-$snidel->fork(function ($arg1, $arg2) {
+$snidel->process(function ($arg1, $arg2) {
     exit(1);
 }, ['foo', 'bar']);
-$snidel->wait();
+$snidel->get();
 
 var_dump($snidel->getError());
 // class Ackintosh\Snidel\Error#4244 (1) {
@@ -166,7 +164,7 @@ foreach ($snidel->getError() as $pid => $e) {
 | Version   | PHP Version |
 |:----------|:------------|
 | 0.1 ~ [0.8](https://github.com/ackintosh/snidel/releases/tag/0.8.0)    | >= 5.3      |
-| 0.9 ([under development](https://github.com/ackintosh/snidel/pull/16)) | >= 5.6      |
+| [0.9](https://github.com/ackintosh/snidel/releases/tag/0.9.0) | >= 5.6      |
 
 ## Author
 

@@ -7,19 +7,12 @@ use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\QueueFactory;
-use Ackintosh\Snidel\Result\Collection;
 use Ackintosh\Snidel\Worker;
 
 class Container
 {
-    /** @var int */
-    private $ownerPid;
-
-    /** @var int */
-    private $masterPid;
-
-    /** @var \Ackintosh\Snidel\Result\Result[] */
-    private $results = array();
+    /** @var Process */
+    private $master;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
@@ -37,10 +30,10 @@ class Container
     private $log;
 
     /** @var array */
-    private $signals = array(
+    private $signals = [
         SIGTERM,
         SIGINT,
-    );
+    ];
 
     /** @var \Ackintosh\Snidel\Config */
     private $config;
@@ -54,9 +47,8 @@ class Container
     /**
      * @param   int     $ownerPid
      */
-    public function __construct($ownerPid, $log, Config $config)
+    public function __construct(Config $config, $log)
     {
-        $this->ownerPid         = $ownerPid;
         $this->log              = $log;
         $this->config           = $config;
         $this->pcntl            = new Pcntl();
@@ -83,7 +75,7 @@ class Container
      */
     public function queuedCount()
     {
-        if (is_null($this->taskQueue)) {
+        if (!isset($this->taskQueue) || is_null($this->taskQueue)) {
             return 0;
         }
 
@@ -103,7 +95,7 @@ class Container
      */
     public function dequeuedCount()
     {
-        if (is_null($this->resultQueue)) {
+        if (!isset($this->resultQueue) || is_null($this->resultQueue)) {
             return 0;
         }
 
@@ -111,65 +103,46 @@ class Container
     }
 
     /**
-     * fork process
-     *
-     * @return  \Ackintosh\Snidel\Fork\Fork
-     * @throws  \RuntimeException
-     */
-    private function fork()
-    {
-        $pid = $this->pcntl->fork();
-        if ($pid === -1) {
-            throw new \RuntimeException('could not fork a new process');
-        }
-
-        $pid = ($pid === 0) ? getmypid() : $pid;
-
-        return new Fork($pid);
-    }
-
-    /**
      * fork master process
      *
-     * @return  int     $masterPid
+     * @return Process $master
+     * @throws \RuntimeException
      */
     public function forkMaster()
     {
         try {
-            $fork = $this->fork();
+            $this->master = $this->pcntl->fork();
         } catch (\RuntimeException $e) {
-            throw $e;
+            $message = 'failed to fork master: ' . $e->getMessage();
+            $this->log->error($message);
+            throw new \RuntimeException($message);
         }
 
-        $this->masterPid = $fork->getPid();
-        $this->log->setMasterPid($this->masterPid);
+        $this->log->setMasterPid($this->master->getPid());
 
-        if (getmypid() === $this->ownerPid) {
+        if (getmypid() === $this->config->get('ownerPid')) {
             // owner
             $this->log->info('pid: ' . getmypid());
             $this->taskQueue    = $this->queueFactory->createTaskQueue();
             $this->resultQueue  = $this->queueFactory->createResultQueue();
 
-            return $this->masterPid;
+            return $this->master;
         } else {
             // master
             $activeWorkerSet = new ActiveWorkerSet();
-            $this->log->info('pid: ' . $this->masterPid);
+            $this->log->info('pid: ' . $this->master->getPid());
 
-            // for php5.3
-            $log = $this->log;
-            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($log, $activeWorkerSet, $receivedSignal) {
-                    $receivedSignal = $sig;
-                    $log->info('received signal: ' . $sig);
+                $this->pcntl->signal($sig, function ($sig) use ($activeWorkerSet) {
+                    $this->receivedSignal = $sig;
+                    $this->log->info('received signal: ' . $sig);
 
                     if ($activeWorkerSet->count() === 0) {
-                        $log->info('no worker is active.');
+                        $this->log->info('no worker is active.');
                     } else {
-                        $log->info('------> sending signal to workers. signal: ' . $sig);
+                        $this->log->info('------> sending signal to workers. signal: ' . $sig);
                         $activeWorkerSet->terminate($sig);
-                        $log->info('<------ sent signal');
+                        $this->log->info('<------ sent signal');
                     }
                     exit;
                 });
@@ -202,15 +175,16 @@ class Container
     private function forkWorker()
     {
         try {
-            $fork = $this->fork();
+            $process = $this->pcntl->fork();
         } catch (\RuntimeException $e) {
-            $this->log->error($e->getMessage());
-            throw $e;
+            $message = 'failed to fork worker: ' . $e->getMessage();
+            $this->log->error($message);
+            throw new \RuntimeException($message);
         }
 
-        $worker = new Worker($fork);
+        $worker = new Worker($process);
 
-        if (getmypid() === $this->masterPid) {
+        if (getmypid() === $this->master->getPid()) {
             // master
             $this->log->info('forked worker. pid: ' . $worker->getPid());
             return $worker;
@@ -219,11 +193,9 @@ class Container
             // @codeCoverageIgnoreStart
             $this->log->info('has forked. pid: ' . getmypid());
 
-            // for php5.3
-            $receivedSignal = &$this->receivedSignal;
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($receivedSignal) {
-                    $receivedSignal = $sig;
+                $this->pcntl->signal($sig, function ($sig) {
+                    $this->receivedSignal = $sig;
                     exit;
                 }, false);
             }
@@ -231,8 +203,12 @@ class Container
             $worker->setTaskQueue($this->queueFactory->createTaskQueue());
             $worker->setResultQueue($this->queueFactory->createResultQueue());
 
-            register_shutdown_function(function () use ($worker, $receivedSignal) {
-                if ($worker->isFailedToEnqueueResult() && $receivedSignal === null) {
+            register_shutdown_function(function () use ($worker) {
+                if (!$worker->hasTask()) {
+                    return;
+                }
+
+                if (!$worker->done() && $this->receivedSignal === null) {
                     $worker->error();
                 }
             });
@@ -257,7 +233,7 @@ class Container
      */
     public function existsMaster()
     {
-        return $this->masterPid !== null;
+        return $this->master !== null;
     }
 
     /**
@@ -268,30 +244,14 @@ class Container
     public function sendSignalToMaster($sig = SIGTERM)
     {
         $this->log->info('----> sending signal to master. signal: ' . $sig);
-        posix_kill($this->masterPid, $sig);
+        posix_kill($this->master->getPid(), $sig);
         $this->log->info('<---- sent signal.');
 
         $this->log->info('----> waiting for master shutdown.');
         $status = null;
-        $this->pcntl->waitpid($this->masterPid, $status);
+        $this->pcntl->waitpid($this->master->getPid(), $status);
         $this->log->info('<---- master shutdown. status: ' . $status);
-        $this->masterPid = null;
-    }
-
-    /**
-     *
-     * @param   string  $tag
-     * @return  bool
-     */
-    public function hasTag($tag)
-    {
-        foreach ($this->results as $result) {
-            if ($result->getTask()->getTag() === $tag) {
-                return true;
-            }
-        }
-
-        return false;
+        $this->master = null;
     }
 
     /**
@@ -301,46 +261,27 @@ class Container
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             $result = $this->dequeue();
-            $pid = $result->getFork()->getPid();
-            $this->results[$pid] = $result;
-
             if ($result->isFailure()) {
-                $this->error[$pid] = $result;
+                $this->error[$result->getProcess()->getPid()] = $result;
             }
         }
-    }
-
-    public function getCollection($tag = null)
-    {
-        if ($tag === null) {
-            $collection = new Collection($this->results);
-            $this->results = array();
-
-            return $collection;
-        }
-
-        return $this->getCollectionWithTag($tag);
     }
 
     /**
-     * return results
-     *
-     * @param   string  $tag
-     * @return  \Ackintosh\Snidel\Result\Collection
+     * @return \Generator
      */
-    private function getCollectionWithTag($tag)
+    public function results()
     {
-        $results = array();
-        foreach ($this->results as $r) {
-            if ($r->getTask()->getTag() !== $tag) {
-                continue;
+        for (; $this->queuedCount() > $this->dequeuedCount();) {
+            $result = $this->dequeue();
+
+            if ($result->isFailure()) {
+                $pid = $result->getProcess()->getPid();
+                $this->error[$pid] = $result;
+            } else {
+                yield $result;
             }
-
-            $results[] = $r;
-            unset($this->results[$r->getFork()->getPid()]);
         }
-
-        return new Collection($results);
     }
 
     /**

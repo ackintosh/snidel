@@ -23,75 +23,37 @@ class Snidel
     /** @var \Ackintosh\Snidel\Log */
     private $log;
 
-    /** @var bool */
-    private $joined = false;
-
-    /** @var int */
-    private $ownerPid;
-
     /** @var array */
-    private $signals = array(
+    private $signals = [
         SIGTERM,
         SIGINT,
-    );
-
-    /** @var int */
-    private $receivedSignal;
+    ];
 
     /**
-     * @param   mixed $parameter
-     * @throws  \InvalidArgumentException
+     * @param   array $parameter
      */
-    public function __construct($parameter = null)
+    public function __construct($parameter = [])
     {
-        if (is_null($parameter)) {
-            $this->config = new Config();
-        } elseif (is_int($parameter) && $parameter >= 1) {
-            $this->config = new Config(
-                array('concurrency' => $parameter)
-            );
-        } elseif (is_array($parameter)) {
-            $this->config = new Config($parameter);
-        } else {
-            throw new \InvalidArgumentException();
-        }
+        $this->config    = new Config($parameter);
+        $this->log       = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
+        $this->container = new Container($this->config, $this->log);
+        $this->pcntl     = new Pcntl();
 
-        $this->ownerPid         = getmypid();
-        $this->log              = new Log($this->ownerPid);
-        $this->pcntl            = new Pcntl();
-        $this->container        = new Container($this->ownerPid, $this->log, $this->config);
-
-        $log    = $this->log;
-        $self   = $this;
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(
                 $sig,
-                function ($sig) use($log, $self) {
-                    $log->info('received signal. signo: ' . $sig);
-                    $self->setReceivedSignal($sig);
-
-                    $log->info('--> sending a signal " to children.');
-                    $self->container->sendSignalToMaster($sig);
-                    $log->info('<-- signal handling has been completed successfully.');
+                function ($sig)  {
+                    $this->log->info('received signal. signo: ' . $sig);
+                    $this->log->info('--> sending a signal " to children.');
+                    $this->container->sendSignalToMaster($sig);
+                    $this->log->info('<-- signal handling has been completed successfully.');
                     exit;
                 },
                 false
             );
         }
 
-        $this->log->info('parent pid: ' . $this->ownerPid);
-    }
-
-    /**
-     * sets the resource for the log.
-     *
-     * @param   resource    $resource
-     * @return  void
-     * @codeCoverageIgnore
-     */
-    public function setLogDestination($resource)
-    {
-        $this->log->setDestination($resource);
+        $this->log->info('parent pid: ' . $this->config->get('ownerPid'));
     }
 
     /**
@@ -103,10 +65,8 @@ class Snidel
      * @return  void
      * @throws  \RuntimeException
      */
-    public function fork($callable, $args = array(), $tag = null)
+    public function process($callable, $args = [], $tag = null)
     {
-        $this->joined = false;
-
         if (!$this->container->existsMaster()) {
             $this->container->forkMaster();
         }
@@ -128,7 +88,18 @@ class Snidel
     public function wait()
     {
         $this->container->wait();
-        $this->joined = true;
+    }
+
+    /**
+     * returns generator which returns a result
+     *
+     * @return \Generator
+     */
+    public function results()
+    {
+        foreach($this->container->results() as $r) {
+            yield $r;
+        }
     }
 
     /**
@@ -147,45 +118,16 @@ class Snidel
         return $this->container->getError();
     }
 
-    /**
-     * gets results
-     *
-     * @param   string  $tag
-     * @return  \Ackintosh\Snidel\Result\Collection
-     * @throws  \InvalidArgumentException
-     */
-    public function get($tag = null)
-    {
-        if (!$this->joined) {
-            $this->wait();
-        }
-        if ($tag !== null && !$this->container->hasTag($tag)) {
-            throw new \InvalidArgumentException('unknown tag: ' . $tag);
-        }
-
-        return $this->container->getCollection($tag);
-    }
-
-    public function setReceivedSignal($sig)
-    {
-        $this->receivedSignal = $sig;
-    }
-
     public function __destruct()
     {
-        if ($this->ownerPid === getmypid()) {
+        if ($this->config->get('ownerPid') === getmypid()) {
+            $this->wait();
             if ($this->container->existsMaster()) {
                 $this->log->info('shutdown master process.');
                 $this->container->sendSignalToMaster();
             }
 
             unset($this->container);
-        }
-
-        if ($this->ownerPid === getmypid() && !$this->joined && $this->receivedSignal === null) {
-            $message = 'snidel will have to wait for the child process is completed. please use Snidel::wait()';
-            $this->log->error($message);
-            throw new \LogicException($message);
         }
     }
 }

@@ -32,7 +32,7 @@ class ResultTest extends \PHPUnit_Framework_TestCase
     {
         $result = new Result();
 
-        $error = array('foo' => 'bar');
+        $error = ['foo' => 'bar'];
         $result->setError($error);
 
         $this->assertTrue($result->isFailure());

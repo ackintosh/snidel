@@ -1,18 +1,22 @@
 <?php
 namespace Ackintosh\Snidel;
 
-class IpcKeyTest extends \PHPUnit_Framework_TestCase
+class IpcKeyTest extends TestCase
 {
     /**
      * @test
-     * @runInSeparateProcess
      * @expectedException \RuntimeException
      */
     public function generateThrowsException()
     {
-        require_once __DIR__ . '/../ftok.php';
-        $ipcKey = new IpcKey(getmypid());
+        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
+            ->setMethods(['ftok'])
+            ->getMock();
+        $semaphore->expects($this->once())
+            ->method('ftok')
+            ->willReturn(-1);
+
+        $ipcKey = $this->setSemaphore(new IpcKey(getmypid()), $semaphore);
         $ipcKey->generate();
     }
-
 }

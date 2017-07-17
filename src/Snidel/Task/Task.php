@@ -62,7 +62,7 @@ class Task implements TaskInterface
             $result->setReturn(
                 call_user_func_array(
                     $this->getCallable(),
-                    (is_array($args = $this->getArgs())) ? $args : array($args)
+                    (is_array($args = $this->getArgs())) ? $args : [$args]
                 )
             );
         } catch (\RuntimeException $e) {

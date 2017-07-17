@@ -1,7 +1,7 @@
 <?php
 use Ackintosh\Snidel\Result\Queue;
 use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Fork\Fork;
+use Ackintosh\Snidel\Fork\Process;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\TestCase;
 
@@ -12,7 +12,14 @@ class ResultQueueTest extends TestCase
 
     public function setUp()
     {
+        parent::setUp();
         $this->queue = $this->makeResultQueue();
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        $this->queue->delete();
     }
 
     /**
@@ -21,7 +28,7 @@ class ResultQueueTest extends TestCase
     public function enqueue()
     {
         $result = new Result();
-        $result->setFork(new Fork(getmypid()));
+        $result->setProcess(new Process(getmypid()));
         $result->setTask(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
         $result = $this->queue->enqueue($result);
 
@@ -41,7 +48,7 @@ class ResultQueueTest extends TestCase
         $property->setValue($this->queue, $stat);
 
         $result = new Result();
-        $result->setFork(new Fork(getmypid()));
+        $result->setProcess(new Process(getmypid()));
         $result->setTask(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
 
         $this->queue->enqueue($result);
@@ -53,7 +60,7 @@ class ResultQueueTest extends TestCase
     public function dequeue()
     {
         $result = new Result();
-        $result->setFork(new Fork(getmypid()));
+        $result->setProcess(new Process(getmypid()));
         $result->setTask(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
         $this->queue->enqueue($result);
 
@@ -64,16 +71,22 @@ class ResultQueueTest extends TestCase
     /**
      * @test
      * @expectedException \RuntimeException
-     * @runInSeparateProcess
      */
     public function dequeueThrowsException()
     {
         $result = new Result();
-        $result->setFork(new Fork(getmypid()));
+        $result->setProcess(new Process(getmypid()));
         $result->setTask(new Task('receivesArgumentsAndReturnsIt', 'foo', null));
         $this->queue->enqueue($result);
 
-        require_once(__DIR__ . '/../../msg_receive.php');
-        $this->queue->dequeue();
+        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
+            ->setMethods(['receiveMessage'])
+            ->getMock();
+        $semaphore->expects($this->once())
+            ->method('receiveMessage')
+            ->willReturn(false);
+
+        $queue = $this->setSemaphore($this->queue, $semaphore);
+        $queue->dequeue();
     }
 }
