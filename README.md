@@ -62,7 +62,7 @@ new Snidel([
 ]);
 ```
 
-### Same argument as `call_user_func_array`
+### Same arguments as `call_user_func_array`
 
 ```php
 // multiple arguments
@@ -84,7 +84,17 @@ $snidel->process($f, 'bar', 'tag1');
 $snidel->process($f, 'baz', 'tag2');
 
 foreach ($snidel->results as $r) {
-    echo $r->getTask()->getTag();
+    switch ($r->getTask()->getTag()) {
+        case 'tag1':
+            // ...
+            break;
+        case 'tag2':
+            // ...
+            break;
+        default:
+            // ...
+            break;
+    }
 }
 ```
 
@@ -179,6 +189,7 @@ blog entries by author about snidel. (japanese)
 - https://ackintosh.github.io/blog/2016/05/04/snidel_0_6_0/
 - https://ackintosh.github.io/blog/2016/09/09/snidel_0_7_0/
 - https://ackintosh.github.io/blog/2017/03/10/snidel_0_8_0/
+- https://ackintosh.github.io/blog/2017/07/17/snidel_0_9_0/
 
 ## License
 
