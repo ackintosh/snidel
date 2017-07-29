@@ -3,12 +3,22 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
 use Ackintosh\Snidel\Result\Result;
+use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
+use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
+use Bernard\Consumer;
+use Bernard\Driver\FlatFileDriver;
+use Bernard\Message\PlainMessage;
+use Bernard\Producer;
+use Bernard\QueueFactory\PersistentFactory;
+use Bernard\Router\SimpleRouter;
+use Bernard\Serializer;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Worker
 {
     /** @var \Ackintosh\Snidel\Task\Task */
-    private $task;
+    private $latestTask;
 
     /** @var \Ackintosh\Snidel\Fork\Process */
     private $process;
@@ -25,6 +35,10 @@ class Worker
     /** @var bool */
     private $done = false;
 
+    private $factory;
+    private $consumer;
+    private $producer;
+
     /**
      * @param   \Ackintosh\Snidel\Fork\Process $process
      */
@@ -32,6 +46,13 @@ class Worker
     {
         $this->pcntl = new Pcntl();
         $this->process = $process;
+
+        $driver = new FlatFileDriver('/tmp/hoge');
+        $this->factory = new PersistentFactory($driver, new Serializer());
+        $router = new SimpleRouter();
+        $router->add('Task', $this);
+        $this->consumer = new Consumer($router, new EventDispatcher());
+        $this->producer = new Producer($this->factory, new EventDispatcher());
     }
 
     /**
@@ -66,21 +87,24 @@ class Worker
      */
     public function run()
     {
-        try {
-            $this->task = $this->taskQueue->dequeue();
-            $result = $this->task->execute();
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
+        $this->consumer->consume($this->factory->create('task'));
+        $this->done = true;
+    }
 
+    public function task($message)
+    {
+        $this->latestTask = $task = TaskFormatter::unserialize($message['task']);
+        $result = $task->execute();
         $result->setProcess($this->process);
 
-        try {
-            $this->resultQueue->enqueue($result);
-            $this->done = true;
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
+        $this->producer->produce(
+            new PlainMessage(
+                'Result',
+                [
+                    'result' => ResultFormatter::serialize($result),
+                ]
+            )
+        );
     }
 
     /**
@@ -91,11 +115,18 @@ class Worker
     {
         $result = new Result();
         $result->setError(error_get_last());
-        $result->setTask($this->task);
+        $result->setTask($this->latestTask);
         $result->setProcess($this->process);
 
         try {
-            $this->resultQueue->enqueue($result);
+            $this->producer->produce(
+                new PlainMessage(
+                    'Result',
+                    [
+                        'result' => ResultFormatter::serialize($result),
+                    ]
+                )
+            );
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -117,7 +148,7 @@ class Worker
      */
     public function hasTask()
     {
-        return $this->task !== null;
+        return $this->latestTask !== null;
     }
 
     /**

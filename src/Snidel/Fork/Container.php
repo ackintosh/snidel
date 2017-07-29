@@ -6,8 +6,17 @@ use Ackintosh\Snidel\ActiveWorkerSet;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\QueueFactory;
+use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
+use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 use Ackintosh\Snidel\Worker;
+use Bernard\Consumer;
+use Bernard\Driver\FlatFileDriver;
+use Bernard\Message\PlainMessage;
+use Bernard\Producer;
+use Bernard\QueueFactory\PersistentFactory;
+use Bernard\Router\SimpleRouter;
+use Bernard\Serializer;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Container
 {
@@ -23,8 +32,6 @@ class Container
     /** @var \Ackintosh\Snidel\Task\QueueInterface */
     private $taskQueue;
 
-    /** @var \Ackintosh\Snidel\Result\QueueInterface */
-    private $resultQueue;
 
     /** @var \Ackintosh\Snidel\Log */
     private $log;
@@ -38,11 +45,16 @@ class Container
     /** @var \Ackintosh\Snidel\Config */
     private $config;
 
-    /** @var \Ackintosh\Snidel\QueueFactory  */
-    private $queueFactory;
-
     /** @var  int */
     private $receivedSignal;
+
+    private $queuedCount = 0;
+    private $dequeuedCount = 0;
+
+    private $factory;
+    private $producer;
+    private $consumer;
+    private $resultQueue;
 
     /**
      * @param   int     $ownerPid
@@ -53,7 +65,14 @@ class Container
         $this->config           = $config;
         $this->pcntl            = new Pcntl();
         $this->error            = new Error();
-        $this->queueFactory     = new QueueFactory($config);
+
+        $driver = new FlatFileDriver('/tmp/hoge');
+        $this->factory = new PersistentFactory($driver, new Serializer());
+        $this->producer = new Producer($this->factory, new EventDispatcher());
+
+        $router = new SimpleRouter();
+        $router->add('Result', $this);
+        $this->consumer = new Consumer($router, new EventDispatcher());
     }
 
     /**
@@ -64,7 +83,16 @@ class Container
     public function enqueue($task)
     {
         try {
-            $this->taskQueue->enqueue($task);
+            $this->producer->produce(
+                new PlainMessage(
+                    'Task',
+                    [
+                        'task' => TaskFormatter::serialize($task),
+                    ]
+                )
+            );
+            $this->queuedCount++;
+
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -75,19 +103,7 @@ class Container
      */
     public function queuedCount()
     {
-        if (!isset($this->taskQueue) || is_null($this->taskQueue)) {
-            return 0;
-        }
-
-        return $this->taskQueue->queuedCount();
-    }
-
-    /**
-     * @return  \Ackintosh\Snidel\Result\Result
-     */
-    private function dequeue()
-    {
-        return $this->resultQueue->dequeue();
+        return $this->queuedCount;
     }
 
     /**
@@ -95,11 +111,7 @@ class Container
      */
     public function dequeuedCount()
     {
-        if (!isset($this->resultQueue) || is_null($this->resultQueue)) {
-            return 0;
-        }
-
-        return $this->resultQueue->dequeuedCount();
+        return $this->dequeuedCount;
     }
 
     /**
@@ -123,8 +135,7 @@ class Container
         if (getmypid() === $this->config->get('ownerPid')) {
             // owner
             $this->log->info('pid: ' . getmypid());
-            $this->taskQueue    = $this->queueFactory->createTaskQueue();
-            $this->resultQueue  = $this->queueFactory->createResultQueue();
+            $this->resultQueue  = $this->factory->create('result');
 
             return $this->master;
         } else {
@@ -200,9 +211,6 @@ class Container
                 }, false);
             }
 
-            $worker->setTaskQueue($this->queueFactory->createTaskQueue());
-            $worker->setResultQueue($this->queueFactory->createResultQueue());
-
             register_shutdown_function(function () use ($worker) {
                 if (!$worker->hasTask()) {
                     return;
@@ -259,12 +267,7 @@ class Container
      */
     public function wait()
     {
-        for (; $this->queuedCount() > $this->dequeuedCount();) {
-            $result = $this->dequeue();
-            if ($result->isFailure()) {
-                $this->error[$result->getProcess()->getPid()] = $result;
-            }
-        }
+        foreach ($this->results() as $_) {}
     }
 
     /**
@@ -273,7 +276,10 @@ class Container
     public function results()
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
-            $result = $this->dequeue();
+            $result = ResultFormatter::unserialize(
+                $this->resultQueue->dequeue()->getMessage()['result']
+            );
+            $this->dequeuedCount++;
 
             if ($result->isFailure()) {
                 $pid = $result->getProcess()->getPid();
@@ -302,7 +308,6 @@ class Container
 
     public function __destruct()
     {
-        unset($this->taskQueue);
         unset($this->resultQueue);
     }
 }
