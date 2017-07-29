@@ -9,10 +9,7 @@ class WorkerTest extends TestCase
     public function setUp()
     {
         parent::setUp();
-        $this->worker = new Worker(
-            new Process(getmypid()),
-            (new Config())->get('driver')
-        );
+        $this->worker = $this->makeWorker();
     }
 
     /**

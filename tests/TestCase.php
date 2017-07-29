@@ -47,7 +47,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function makeForkContainer()
     {
         return \ClassProxy::on(new Container(
-            $this->makeDefaultConfig(),
+            new Config(),
             new Log(getmypid(), null)
         ));
     }
@@ -59,12 +59,10 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         $pid = $pid ?: getmypid();
 
-        return new Worker(new Process($pid));
-    }
-
-    protected function makeDefaultConfig()
-    {
-        return new Config(['concurrency' => 5]);
+        return new Worker(
+            new Process($pid),
+            (new Config())->get('driver')
+        );
     }
 
     /**
