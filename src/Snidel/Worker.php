@@ -33,7 +33,7 @@ class Worker
     private $pcntl;
 
     /** @var bool */
-    private $done = false;
+    private $isInProgress = false;
 
     private $factory;
     private $consumer;
@@ -88,11 +88,11 @@ class Worker
     public function run()
     {
         $this->consumer->consume($this->factory->create('task'));
-        $this->done = true;
     }
 
     public function task($message)
     {
+        $this->isInProgress = true;
         $this->latestTask = $task = TaskFormatter::unserialize($message['task']);
         $result = $task->execute();
         $result->setProcess($this->process);
@@ -105,6 +105,7 @@ class Worker
                 ]
             )
         );
+        $this->isInProgress = false;
     }
 
     /**
@@ -154,8 +155,8 @@ class Worker
     /**
      * @return bool
      */
-    public function done()
+    public function isInProgress()
     {
-        return $this->done;
+        return $this->isInProgress;
     }
 }

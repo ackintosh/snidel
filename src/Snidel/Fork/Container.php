@@ -212,11 +212,7 @@ class Container
             }
 
             register_shutdown_function(function () use ($worker) {
-                if (!$worker->hasTask()) {
-                    return;
-                }
-
-                if (!$worker->done() && $this->receivedSignal === null) {
+                if ($this->receivedSignal === null && $worker->isInProgress()) {
                     $worker->error();
                 }
             });
@@ -278,13 +274,13 @@ class Container
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             for (;;) {
                 if ($r = $this->resultQueue->dequeue()) {
+                    $this->dequeuedCount++;
                     break;
                 }
             }
             $result = ResultFormatter::unserialize(
                 $r->getMessage()['result']
             );
-            $this->dequeuedCount++;
 
             if ($result->isFailure()) {
                 $pid = $result->getProcess()->getPid();
