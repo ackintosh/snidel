@@ -7,7 +7,6 @@ use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
 use Bernard\Consumer;
-use Bernard\Driver\FlatFileDriver;
 use Bernard\Message\PlainMessage;
 use Bernard\Producer;
 use Bernard\QueueFactory\PersistentFactory;
@@ -40,14 +39,14 @@ class Worker
     private $producer;
 
     /**
-     * @param   \Ackintosh\Snidel\Fork\Process $process
+     * @param \Ackintosh\Snidel\Fork\Process $process
+     * @param \Bernard\Driver $driver
      */
-    public function __construct($process)
+    public function __construct($process, $driver)
     {
         $this->pcntl = new Pcntl();
         $this->process = $process;
 
-        $driver = new FlatFileDriver('/tmp/hoge');
         $this->factory = new PersistentFactory($driver, new Serializer());
         $router = new SimpleRouter();
         $router->add('Task', $this);

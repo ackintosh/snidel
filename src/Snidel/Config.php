@@ -1,6 +1,8 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Bernard\Driver\FlatFileDriver;
+
 class Config
 {
     /** @var array */
@@ -19,6 +21,11 @@ class Config
         $this->params = array_merge($default, $params);
         $this->params['ownerPid'] = getmypid();
         $this->params['id'] = spl_object_hash($this);
+        if (!$this->params['driver']) {
+            $this->params['driver'] = new FlatFileDriver(
+                sys_get_temp_dir() . DIRECTORY_SEPARATOR . $this->params['id']
+            );
+        }
     }
 
     /**

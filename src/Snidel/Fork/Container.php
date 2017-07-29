@@ -10,7 +10,6 @@ use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 use Ackintosh\Snidel\Worker;
 use Bernard\Consumer;
-use Bernard\Driver\FlatFileDriver;
 use Bernard\Message\PlainMessage;
 use Bernard\Producer;
 use Bernard\QueueFactory\PersistentFactory;
@@ -66,8 +65,7 @@ class Container
         $this->pcntl            = new Pcntl();
         $this->error            = new Error();
 
-        $driver = new FlatFileDriver('/tmp/hoge');
-        $this->factory = new PersistentFactory($driver, new Serializer());
+        $this->factory = new PersistentFactory($this->config->get('driver'), new Serializer());
         $this->producer = new Producer($this->factory, new EventDispatcher());
 
         $router = new SimpleRouter();
@@ -193,7 +191,7 @@ class Container
             throw new \RuntimeException($message);
         }
 
-        $worker = new Worker($process);
+        $worker = new Worker($process, $this->config->get('driver'));
 
         if (getmypid() === $this->master->getPid()) {
             // master
