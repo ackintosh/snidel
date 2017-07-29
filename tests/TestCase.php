@@ -42,22 +42,6 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Ackintosh\Snidel\Result\Queue
-     */
-    protected function makeResultQueue()
-    {
-        return new ResultQueue($this->makeDefaultConfig());
-    }
-
-    /**
-     * @return \Ackintosh\Snidel\Task\Queue
-     */
-    protected function makeTaskQueue()
-    {
-        return new TaskQueue($this->makeDefaultConfig());
-    }
-
-    /**
      * @return \Ackintosh\Snidel\Fork\Container
      */
     protected function makeForkContainer()

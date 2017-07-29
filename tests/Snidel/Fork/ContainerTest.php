@@ -8,33 +8,6 @@ class ContainerTest extends TestCase
      * @test
      * @expectedException \RuntimeException
      */
-    public function enqueueThrowsExceptionWhenFailed()
-    {
-        $semaphore = $this->getMockBuilder('\Ackintosh\Snidel\Semaphore')
-            ->setMethods(['sendMessage'])
-            ->getMock();
-        $semaphore->expects($this->once())
-            ->method('sendMessage')
-            ->willReturn(false);
-
-        $container = $this->makeForkContainer();
-        $container->taskQueue = $this->setSemaphore($this->makeTaskQueue(), $semaphore);
-
-        $task = new Task(
-            function ($args) {
-                return $args;
-            }, 
-            'foo',
-            null
-        );
-
-        $container->enqueue($task);
-    }
-
-    /**
-     * @test
-     * @expectedException \RuntimeException
-     */
     public function forkWorkerThrowsExceptionWhenFailed()
     {
         $pcntl = $this->getMockBuilder('\Ackintosh\Snidel\Pcntl')

@@ -13,14 +13,6 @@ class Config
     {
         $default = [
             'concurrency'   => 5,
-            'taskQueue'     => [
-                'className'         => '\Ackintosh\Snidel\Task\Queue',
-                'constructorArgs'   => null,
-            ],
-            'resultQueue'   => [
-                'className'         => '\Ackintosh\Snidel\Result\Queue',
-                'constructorArgs'   => null,
-            ],
             'logger'        => null,
         ];
 

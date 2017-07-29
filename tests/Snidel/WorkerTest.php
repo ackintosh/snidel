@@ -16,30 +16,6 @@ class WorkerTest extends TestCase
     {
         parent::setUp();
         $this->worker = new Worker(new Process(getmypid()));
-        $this->resultQueue = $this->makeResultQueue();
-        $this->taskQueue = $this->makeTaskQueue();
-    }
-
-    public function tearDown()
-    {
-        parent::tearDown();
-        $this->resultQueue->delete();
-        $this->taskQueue->delete();
-    }
-
-    /**
-     * @test
-     */
-    public function setResultQueue()
-    {
-
-        $reflection = new \ReflectionProperty('\Ackintosh\Snidel\Worker', 'resultQueue');
-        $reflection->setAccessible(true);
-
-        $this->assertNull($reflection->getValue($this->worker));
-
-        $this->worker->setResultQueue($this->resultQueue);
-        $this->assertInstanceOf('\Ackintosh\Snidel\Result\Queue', $reflection->getValue($this->worker));
     }
 
     /**
