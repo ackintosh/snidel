@@ -276,8 +276,13 @@ class Container
     public function results()
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
+            for (;;) {
+                if ($r = $this->resultQueue->dequeue()) {
+                    break;
+                }
+            }
             $result = ResultFormatter::unserialize(
-                $this->resultQueue->dequeue()->getMessage()['result']
+                $r->getMessage()['result']
             );
             $this->dequeuedCount++;
 
