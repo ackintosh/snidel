@@ -16,6 +16,7 @@ class Config
         $default = [
             'concurrency'   => 5,
             'logger'        => null,
+            'driver' => null,
         ];
 
         $this->params = array_merge($default, $params);
