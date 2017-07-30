@@ -83,12 +83,18 @@ class Worker
     /**
      * @return  void
      * @throws  \RuntimeException
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function run()
     {
         $this->consumer->consume($this->factory->create('task'));
     }
 
+    /**
+     * @param PlainMessage $message
+     * @return void
+     * @codeCoverageIgnore covered by SnidelTest via worker process
+     */
     public function task($message)
     {
         $this->isInProgress = true;
@@ -110,6 +116,7 @@ class Worker
     /**
      * @return  void
      * @throws  \RuntimeException
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function error()
     {
@@ -135,6 +142,7 @@ class Worker
     /**
      * @param   int     $sig
      * @return  void
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function terminate($sig)
     {

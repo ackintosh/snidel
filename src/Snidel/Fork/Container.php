@@ -133,6 +133,8 @@ class Container
 
             return $this->master;
         } else {
+            // @codeCoverageIgnoreStart
+            // covered by SnidelTest via master process
             // master
             $activeWorkerSet = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->master->getPid());
@@ -168,6 +170,7 @@ class Container
                 $status = null;
             }
             exit;
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -194,8 +197,9 @@ class Container
             $this->log->info('forked worker. pid: ' . $worker->getPid());
             return $worker;
         } else {
-            // worker
             // @codeCoverageIgnoreStart
+            // covered by SnidelTest via worker process
+            // worker
             $this->log->info('has forked. pid: ' . getmypid());
 
             foreach ($this->signals as $sig) {
