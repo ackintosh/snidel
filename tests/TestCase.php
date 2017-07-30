@@ -64,18 +64,4 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             (new Config())->get('driver')
         );
     }
-
-    /**
-     * @param mixed $target
-     * @param \Ackintosh\Snidel\Semaphore $semaphore
-     * @return \Ackintosh\Snidel\AbstractQueue
-     */
-    protected function setSemaphore($target, $semaphore)
-    {
-        $prop = new \ReflectionProperty($target, 'semaphore');
-        $prop->setAccessible(true);
-        $prop->setValue($target, $semaphore);
-
-        return $target;
-    }
 }
