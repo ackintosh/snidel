@@ -1,11 +1,9 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
-use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
 use Bernard\Consumer;
 use Bernard\Message\PlainMessage;
 use Bernard\Producer;
@@ -21,12 +19,6 @@ class Worker
 
     /** @var \Ackintosh\Snidel\Fork\Process */
     private $process;
-
-    /** @var \Ackintosh\Snidel\Task\QueueInterface */
-    private $taskQueue;
-
-    /** @var \Ackintosh\Snidel\Result\QueueInterface */
-    private $resultQueue;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
@@ -52,24 +44,6 @@ class Worker
         $router->add('Task', $this);
         $this->consumer = new Consumer($router, new EventDispatcher());
         $this->producer = new Producer($this->factory, new EventDispatcher());
-    }
-
-    /**
-     * @param   \Ackintosh\Snidel\Task\QueueInterface
-     * @return  void
-     */
-    public function setTaskQueue(TaskQueueInterface $queue)
-    {
-        $this->taskQueue = $queue;
-    }
-
-    /**
-     * @param   \Ackintosh\Snidel\Result\QueueInterface
-     * @return  void
-     */
-    public function setResultQueue(ResultQueueInterface $queue)
-    {
-        $this->resultQueue = $queue;
     }
 
     /**
