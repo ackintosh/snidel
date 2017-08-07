@@ -56,10 +56,10 @@ class Container
      */
     public function __construct(Config $config, $log)
     {
-        $this->log              = $log;
-        $this->config           = $config;
-        $this->pcntl            = new Pcntl();
-        $this->error            = new Error();
+        $this->log = $log;
+        $this->config = $config;
+        $this->pcntl = new Pcntl();
+        $this->error = new Error();
 
         $this->factory = new PersistentFactory($this->config->get('driver'), new Serializer());
         $this->producer = new Producer($this->factory, new EventDispatcher());
