@@ -7,6 +7,7 @@ use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
+use Ackintosh\Snidel\Result\Normalizer as ResultNormalizer;
 use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
 use Ackintosh\Snidel\Worker;
 use Bernard\Consumer;
@@ -67,7 +68,8 @@ class Container
         $aggregateNormalizer = new AggregateNormalizer([
             new EnvelopeNormalizer(),
             new PlainMessageNormalizer(),
-            new TaskNormalizer()
+            new TaskNormalizer(),
+            new ResultNormalizer()
         ]);
         $this->factory = new PersistentFactory($this->config->get('driver'), new Serializer($aggregateNormalizer));
         $this->producer = new Producer($this->factory, new EventDispatcher());
@@ -272,15 +274,12 @@ class Container
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             for (;;) {
-                if ($r = $this->resultQueue->dequeue()) {
+                if ($envelope = $this->resultQueue->dequeue()) {
                     $this->dequeuedCount++;
                     break;
                 }
             }
-            $result = ResultFormatter::unserialize(
-                $r->getMessage()['result']
-            );
-
+            $result = $envelope->getMessage();
             if ($result->isFailure()) {
                 $pid = $result->getProcess()->getPid();
                 $this->error[$pid] = $result;

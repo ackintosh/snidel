@@ -3,6 +3,7 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
+use Ackintosh\Snidel\Result\Normalizer as ResultNormalizer;
 use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
 use Ackintosh\Snidel\Task\Task;
 use Bernard\Consumer;
@@ -46,7 +47,8 @@ class Worker
         $aggregateNormalizer = new AggregateNormalizer([
             new EnvelopeNormalizer(),
             new PlainMessageNormalizer(),
-            new TaskNormalizer()
+            new TaskNormalizer(),
+            new ResultNormalizer()
         ]);
         $this->factory = new PersistentFactory($driver, new Serializer($aggregateNormalizer));
         $router = new SimpleRouter();
@@ -85,14 +87,7 @@ class Worker
         $result = $task->execute();
         $result->setProcess($this->process);
 
-        $this->producer->produce(
-            new PlainMessage(
-                'Result',
-                [
-                    'result' => ResultFormatter::serialize($result),
-                ]
-            )
-        );
+        $this->producer->produce($result);
         $this->isInProgress = false;
     }
 
@@ -109,14 +104,7 @@ class Worker
         $result->setProcess($this->process);
 
         try {
-            $this->producer->produce(
-                new PlainMessage(
-                    'Result',
-                    [
-                        'result' => ResultFormatter::serialize($result),
-                    ]
-                )
-            );
+            $this->producer->produce($result);
         } catch (\RuntimeException $e) {
             throw $e;
         }
