@@ -20,7 +20,7 @@ trait Queueing
      * @param Driver $driver
      * @return PersistentFactory
      */
-    public function createFactory(Driver $driver)
+    private function createFactory(Driver $driver)
     {
         $aggregateNormalizer = new AggregateNormalizer([
             new EnvelopeNormalizer(),
@@ -35,7 +35,7 @@ trait Queueing
      * @param Router $router
      * @return Consumer
      */
-    public function createConsumer(Router $router)
+    private function createConsumer(Router $router)
     {
         return new Consumer($router, new EventDispatcher());
     }
@@ -44,7 +44,7 @@ trait Queueing
      * @param QueueFactory $factory
      * @return Producer
      */
-    public function createProducer(QueueFactory $factory)
+    private function createProducer(QueueFactory $factory)
     {
         return new Producer($factory, new EventDispatcher());
     }
