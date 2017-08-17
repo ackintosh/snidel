@@ -22,8 +22,13 @@ class Worker
     /** @var bool */
     private $isInProgress = false;
 
+    /** @var \Bernard\QueueFactory\PersistentFactory */
     private $factory;
+
+    /** @var \Bernard\Consumer */
     private $consumer;
+
+    /** @var \Bernard\Producer */
     private $producer;
 
     /**

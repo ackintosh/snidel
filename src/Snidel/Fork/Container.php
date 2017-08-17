@@ -38,12 +38,21 @@ class Container
     /** @var  int */
     private $receivedSignal;
 
+    /** @var int */
     private $queuedCount = 0;
+    /** @var int */
     private $dequeuedCount = 0;
 
+    /** @var \Bernard\QueueFactory\PersistentFactory */
     private $factory;
+
+    /** @var \Bernard\Producer */
     private $producer;
+
+    /** @var \Bernard\Consumer */
     private $consumer;
+
+    /** @var \Bernard\Queue  */
     private $resultQueue;
 
     /**
