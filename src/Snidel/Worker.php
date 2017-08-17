@@ -4,7 +4,6 @@ namespace Ackintosh\Snidel;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
-use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 use Ackintosh\Snidel\Task\Task;
 use Bernard\Consumer;
 use Bernard\Message\PlainMessage;

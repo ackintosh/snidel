@@ -8,7 +8,6 @@ use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
 use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
-use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 use Ackintosh\Snidel\Worker;
 use Bernard\Consumer;
 use Bernard\Message\PlainMessage;
