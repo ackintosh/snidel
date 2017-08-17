@@ -6,7 +6,6 @@ use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
 use Bernard\Consumer;
 use Bernard\Driver;
 use Bernard\Normalizer\EnvelopeNormalizer;
-use Bernard\Normalizer\PlainMessageNormalizer;
 use Bernard\Producer;
 use Bernard\QueueFactory;
 use Bernard\QueueFactory\PersistentFactory;
@@ -25,7 +24,6 @@ trait Queueing
     {
         $aggregateNormalizer = new AggregateNormalizer([
             new EnvelopeNormalizer(),
-            new PlainMessageNormalizer(),
             new TaskNormalizer(),
             new ResultNormalizer()
         ]);
