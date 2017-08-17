@@ -6,21 +6,14 @@ use Ackintosh\Snidel\ActiveWorkerSet;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\Result\Normalizer as ResultNormalizer;
-use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
+use Ackintosh\Snidel\Traits\Queueing;
 use Ackintosh\Snidel\Worker;
-use Bernard\Consumer;
-use Bernard\Normalizer\EnvelopeNormalizer;
-use Bernard\Normalizer\PlainMessageNormalizer;
-use Bernard\Producer;
-use Bernard\QueueFactory\PersistentFactory;
 use Bernard\Router\SimpleRouter;
-use Bernard\Serializer;
-use Normalt\Normalizer\AggregateNormalizer;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Container
 {
+    use Queueing;
+
     /** @var Process */
     private $master;
 
@@ -63,18 +56,11 @@ class Container
         $this->pcntl = new Pcntl();
         $this->error = new Error();
 
-        $aggregateNormalizer = new AggregateNormalizer([
-            new EnvelopeNormalizer(),
-            new PlainMessageNormalizer(),
-            new TaskNormalizer(),
-            new ResultNormalizer()
-        ]);
-        $this->factory = new PersistentFactory($this->config->get('driver'), new Serializer($aggregateNormalizer));
-        $this->producer = new Producer($this->factory, new EventDispatcher());
-
+        $this->factory = $this->createFactory($this->config->get('driver'));
         $router = new SimpleRouter();
         $router->add('Result', $this);
-        $this->consumer = new Consumer($router, new EventDispatcher());
+        $this->consumer = $this->createConsumer($router);
+        $this->producer = $this->createProducer($this->factory);
     }
 
     /**
