@@ -3,13 +3,18 @@ namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
+use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
+use Ackintosh\Snidel\Task\Task;
 use Bernard\Consumer;
 use Bernard\Message\PlainMessage;
+use Bernard\Normalizer\EnvelopeNormalizer;
+use Bernard\Normalizer\PlainMessageNormalizer;
 use Bernard\Producer;
 use Bernard\QueueFactory\PersistentFactory;
 use Bernard\Router\SimpleRouter;
 use Bernard\Serializer;
+use Normalt\Normalizer\AggregateNormalizer;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Worker
@@ -39,7 +44,12 @@ class Worker
         $this->pcntl = new Pcntl();
         $this->process = $process;
 
-        $this->factory = new PersistentFactory($driver, new Serializer());
+        $aggregateNormalizer = new AggregateNormalizer([
+            new EnvelopeNormalizer(),
+            new PlainMessageNormalizer(),
+            new TaskNormalizer()
+        ]);
+        $this->factory = new PersistentFactory($driver, new Serializer($aggregateNormalizer));
         $router = new SimpleRouter();
         $router->add('Task', $this);
         $this->consumer = new Consumer($router, new EventDispatcher());
@@ -65,14 +75,14 @@ class Worker
     }
 
     /**
-     * @param PlainMessage $message
+     * @param Task $task
      * @return void
      * @codeCoverageIgnore covered by SnidelTest via worker process
      */
-    public function task($message)
+    public function task(Task $task)
     {
         $this->isInProgress = true;
-        $this->latestTask = $task = TaskFormatter::unserialize($message['task']);
+        $this->latestTask = $task;
         $result = $task->execute();
         $result->setProcess($this->process);
 

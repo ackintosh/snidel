@@ -7,14 +7,18 @@ use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Result\Formatter as ResultFormatter;
+use Ackintosh\Snidel\Task\Normalizer as TaskNormalizer;
 use Ackintosh\Snidel\Task\Formatter as TaskFormatter;
 use Ackintosh\Snidel\Worker;
 use Bernard\Consumer;
 use Bernard\Message\PlainMessage;
+use Bernard\Normalizer\EnvelopeNormalizer;
+use Bernard\Normalizer\PlainMessageNormalizer;
 use Bernard\Producer;
 use Bernard\QueueFactory\PersistentFactory;
 use Bernard\Router\SimpleRouter;
 use Bernard\Serializer;
+use Normalt\Normalizer\AggregateNormalizer;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class Container
@@ -61,7 +65,12 @@ class Container
         $this->pcntl = new Pcntl();
         $this->error = new Error();
 
-        $this->factory = new PersistentFactory($this->config->get('driver'), new Serializer());
+        $aggregateNormalizer = new AggregateNormalizer([
+            new EnvelopeNormalizer(),
+            new PlainMessageNormalizer(),
+            new TaskNormalizer()
+        ]);
+        $this->factory = new PersistentFactory($this->config->get('driver'), new Serializer($aggregateNormalizer));
         $this->producer = new Producer($this->factory, new EventDispatcher());
 
         $router = new SimpleRouter();
@@ -77,14 +86,7 @@ class Container
     public function enqueue($task)
     {
         try {
-            $this->producer->produce(
-                new PlainMessage(
-                    'Task',
-                    [
-                        'task' => TaskFormatter::serialize($task),
-                    ]
-                )
-            );
+            $this->producer->produce($task);
             $this->queuedCount++;
 
         } catch (\RuntimeException $e) {
