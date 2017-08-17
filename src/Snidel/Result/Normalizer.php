@@ -5,6 +5,10 @@ use Bernard\Normalizer\AbstractAggregateNormalizerAware;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
+/**
+ * @codeCoverageIgnore
+ * It has been covered by SnidelTest
+ */
 class Normalizer extends AbstractAggregateNormalizerAware implements NormalizerInterface, DenormalizerInterface
 {
     /**
