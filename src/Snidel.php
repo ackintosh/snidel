@@ -34,10 +34,10 @@ class Snidel
      */
     public function __construct($parameter = [])
     {
-        $this->config    = new Config($parameter);
-        $this->log       = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
+        $this->config = new Config($parameter);
+        $this->log = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
         $this->container = new Container($this->config, $this->log);
-        $this->pcntl     = new Pcntl();
+        $this->pcntl = new Pcntl();
 
         foreach ($this->signals as $sig) {
             $this->pcntl->signal(

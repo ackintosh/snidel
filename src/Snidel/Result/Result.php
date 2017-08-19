@@ -1,7 +1,9 @@
 <?php
 namespace Ackintosh\Snidel\Result;
 
-class Result
+use Bernard\Message\AbstractMessage;
+
+class Result extends AbstractMessage
 {
     /** @var mixed */
     private $return;
@@ -20,6 +22,14 @@ class Result
 
     /** @var array */
     private $error;
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'Result';
+    }
 
     /**
      * set return

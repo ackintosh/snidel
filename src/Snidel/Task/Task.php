@@ -2,8 +2,9 @@
 namespace Ackintosh\Snidel\Task;
 
 use Ackintosh\Snidel\Result\Result;
+use Bernard\Message\AbstractMessage;
 
-class Task implements TaskInterface
+class Task extends AbstractMessage implements TaskInterface
 {
     /** @var callable */
     private $callable;
@@ -24,6 +25,14 @@ class Task implements TaskInterface
         $this->callable     = $callable;
         $this->args         = $args;
         $this->tag          = $tag;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'Task';
     }
 
     /**

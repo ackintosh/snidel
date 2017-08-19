@@ -42,28 +42,12 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Ackintosh\Snidel\Result\Queue
-     */
-    protected function makeResultQueue()
-    {
-        return new ResultQueue($this->makeDefaultConfig());
-    }
-
-    /**
-     * @return \Ackintosh\Snidel\Task\Queue
-     */
-    protected function makeTaskQueue()
-    {
-        return new TaskQueue($this->makeDefaultConfig());
-    }
-
-    /**
      * @return \Ackintosh\Snidel\Fork\Container
      */
     protected function makeForkContainer()
     {
         return \ClassProxy::on(new Container(
-            $this->makeDefaultConfig(),
+            new Config(),
             new Log(getmypid(), null)
         ));
     }
@@ -75,25 +59,9 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         $pid = $pid ?: getmypid();
 
-        return new Worker(new Process($pid));
-    }
-
-    protected function makeDefaultConfig()
-    {
-        return new Config(['concurrency' => 5]);
-    }
-
-    /**
-     * @param mixed $target
-     * @param \Ackintosh\Snidel\Semaphore $semaphore
-     * @return \Ackintosh\Snidel\AbstractQueue
-     */
-    protected function setSemaphore($target, $semaphore)
-    {
-        $prop = new \ReflectionProperty($target, 'semaphore');
-        $prop->setAccessible(true);
-        $prop->setValue($target, $semaphore);
-
-        return $target;
+        return new Worker(
+            new Process($pid),
+            (new Config())->get('driver')
+        );
     }
 }

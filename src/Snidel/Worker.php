@@ -1,55 +1,50 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
 use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
+use Ackintosh\Snidel\Task\Task;
+use Ackintosh\Snidel\Traits\Queueing;
+use Bernard\Router\SimpleRouter;
 
 class Worker
 {
+    use Queueing;
+
     /** @var \Ackintosh\Snidel\Task\Task */
-    private $task;
+    private $latestTask;
 
     /** @var \Ackintosh\Snidel\Fork\Process */
     private $process;
-
-    /** @var \Ackintosh\Snidel\Task\QueueInterface */
-    private $taskQueue;
-
-    /** @var \Ackintosh\Snidel\Result\QueueInterface */
-    private $resultQueue;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
 
     /** @var bool */
-    private $done = false;
+    private $isInProgress = false;
+
+    /** @var \Bernard\QueueFactory\PersistentFactory */
+    private $factory;
+
+    /** @var \Bernard\Consumer */
+    private $consumer;
+
+    /** @var \Bernard\Producer */
+    private $producer;
 
     /**
-     * @param   \Ackintosh\Snidel\Fork\Process $process
+     * @param \Ackintosh\Snidel\Fork\Process $process
+     * @param \Bernard\Driver $driver
      */
-    public function __construct($process)
+    public function __construct($process, $driver)
     {
         $this->pcntl = new Pcntl();
         $this->process = $process;
-    }
 
-    /**
-     * @param   \Ackintosh\Snidel\Task\QueueInterface
-     * @return  void
-     */
-    public function setTaskQueue(TaskQueueInterface $queue)
-    {
-        $this->taskQueue = $queue;
-    }
-
-    /**
-     * @param   \Ackintosh\Snidel\Result\QueueInterface
-     * @return  void
-     */
-    public function setResultQueue(ResultQueueInterface $queue)
-    {
-        $this->resultQueue = $queue;
+        $this->factory = $this->createFactory($driver);
+        $router = new SimpleRouter();
+        $router->add('Task', $this);
+        $this->consumer = $this->createConsumer($router);
+        $this->producer = $this->createProducer($this->factory);
     }
 
     /**
@@ -63,39 +58,43 @@ class Worker
     /**
      * @return  void
      * @throws  \RuntimeException
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function run()
     {
-        try {
-            $this->task = $this->taskQueue->dequeue();
-            $result = $this->task->execute();
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
+        $this->consumer->consume($this->factory->create('task'));
+    }
 
+    /**
+     * @param Task $task
+     * @return void
+     * @codeCoverageIgnore covered by SnidelTest via worker process
+     */
+    public function task(Task $task)
+    {
+        $this->isInProgress = true;
+        $this->latestTask = $task;
+        $result = $task->execute();
         $result->setProcess($this->process);
 
-        try {
-            $this->resultQueue->enqueue($result);
-            $this->done = true;
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
+        $this->producer->produce($result);
+        $this->isInProgress = false;
     }
 
     /**
      * @return  void
      * @throws  \RuntimeException
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function error()
     {
         $result = new Result();
         $result->setError(error_get_last());
-        $result->setTask($this->task);
+        $result->setTask($this->latestTask);
         $result->setProcess($this->process);
 
         try {
-            $this->resultQueue->enqueue($result);
+            $this->producer->produce($result);
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -104,6 +103,7 @@ class Worker
     /**
      * @param   int     $sig
      * @return  void
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function terminate($sig)
     {
@@ -117,14 +117,14 @@ class Worker
      */
     public function hasTask()
     {
-        return $this->task !== null;
+        return $this->latestTask !== null;
     }
 
     /**
      * @return bool
      */
-    public function done()
+    public function isInProgress()
     {
-        return $this->done;
+        return $this->isInProgress;
     }
 }

@@ -1,6 +1,7 @@
 <?php
-use Ackintosh\Snidel\TestCase;
 use Ackintosh\Snidel\ActiveWorkerSet;
+use Ackintosh\Snidel\Config;
+use Ackintosh\Snidel\TestCase;
 
 class ActiveWorkerSetTest extends TestCase
 {
@@ -67,8 +68,9 @@ class ActiveWorkerSetTest extends TestCase
      */
     public function terminate()
     {
+        $driver = (new Config())->get('driver');
         $worker1 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
-            ->setConstructorArgs([$this->makeProcess(1)])
+            ->setConstructorArgs([$this->makeProcess(1), $driver])
             ->setMethods(['terminate'])
             ->getMock();
         $worker1->expects($this->once())
@@ -76,7 +78,7 @@ class ActiveWorkerSetTest extends TestCase
             ->with(SIGTERM);
 
         $worker2 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
-            ->setConstructorArgs([$this->makeProcess(2)])
+            ->setConstructorArgs([$this->makeProcess(2), $driver])
             ->setMethods(['terminate'])
             ->getMock();
         $worker2->expects($this->once())

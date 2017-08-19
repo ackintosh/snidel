@@ -6,11 +6,14 @@ use Ackintosh\Snidel\ActiveWorkerSet;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
-use Ackintosh\Snidel\QueueFactory;
+use Ackintosh\Snidel\Traits\Queueing;
 use Ackintosh\Snidel\Worker;
+use Bernard\Router\SimpleRouter;
 
 class Container
 {
+    use Queueing;
+
     /** @var Process */
     private $master;
 
@@ -19,12 +22,6 @@ class Container
 
     /** @var \Ackintosh\Snidel\Error */
     private $error;
-
-    /** @var \Ackintosh\Snidel\Task\QueueInterface */
-    private $taskQueue;
-
-    /** @var \Ackintosh\Snidel\Result\QueueInterface */
-    private $resultQueue;
 
     /** @var \Ackintosh\Snidel\Log */
     private $log;
@@ -38,22 +35,41 @@ class Container
     /** @var \Ackintosh\Snidel\Config */
     private $config;
 
-    /** @var \Ackintosh\Snidel\QueueFactory  */
-    private $queueFactory;
-
     /** @var  int */
     private $receivedSignal;
+
+    /** @var int */
+    private $queuedCount = 0;
+    /** @var int */
+    private $dequeuedCount = 0;
+
+    /** @var \Bernard\QueueFactory\PersistentFactory */
+    private $factory;
+
+    /** @var \Bernard\Producer */
+    private $producer;
+
+    /** @var \Bernard\Consumer */
+    private $consumer;
+
+    /** @var \Bernard\Queue  */
+    private $resultQueue;
 
     /**
      * @param   int     $ownerPid
      */
     public function __construct(Config $config, $log)
     {
-        $this->log              = $log;
-        $this->config           = $config;
-        $this->pcntl            = new Pcntl();
-        $this->error            = new Error();
-        $this->queueFactory     = new QueueFactory($config);
+        $this->log = $log;
+        $this->config = $config;
+        $this->pcntl = new Pcntl();
+        $this->error = new Error();
+
+        $this->factory = $this->createFactory($this->config->get('driver'));
+        $router = new SimpleRouter();
+        $router->add('Result', $this);
+        $this->consumer = $this->createConsumer($router);
+        $this->producer = $this->createProducer($this->factory);
     }
 
     /**
@@ -64,7 +80,9 @@ class Container
     public function enqueue($task)
     {
         try {
-            $this->taskQueue->enqueue($task);
+            $this->producer->produce($task);
+            $this->queuedCount++;
+
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -75,19 +93,7 @@ class Container
      */
     public function queuedCount()
     {
-        if (!isset($this->taskQueue) || is_null($this->taskQueue)) {
-            return 0;
-        }
-
-        return $this->taskQueue->queuedCount();
-    }
-
-    /**
-     * @return  \Ackintosh\Snidel\Result\Result
-     */
-    private function dequeue()
-    {
-        return $this->resultQueue->dequeue();
+        return $this->queuedCount;
     }
 
     /**
@@ -95,11 +101,7 @@ class Container
      */
     public function dequeuedCount()
     {
-        if (!isset($this->resultQueue) || is_null($this->resultQueue)) {
-            return 0;
-        }
-
-        return $this->resultQueue->dequeuedCount();
+        return $this->dequeuedCount;
     }
 
     /**
@@ -123,11 +125,12 @@ class Container
         if (getmypid() === $this->config->get('ownerPid')) {
             // owner
             $this->log->info('pid: ' . getmypid());
-            $this->taskQueue    = $this->queueFactory->createTaskQueue();
-            $this->resultQueue  = $this->queueFactory->createResultQueue();
+            $this->resultQueue  = $this->factory->create('result');
 
             return $this->master;
         } else {
+            // @codeCoverageIgnoreStart
+            // covered by SnidelTest via master process
             // master
             $activeWorkerSet = new ActiveWorkerSet();
             $this->log->info('pid: ' . $this->master->getPid());
@@ -163,6 +166,7 @@ class Container
                 $status = null;
             }
             exit;
+            // @codeCoverageIgnoreEnd
         }
     }
 
@@ -182,15 +186,16 @@ class Container
             throw new \RuntimeException($message);
         }
 
-        $worker = new Worker($process);
+        $worker = new Worker($process, $this->config->get('driver'));
 
         if (getmypid() === $this->master->getPid()) {
             // master
             $this->log->info('forked worker. pid: ' . $worker->getPid());
             return $worker;
         } else {
-            // worker
             // @codeCoverageIgnoreStart
+            // covered by SnidelTest via worker process
+            // worker
             $this->log->info('has forked. pid: ' . getmypid());
 
             foreach ($this->signals as $sig) {
@@ -200,15 +205,8 @@ class Container
                 }, false);
             }
 
-            $worker->setTaskQueue($this->queueFactory->createTaskQueue());
-            $worker->setResultQueue($this->queueFactory->createResultQueue());
-
             register_shutdown_function(function () use ($worker) {
-                if (!$worker->hasTask()) {
-                    return;
-                }
-
-                if (!$worker->done() && $this->receivedSignal === null) {
+                if ($this->receivedSignal === null && $worker->isInProgress()) {
                     $worker->error();
                 }
             });
@@ -259,12 +257,7 @@ class Container
      */
     public function wait()
     {
-        for (; $this->queuedCount() > $this->dequeuedCount();) {
-            $result = $this->dequeue();
-            if ($result->isFailure()) {
-                $this->error[$result->getProcess()->getPid()] = $result;
-            }
-        }
+        foreach ($this->results() as $_) {}
     }
 
     /**
@@ -273,8 +266,13 @@ class Container
     public function results()
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
-            $result = $this->dequeue();
-
+            for (;;) {
+                if ($envelope = $this->resultQueue->dequeue()) {
+                    $this->dequeuedCount++;
+                    break;
+                }
+            }
+            $result = $envelope->getMessage();
             if ($result->isFailure()) {
                 $pid = $result->getProcess()->getPid();
                 $this->error[$pid] = $result;
@@ -302,7 +300,6 @@ class Container
 
     public function __destruct()
     {
-        unset($this->taskQueue);
         unset($this->resultQueue);
     }
 }
