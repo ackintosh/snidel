@@ -22,9 +22,10 @@ $ composer require ackintosh/snidel
 <?php
 use Ackintosh\Snidel;
 
-$f = function ($str) {
+$f = function ($s) {
     sleep(3);
-    return $str;
+    echo 'echo: ' . $s
+    return 'return: ' . $s;
 };
 
 $s = time();
@@ -35,9 +36,10 @@ $snidel->process($f, 'baz');
 
 // `Snidel::results()` returns `\Generator`
 foreach ($snidel->results() as $r) {
-    echo $r->getProcess()->getPid();
-    echo $r->getOutput();
-    echo $r->getReturn();
+    // string(9) "echo: foo"
+    var_dump($r->getOutput());
+    // string(11) "return: foo"
+    var_dump($r->getReturn());
 }
 
 // If you don't need the results, let's use `Snidel::wait()`
