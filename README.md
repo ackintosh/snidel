@@ -167,7 +167,6 @@ foreach ($snidel->getError() as $pid => $e) {
 ## Requirements
 
 - [PCNTL functions](http://php.net/manual/en/ref.pcntl.php)
-- [Semaphore functions](http://php.net/manual/en/ref.sem.php)
 
 ### Version Guidance
 
