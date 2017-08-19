@@ -16,7 +16,7 @@ $ composer require ackintosh/snidel
 
 ## Usage
 
-### Basic
+### Basic Usage
 
 ```php
 <?php
@@ -49,16 +49,15 @@ echo (time() - $s) . 'sec elapsed' . PHP_EOL;
 
 ### Constructor parameters
 
+All parameters are optional.
+
 ```php
 new Snidel([
-    'concurrency' => 2,
+    'concurrency' => 3,
+    // Please refer to `Logging`
     'logger' => $monolog,
-    'taskQueue'   => [
-        'className' => '\Ackintosh\Snidel\Queue\Sqs\Task',
-    ],
-    'resultQueue' => [
-        'className' => '\Ackintosh\Snidel\Queue\Sqs\Result',
-    ],
+    // Please refer to `Using custom queue`
+    'driver' => $driver,
 ]);
 ```
 
@@ -76,7 +75,7 @@ $snidel->process([$instance, 'method']);
 
 ```
 
-### Tag the task
+### Tagging the task
 
 ```php
 $snidel->process($f, 'foo', 'tag1');
@@ -98,7 +97,7 @@ foreach ($snidel->results as $r) {
 }
 ```
 
-### With Logger
+### Logging
 
 Snidel supports logging with logger which implements [PSR-3: Logger Interface](http://www.php-fig.org/psr/psr-3/).
 
@@ -157,12 +156,27 @@ foreach ($snidel->getError() as $pid => $e) {
 // }
 ```
 
-## With Amazon SQS
+### Using custom queue
 
-[ackintosh/snidel-queue-sqs](https://github.com/ackintosh/snidel-queue-sqs)
+Snidel depends on [Bernard](https://github.com/bernardphp/bernard) as a queue abstraction layer. Bernard is a multi-backend PHP library for creating background jobs for later processing.  
+By default Snidel builds the flatfile driver, but from a race condition perspective, we recommend using a more reliable queue in production.  
 
-![with amazon sqs](images/snidel-queue-sqs.png)
+##### Amazon SQS
 
+```php
+$connection = Aws\Sqs\SqsClient::factory([
+    'key'    => 'your-aws-access-key',
+    'secret' => 'your-aws-secret-key',
+    'region' => 'the-aws-region-you-choose'
+]);
+$driver = new Bernard\Driver\SqsDriver($connection);
+
+new Snidel([
+    'driver' => $driver,
+]);
+```
+
+For details on the driver, please see [here](http://bernard.readthedocs.io/drivers.html).
 
 ## Requirements
 
@@ -179,7 +193,7 @@ foreach ($snidel->getError() as $pid => $e) {
 
 Akihito Nakano
 
-blog entries by author about snidel. (japanese)
+blog entries by author about snidel. (ja)
 
 - https://ackintosh.github.io/blog/2015/09/29/snidel/
 - https://ackintosh.github.io/blog/2015/11/08/snidel_0_2_0/
