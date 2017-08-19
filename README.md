@@ -171,10 +171,10 @@ foreach ($snidel->getError() as $pid => $e) {
 
 ### Version Guidance
 
-| Version   | PHP Version |
+| Snidel | PHP |
 |:----------|:------------|
-| 0.1 ~ [0.8](https://github.com/ackintosh/snidel/releases/tag/0.8.0)    | >= 5.3      |
-| [0.9](https://github.com/ackintosh/snidel/releases/tag/0.9.0) | >= 5.6      |
+| 0.1 ~ [0.8](https://github.com/ackintosh/snidel/releases/tag/0.8.0) | >= 5.3 |
+| [0.9](https://github.com/ackintosh/snidel/releases/tag/0.9.0) ~ | >= 5.6 |
 
 ## Author
 
