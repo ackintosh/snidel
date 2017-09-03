@@ -4,6 +4,19 @@ A multi-process container. It looks like multi-thread-ish.
 
 [![Latest Stable Version](https://poser.pugx.org/ackintosh/snidel/v/stable)](https://packagist.org/packages/ackintosh/snidel) [![License](https://poser.pugx.org/ackintosh/snidel/license)](https://packagist.org/packages/ackintosh/snidel) [![Build Status](https://travis-ci.org/ackintosh/snidel.svg?branch=master)](https://travis-ci.org/ackintosh/snidel) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ackintosh/snidel/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ackintosh/snidel/?branch=master) [![Coverage Status](https://coveralls.io/repos/github/ackintosh/snidel/badge.svg?branch=master)](https://coveralls.io/github/ackintosh/snidel?branch=master)
 
+## The description of what Snidel solves / The motivation for development
+
+(ja)
+
+PHPでプログラミングに入門して、PHPでキャリアを積み重ねているプログラマがある程度いると思います(私がそうです)。そのような方にとって並列処理は馴染みがなかったり、敷居の高さを感じるのではないでしょうか。
+
+或いは諸事情によりPHP以外の言語(例えば、並列処理のための優れた機構を持った言語)を利用する事を制限されている中で開発を進めなければならない状況にある方もいらっしゃるでしょう(以前の私がそうでした)。
+
+そのような方が、手軽に・直感的に並列処理を使って問題解決できることを目的として Snidel の開発をはじめました。
+
+"この処理を並列に実行したいんだけどどうしよう？" といった場合に Snidel がみなさんの選択肢のひとつになれたら幸いです。
+
+
 ## Installing Snidel via Composer
 
 ```
