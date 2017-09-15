@@ -31,12 +31,14 @@ class Snidel
 
     /**
      * @param   array $parameter
+     * @throws \RuntimeException
      */
     public function __construct($parameter = [])
     {
         $this->config = new Config($parameter);
         $this->log = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
         $this->container = new Container($this->config, $this->log);
+        $this->container->forkMaster();
         $this->pcntl = new Pcntl();
 
         foreach ($this->signals as $sig) {
@@ -67,10 +69,6 @@ class Snidel
      */
     public function process($callable, $args = [], $tag = null)
     {
-        if (!$this->container->existsMaster()) {
-            $this->container->forkMaster();
-        }
-
         try {
             $this->container->enqueue(new Task($callable, $args, $tag));
         } catch (\RuntimeException $e) {
