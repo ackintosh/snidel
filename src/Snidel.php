@@ -72,6 +72,7 @@ class Snidel
         try {
             $this->container->enqueue(new Task($callable, $args, $tag));
         } catch (\RuntimeException $e) {
+            $this->log->error('failed to enqueue the task: ' . $e->getMessage());
             throw $e;
         }
 
