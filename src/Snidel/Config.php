@@ -16,7 +16,7 @@ class Config
         $default = [
             'concurrency'   => 5,
             // number of seconds to keep polling for results.
-            'duration' => 1,
+            'pollingDuration' => 1,
             'logger'        => null,
             'driver' => null,
         ];
