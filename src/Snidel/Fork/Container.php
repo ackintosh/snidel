@@ -267,7 +267,7 @@ class Container
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             for (;;) {
-                if ($envelope = $this->resultQueue->dequeue()) {
+                if ($envelope = $this->resultQueue->dequeue($this->config->get('duration'))) {
                     $this->dequeuedCount++;
                     break;
                 }
