@@ -6,6 +6,16 @@ A multi-process container. It looks like multi-thread-ish.
 
 ## The description of what Snidel solves / The motivation for development
 
+(en)
+
+Not a few people, start their programming carrier with PHP, and go on. Parallel processing, they are not familiar with it, and may be a hurdle for them.
+
+Or else, people who limited to develop with a language that is not PHP (e.g. A language that has superior feature for parallel processing). (It's me in past.)
+
+To make parallel processing more easily and instinctively to them to use, I started developing Snidel.
+
+In a case "How to do it parallelly?", if Snidel be a option to do it, it's honer to me.
+
 (ja)
 
 PHPでプログラミングに入門して、PHPでキャリアを積み重ねているプログラマがある程度いると思います(私がそうです)。そのような方にとって並列処理は馴染みがなかったり、敷居の高さを感じるのではないでしょうか。
