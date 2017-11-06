@@ -14,7 +14,7 @@
     "bernard/bernard": "dev-master",
     "php": ">=5.6.0",
     "psr/log": "^1.0",
-    "opis/closure": "^2.1.0",
+    "opis/closure": "^3.0",
     "ext-pcntl": "*",
     "ext-shmop": "*",
     "ext-sysvshm": "*",
