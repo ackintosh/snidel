@@ -232,3 +232,7 @@ blog entries by author about snidel. (ja)
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
+
+## Special Thanks
+
+This project has OSS license support from [JetBrains](https://jetbrains.com/).
