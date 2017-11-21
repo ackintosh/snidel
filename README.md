@@ -235,4 +235,4 @@ blog entries by author about snidel. (ja)
 
 ## Special Thanks
 
-This project has OSS license support from [JetBrains](https://jetbrains.com/).
+This project has OpenSource license support from [JetBrains](https://jetbrains.com/).
