@@ -65,7 +65,7 @@ foreach ($snidel->results() as $r) {
     var_dump($r->getReturn());
 }
 
-// If you don't need the results, let's use `Snidel::wait()`
+// If you don't need the results, let's use `Snidel::wait()` instead of `Snidel::results()`
 // $snidel->wait();
 
 echo (time() - $s) . 'sec elapsed' . PHP_EOL;
