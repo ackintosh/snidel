@@ -233,6 +233,6 @@ blog entries by author about snidel. (ja)
 
 [The MIT License](http://opensource.org/licenses/MIT)
 
-## Special Thanks
+## Acknowledgments
 
-This project has OpenSource license support from [JetBrains](https://jetbrains.com/).
+Thanks to [JetBrains](https://jetbrains.com/) for supporting us with a [Free Open Source License](https://www.jetbrains.com/buy/opensource).
