@@ -4,7 +4,17 @@ A multi-process container. It looks like multi-thread-ish.
 
 [![Latest Stable Version](https://poser.pugx.org/ackintosh/snidel/v/stable)](https://packagist.org/packages/ackintosh/snidel) [![License](https://poser.pugx.org/ackintosh/snidel/license)](https://packagist.org/packages/ackintosh/snidel) [![Build Status](https://travis-ci.org/ackintosh/snidel.svg?branch=master)](https://travis-ci.org/ackintosh/snidel) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ackintosh/snidel/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ackintosh/snidel/?branch=master) [![Coverage Status](https://coveralls.io/repos/github/ackintosh/snidel/badge.svg?branch=master)](https://coveralls.io/github/ackintosh/snidel?branch=master)
 
-## The description of what Snidel solves / The motivation for development
+## What Snidel solves? / The motivation for development
+
+(en)
+
+Not a few people, start their programming carrier with PHP, and go on. Parallel processing, they are not familiar with it, and may be a hurdle for them.
+
+Or else, people who limited to develop with a language that is not PHP (e.g. A language that has superior feature for parallel processing). (It's me in past.)
+
+To make parallel processing more easily and instinctively to them to use, I started developing Snidel.
+
+In a case "How to do it parallelly?", if Snidel be a option to do it, it's honer to me.
 
 (ja)
 
@@ -55,7 +65,7 @@ foreach ($snidel->results() as $r) {
     var_dump($r->getReturn());
 }
 
-// If you don't need the results, let's use `Snidel::wait()`
+// If you don't need the results, let's use `Snidel::wait()` instead of `Snidel::results()`
 // $snidel->wait();
 
 echo (time() - $s) . 'sec elapsed' . PHP_EOL;
@@ -222,3 +232,7 @@ blog entries by author about snidel. (ja)
 ## License
 
 [The MIT License](http://opensource.org/licenses/MIT)
+
+## Acknowledgments
+
+Thanks to [JetBrains](https://jetbrains.com/) for supporting us with a [Free Open Source License](https://www.jetbrains.com/buy/opensource).

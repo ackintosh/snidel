@@ -11,10 +11,10 @@
     }
   ],
   "require": {
-    "bernard/bernard": "dev-master",
+    "bernard/bernard": "1.0.0-alpha9",
     "php": ">=5.6.0",
     "psr/log": "^1.0",
-    "opis/closure": "^2.1.0",
+    "opis/closure": "^3.0.7",
     "ext-pcntl": "*",
     "ext-shmop": "*",
     "ext-sysvshm": "*",
