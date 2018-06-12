@@ -16,9 +16,6 @@
     "psr/log": "^1.0",
     "opis/closure": "^3.0.7",
     "ext-pcntl": "*",
-    "ext-shmop": "*",
-    "ext-sysvshm": "*",
-    "ext-sysvmsg": "*",
     "ext-posix": "*"
   },
   "require-dev": {
