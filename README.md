@@ -213,6 +213,17 @@ For details on the driver, please see [here](http://bernard.readthedocs.io/drive
 |:----------|:------------|
 | 0.1 ~ [0.8](https://github.com/ackintosh/snidel/releases/tag/0.8.0) | >= 5.3 |
 | [0.9](https://github.com/ackintosh/snidel/releases/tag/0.9.0) ~ | >= 5.6 |
+| upcoming new release ~ | >= 7.0 |
+
+## Docker
+
+We suggest you give it a try with Docker as Snidel requires some php extensions.
+
+```bash
+docker build -t snidel .
+docker run --rm -v ${PWD}:/snidel php composer.phar install
+docker run --rm -v ${PWD}:/snidel vendor/bin/phpunit
+```
 
 ## Author
 
