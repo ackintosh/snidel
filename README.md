@@ -48,7 +48,7 @@ exec('php slow_job1.php &');
 exec('php slow_job2.php &');
 ```
 
-For the developers who feels pain with the above, Snidel can provides pretty good experience to you and will streamline your PHP programming.
+For the developers who feels pain with the above, Snidel can provides pretty good experience and will streamline their PHP programming.
 
 We will walk through usage to show how Snidel melt parallel processing into your programming. The experience using Snidel should resolve your pain. Let's get started!
 
