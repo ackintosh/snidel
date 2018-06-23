@@ -37,6 +37,21 @@ $ composer require ackintosh/snidel
 
 ![Master - Worker Architecture](images/0.8_pluggable_queue.png)
 
+## Benefits
+
+It is also possible parallel processing via build-in functions (e.g. `exec`):
+
+```php
+initialize_data_required_for_the_slow_jobs();
+
+exec('php slow_job1.php &');
+exec('php slow_job2.php &');
+```
+
+For the developers who feels pain with the above, Snidel can provides pretty good experience to you and will streamline your PHP programming.
+
+We will walk through usage to show how Snidel melt parallel processing into your programming. The experience using Snidel should resolve your pain. Let's get started!
+
 ## Usage
 
 ### Basic Usage
