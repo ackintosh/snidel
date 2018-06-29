@@ -30,7 +30,7 @@ PHPでプログラミングに入門して、PHPでキャリアを積み重ね�
 ## Installing Snidel via Composer
 
 ```
-$ composer require ackintosh/snidel
+$ composer require ackintosh/snidel:~0.11.0
 ```
 
 ## Architecture
