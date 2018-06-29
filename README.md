@@ -237,8 +237,8 @@ We suggest you give it a try with Docker as Snidel requires some php extensions.
 ```bash
 curl -Ss https://getcomposer.org/installer | php
 docker build -t snidel .
-docker run --rm -v ${PWD}:/local snidel php composer.phar install
-docker run --rm -v ${PWD}:/local snidel vendor/bin/phpunit
+docker run --rm -v ${PWD}:/snidel snidel php composer.phar install
+docker run --rm -v ${PWD}:/snidel snidel vendor/bin/phpunit
 ```
 
 ## Author
