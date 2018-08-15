@@ -31,19 +31,24 @@ class Worker
     /** @var \Bernard\Queue  */
     private $taskQueue;
 
+    /** @var int */
+    private $pollingDuration;
+
     /**
      * @param \Ackintosh\Snidel\Fork\Process $process
      * @param \Bernard\Driver $driver
+     * @param int $pollingDuration
      */
-    public function __construct($process, $driver)
+    public function __construct($process, $driver, $pollingDuration)
     {
         $this->pcntl = new Pcntl();
         $this->process = $process;
 
         $this->factory = $this->createFactory($driver);
         $this->producer = $this->createProducer($this->factory);
-        $this->taskQueue = @$this->factory->create('task');
         $this->taskQueue = $this->factory->create('task');
+
+        $this->pollingDuration = $pollingDuration;
     }
 
     /**
@@ -62,7 +67,7 @@ class Worker
     public function run()
     {
         while (true) {
-            if ($envelope = $this->taskQueue->dequeue(1)) {
+            if ($envelope = $this->taskQueue->dequeue($this->pollingDuration)) {
                 $this->task($envelope->getMessage());
             }
         }
