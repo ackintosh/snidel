@@ -46,7 +46,16 @@ class Worker
 
         $this->factory = $this->createFactory($driver);
         $this->producer = $this->createProducer($this->factory);
-        $this->taskQueue = $this->factory->create('task');
+
+        /*
+         * Flat-file driver may causes E_WARNING (mkdir(): File exists) in race condition.
+         * Suppress the warning as it isn't matter and we should progress this task.
+         */
+        if ($driver instanceof \Bernard\Driver\FlatFileDriver) {
+            $this->taskQueue = @$this->factory->create('task');
+        } else {
+            $this->taskQueue = $this->factory->create('task');
+        }
 
         $this->pollingDuration = $pollingDuration;
     }
