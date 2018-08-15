@@ -65,7 +65,11 @@ class SnidelTest extends TestCase
      */
     public function concurrency()
     {
-        $snidel = new Snidel(['concurrency' => 3]);
+        $snidel = new Snidel([
+            'concurrency' => 3,
+            // in order to minify the delay time due to the issue of bernard's polling, specifying a small number.
+            'pollingDuration' => 0.5,
+        ]);
 
         $start = time();
         $snidel->process('sleepsTwoSeconds');
