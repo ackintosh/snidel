@@ -234,6 +234,8 @@ For details on the driver, please see [here](http://bernard.readthedocs.io/drive
 
 We suggest you give it a try with Docker as Snidel requires some php extensions.
 
+### Run unit tests in docker container
+
 ```bash
 curl -Ss https://getcomposer.org/installer | php
 docker build -t snidel .
