@@ -17,6 +17,8 @@ class Config
             'concurrency'   => 5,
             'logger'        => null,
             'driver' => null,
+            // a polling duration(in seconds) of queueing
+            'pollingDuration' => 1,
         ];
 
         $this->params = array_merge($default, $params);
