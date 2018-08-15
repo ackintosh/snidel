@@ -1,10 +1,10 @@
 <?php
+declare(ticks = 1);
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Traits\Queueing;
-use Bernard\Router\SimpleRouter;
 
 class Worker
 {
@@ -25,11 +25,11 @@ class Worker
     /** @var \Bernard\QueueFactory\PersistentFactory */
     private $factory;
 
-    /** @var \Bernard\Consumer */
-    private $consumer;
-
     /** @var \Bernard\Producer */
     private $producer;
+
+    /** @var \Bernard\Queue  */
+    private $taskQueue;
 
     /**
      * @param \Ackintosh\Snidel\Fork\Process $process
@@ -41,10 +41,9 @@ class Worker
         $this->process = $process;
 
         $this->factory = $this->createFactory($driver);
-        $router = new SimpleRouter();
-        $router->add('Task', $this);
-        $this->consumer = $this->createConsumer($router);
         $this->producer = $this->createProducer($this->factory);
+        $this->taskQueue = @$this->factory->create('task');
+        $this->taskQueue = $this->factory->create('task');
     }
 
     /**
@@ -62,7 +61,11 @@ class Worker
      */
     public function run()
     {
-        $this->consumer->consume($this->factory->create('task'));
+        while (true) {
+            if ($envelope = $this->taskQueue->dequeue(1)) {
+                $this->task($envelope->getMessage());
+            }
+        }
     }
 
     /**
