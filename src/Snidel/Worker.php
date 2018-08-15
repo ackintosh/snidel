@@ -1,5 +1,5 @@
 <?php
-declare(ticks = 1);
+declare(ticks=1);
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Result\Result;
