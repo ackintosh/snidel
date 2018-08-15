@@ -98,6 +98,8 @@ new Snidel([
     'logger' => $monolog,
     // Please refer to `Using custom queue`
     'driver' => $driver,
+    // a polling duration(in seconds) of queueing
+    'pollingDuration' => 1,
 ]);
 ```
 
