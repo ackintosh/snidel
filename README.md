@@ -107,7 +107,7 @@ new Snidel([
 
 ```php
 // multiple arguments
-$snidel->process($f, ['foo', 'bar']);
+$snidel->process($f, ['arg1', 'arg2']);
 
 // global function
 $snidel->process('myfunction');
@@ -120,20 +120,25 @@ $snidel->process([$instance, 'method']);
 ### Tagging the task
 
 ```php
-$snidel->process($f, 'foo', 'tag1');
-$snidel->process($f, 'bar', 'tag1');
-$snidel->process($f, 'baz', 'tag2');
+$function = function ($arg) {
+    return $arg;
+};
+
+$snidel->process($f, 'arg-A_tag1', 'tag1');
+$snidel->process($f, 'arg-B_tag1', 'tag1');
+$snidel->process($f, 'arg_tag2', 'tag2');
 
 foreach ($snidel->results as $r) {
+    // `Task::getTag()` returns the tag passed as 3rd parameter of `Snidel::process()`
     switch ($r->getTask()->getTag()) {
         case 'tag1':
-            // ...
+            $r->getReturn(); // arg-A_tag1 | arg-B_tag1
             break;
         case 'tag2':
-            // ...
+            $r->getReturn(); // arg_tag2
             break;
         default:
-            // ...
+            $r->getReturn();
             break;
     }
 }
