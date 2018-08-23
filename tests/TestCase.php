@@ -61,7 +61,8 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
 
         return new Worker(
             new Process($pid),
-            (new Config())->get('driver')
+            (new Config())->get('driver'),
+            (new Config())->get('pollingDuration')
         );
     }
 }

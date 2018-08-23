@@ -1,5 +1,5 @@
 <?php
-declare(ticks = 1);
+declare(ticks=1);
 namespace Ackintosh\Snidel\Fork;
 
 use Ackintosh\Snidel\ActiveWorkerSet;
@@ -186,7 +186,7 @@ class Container
             throw new \RuntimeException($message);
         }
 
-        $worker = new Worker($process, $this->config->get('driver'));
+        $worker = new Worker($process, $this->config->get('driver'), $this->config->get('pollingDuration'));
 
         if (getmypid() === $this->master->getPid()) {
             // master

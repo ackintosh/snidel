@@ -70,7 +70,7 @@ class ActiveWorkerSetTest extends TestCase
     {
         $driver = (new Config())->get('driver');
         $worker1 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
-            ->setConstructorArgs([$this->makeProcess(1), $driver])
+            ->setConstructorArgs([$this->makeProcess(1), $driver, 1])
             ->setMethods(['terminate'])
             ->getMock();
         $worker1->expects($this->once())
@@ -78,7 +78,7 @@ class ActiveWorkerSetTest extends TestCase
             ->with(SIGTERM);
 
         $worker2 = $this->getMockBuilder('\Ackintosh\Snidel\Worker')
-            ->setConstructorArgs([$this->makeProcess(2), $driver])
+            ->setConstructorArgs([$this->makeProcess(2), $driver, 1])
             ->setMethods(['terminate'])
             ->getMock();
         $worker2->expects($this->once())

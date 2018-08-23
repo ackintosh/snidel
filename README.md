@@ -2,9 +2,9 @@
 
 A multi-process container. It looks like multi-thread-ish.
 
-[![Latest Stable Version](https://poser.pugx.org/ackintosh/snidel/v/stable)](https://packagist.org/packages/ackintosh/snidel) [![License](https://poser.pugx.org/ackintosh/snidel/license)](https://packagist.org/packages/ackintosh/snidel) [![Build Status](https://travis-ci.org/ackintosh/snidel.svg?branch=master)](https://travis-ci.org/ackintosh/snidel) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ackintosh/snidel/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ackintosh/snidel/?branch=master) [![Coverage Status](https://coveralls.io/repos/github/ackintosh/snidel/badge.svg?branch=master)](https://coveralls.io/github/ackintosh/snidel?branch=master)
+[![Latest Stable Version](https://poser.pugx.org/ackintosh/snidel/v/stable)](https://packagist.org/packages/ackintosh/snidel) [![License](https://poser.pugx.org/ackintosh/snidel/license)](https://packagist.org/packages/ackintosh/snidel) [![Build Status](https://travis-ci.org/ackintosh/snidel.svg?branch=master)](https://travis-ci.org/ackintosh/snidel) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ackintosh/snidel/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ackintosh/snidel/?branch=master) [![Coverage Status](https://coveralls.io/repos/github/ackintosh/snidel/badge.svg?branch=master)](https://coveralls.io/github/ackintosh/snidel?branch=master) [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.6-8892BF.svg?style=flat-square)](https://php.net/)
 
-## What Snidel solves? / The motivation for development
+## What Snidel solves?
 
 (en)
 
@@ -30,12 +30,27 @@ PHPでプログラミングに入門して、PHPでキャリアを積み重ね�
 ## Installing Snidel via Composer
 
 ```
-$ composer require ackintosh/snidel
+$ composer require ackintosh/snidel:~0.11.0
 ```
 
 ## Architecture
 
 ![Master - Worker Architecture](images/0.8_pluggable_queue.png)
+
+## Benefits
+
+It is also possible parallel processing via build-in functions (e.g. `exec`):
+
+```php
+initialize_data_required_for_the_slow_jobs();
+
+exec('php slow_job1.php &');
+exec('php slow_job2.php &');
+```
+
+For the developers who feels pain with the above, Snidel can provides pretty good experience and will streamline their PHP programming.
+
+We will walk through usage to show how Snidel melt parallel processing into your programming. The experience using Snidel should resolve your pain. Let's get started!
 
 ## Usage
 
@@ -83,6 +98,8 @@ new Snidel([
     'logger' => $monolog,
     // Please refer to `Using custom queue`
     'driver' => $driver,
+    // a polling duration(in seconds) of queueing
+    'pollingDuration' => 1,
 ]);
 ```
 
@@ -90,7 +107,7 @@ new Snidel([
 
 ```php
 // multiple arguments
-$snidel->process($f, ['foo', 'bar']);
+$snidel->process($f, ['arg1', 'arg2']);
 
 // global function
 $snidel->process('myfunction');
@@ -103,20 +120,25 @@ $snidel->process([$instance, 'method']);
 ### Tagging the task
 
 ```php
-$snidel->process($f, 'foo', 'tag1');
-$snidel->process($f, 'bar', 'tag1');
-$snidel->process($f, 'baz', 'tag2');
+$function = function ($arg) {
+    return $arg;
+};
+
+$snidel->process($f, 'arg-A_tag1', 'tag1');
+$snidel->process($f, 'arg-B_tag1', 'tag1');
+$snidel->process($f, 'arg_tag2', 'tag2');
 
 foreach ($snidel->results as $r) {
+    // `Task::getTag()` returns the tag passed as 3rd parameter of `Snidel::process()`
     switch ($r->getTask()->getTag()) {
         case 'tag1':
-            // ...
+            $r->getReturn(); // arg-A_tag1 | arg-B_tag1
             break;
         case 'tag2':
-            // ...
+            $r->getReturn(); // arg_tag2
             break;
         default:
-            // ...
+            $r->getReturn();
             break;
     }
 }
@@ -219,10 +241,13 @@ For details on the driver, please see [here](http://bernard.readthedocs.io/drive
 
 We suggest you give it a try with Docker as Snidel requires some php extensions.
 
+### Run unit tests in docker container
+
 ```bash
+curl -Ss https://getcomposer.org/installer | php
 docker build -t snidel .
-docker run --rm -v ${PWD}:/snidel php composer.phar install
-docker run --rm -v ${PWD}:/snidel vendor/bin/phpunit
+docker run --rm -v ${PWD}:/snidel snidel php composer.phar install
+docker run --rm -v ${PWD}:/snidel snidel vendor/bin/phpunit
 ```
 
 ## Author
