@@ -14,7 +14,7 @@ Or else, people who limited to develop with a language that is not PHP (e.g. A l
 
 To make parallel processing more easily and instinctively to them to use, I started developing Snidel.
 
-In a case "How to do it parallelly?", if Snidel be a option to do it, it's honer to me.
+Snidel can be one of your options when you are considering "How to do it parallelly?". It's an honer for me.
 
 (ja)
 
@@ -48,7 +48,7 @@ exec('php slow_job1.php &');
 exec('php slow_job2.php &');
 ```
 
-For the developers who feels pain with the above, Snidel can provides pretty good experience and will streamline their PHP programming.
+For the developers who feels "pain" with the above, Snidel can provides pretty good experience and will streamline their PHP programming.
 
 We will walk through usage to show how Snidel melt parallel processing into your programming. The experience using Snidel should resolve your pain. Let's get started!
 
@@ -239,7 +239,7 @@ For details on the driver, please see [here](http://bernard.readthedocs.io/drive
 
 ## Docker
 
-We suggest you give it a try with Docker as Snidel requires some php extensions.
+We suggest you give it a try with Docker as Snidel requires some php extensions shown in [Requirements](#requirements).
 
 ### Run unit tests in docker container
 
