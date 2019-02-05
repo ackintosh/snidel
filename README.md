@@ -4,6 +4,8 @@ A multi-process container. It looks like multi-thread-ish.
 
 [![Latest Stable Version](https://poser.pugx.org/ackintosh/snidel/v/stable)](https://packagist.org/packages/ackintosh/snidel) [![License](https://poser.pugx.org/ackintosh/snidel/license)](https://packagist.org/packages/ackintosh/snidel) [![Build Status](https://travis-ci.org/ackintosh/snidel.svg?branch=master)](https://travis-ci.org/ackintosh/snidel) [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ackintosh/snidel/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ackintosh/snidel/?branch=master) [![Coverage Status](https://coveralls.io/repos/github/ackintosh/snidel/badge.svg?branch=master)](https://coveralls.io/github/ackintosh/snidel?branch=master) [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%205.6-8892BF.svg?style=flat-square)](https://php.net/)
 
+**Please consider [donating](https://www.patreon.com/ackintosh) to this project's author, [Akihito Nakano](#author), to show your :heart: and support.**
+
 ## What Snidel solves?
 
 (en)
@@ -252,9 +254,12 @@ docker run --rm -v ${PWD}:/snidel snidel vendor/bin/phpunit
 
 ## Author
 
-Akihito Nakano
+**Snidel** &copy; ackintosh, Released under the [MIT](./LICENSE) License.  
+Authored and maintained by ackintosh
 
-blog entries by author about snidel. (ja)
+> GitHub [@ackintosh](https://github.com/ackintosh) / Twitter [@NAKANO_Akihito](https://twitter.com/NAKANO_Akihito) / [Blog (ja)](https://ackintosh.github.io/)
+
+Blog entries by author about Snidel (ja):
 
 - https://ackintosh.github.io/blog/2015/09/29/snidel/
 - https://ackintosh.github.io/blog/2015/11/08/snidel_0_2_0/
@@ -264,10 +269,6 @@ blog entries by author about snidel. (ja)
 - https://ackintosh.github.io/blog/2016/09/09/snidel_0_7_0/
 - https://ackintosh.github.io/blog/2017/03/10/snidel_0_8_0/
 - https://ackintosh.github.io/blog/2017/07/17/snidel_0_9_0/
-
-## License
-
-[The MIT License](http://opensource.org/licenses/MIT)
 
 ## Acknowledgments
 
