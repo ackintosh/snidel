@@ -237,7 +237,7 @@ For details on the driver, please see [here](http://bernard.readthedocs.io/drive
 |:----------|:------------|
 | 0.1 ~ [0.8](https://github.com/ackintosh/snidel/releases/tag/0.8.0) | >= 5.3 |
 | [0.9](https://github.com/ackintosh/snidel/releases/tag/0.9.0) ~ | >= 5.6 |
-| 0.13.0 | >= 7.1 |
+| [0.13](https://github.com/ackintosh/snidel/releases/tag/0.13.0) | >= 7.1 |
 
 ## Docker
 
