@@ -2,7 +2,7 @@
 declare(ticks=1);
 namespace Ackintosh\Snidel\Fork;
 
-use Ackintosh\Snidel\ActiveWorkerSet;
+use Ackintosh\Snidel\WorkerPool;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
@@ -10,7 +10,7 @@ use Ackintosh\Snidel\Traits\Queueing;
 use Ackintosh\Snidel\Worker;
 use Bernard\Router\SimpleRouter;
 
-class Container
+class Coordinator
 {
     use Queueing;
 
@@ -132,19 +132,19 @@ class Container
             // @codeCoverageIgnoreStart
             // covered by SnidelTest via master process
             // master
-            $activeWorkerSet = new ActiveWorkerSet();
+            $workerPool = new WorkerPool();
             $this->log->info('pid: ' . $this->master->getPid());
 
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($activeWorkerSet) {
+                $this->pcntl->signal($sig, function ($sig) use ($workerPool) {
                     $this->receivedSignal = $sig;
                     $this->log->info('received signal: ' . $sig);
 
-                    if ($activeWorkerSet->count() === 0) {
+                    if ($workerPool->count() === 0) {
                         $this->log->info('no worker is active.');
                     } else {
                         $this->log->info('------> sending signal to workers. signal: ' . $sig);
-                        $activeWorkerSet->terminate($sig);
+                        $workerPool->terminate($sig);
                         $this->log->info('<------ sent signal');
                     }
                     exit;
@@ -153,7 +153,7 @@ class Container
 
             $concurrency = (int)$this->config->get('concurrency');
             for ($i = 0; $i < $concurrency; $i++) {
-                $activeWorkerSet->add($this->forkWorker());
+                $workerPool->add($this->forkWorker());
             }
             $status = null;
             while (($workerPid = $this->pcntl->waitpid(-1, $status, WNOHANG)) !== -1) {
@@ -161,8 +161,8 @@ class Container
                     usleep(100000);
                     continue;
                 }
-                $activeWorkerSet->delete($workerPid);
-                $activeWorkerSet->add($this->forkWorker());
+                $workerPool->delete($workerPid);
+                $workerPool->add($this->forkWorker());
                 $status = null;
             }
             exit;

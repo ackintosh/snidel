@@ -1,16 +1,16 @@
 <?php
-use Ackintosh\Snidel\ActiveWorkerSet;
+use Ackintosh\Snidel\WorkerPool;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\TestCase;
 
-class ActiveWorkerSetTest extends TestCase
+class WorkerPoolTest extends TestCase
 {
-    /** @var \Ackintosh\Snidel\ActiveWorkerSet */
-    private $activeWorkerSet;
+    /** @var \Ackintosh\Snidel\WorkerPool */
+    private $workerPool;
 
     public function setUp()
     {
-        $this->activeWorkerSet = new ActiveWorkerSet();
+        $this->workerPool = new WorkerPool();
     }
 
     /**
@@ -18,16 +18,16 @@ class ActiveWorkerSetTest extends TestCase
      */
     public function add()
     {
-        $ref = new \ReflectionProperty('\Ackintosh\Snidel\ActiveWorkerSet', 'workers');
+        $ref = new \ReflectionProperty('\Ackintosh\Snidel\WorkerPool', 'workers');
         $ref->setAccessible(true);
-        $workers = $ref->getValue($this->activeWorkerSet);
+        $workers = $ref->getValue($this->workerPool);
 
         $this->assertSame([], $workers);
 
         $worker = $this->makeWorker();
-        $this->activeWorkerSet->add($worker);
+        $this->workerPool->add($worker);
 
-        $workers = $ref->getValue($this->activeWorkerSet);
+        $workers = $ref->getValue($this->workerPool);
         $this->assertSame([getmypid() => $worker], $workers);
     }
 
@@ -38,13 +38,13 @@ class ActiveWorkerSetTest extends TestCase
     {
         $worker1 = $this->makeWorker(1);
         $worker2 = $this->makeWorker(2);
-        $this->activeWorkerSet->add($worker1);
-        $this->activeWorkerSet->add($worker2);
-        $this->activeWorkerSet->delete($worker1->getPid());
+        $this->workerPool->add($worker1);
+        $this->workerPool->add($worker2);
+        $this->workerPool->delete($worker1->getPid());
 
-        $ref = new \ReflectionProperty('\Ackintosh\Snidel\ActiveWorkerSet', 'workers');
+        $ref = new \ReflectionProperty('\Ackintosh\Snidel\WorkerPool', 'workers');
         $ref->setAccessible(true);
-        $workers = $ref->getValue($this->activeWorkerSet);
+        $workers = $ref->getValue($this->workerPool);
 
         $this->assertSame([2 => $worker2], $workers);
     }
@@ -54,13 +54,13 @@ class ActiveWorkerSetTest extends TestCase
      */
     public function countWorker()
     {
-        $this->assertSame(0, $this->activeWorkerSet->count());
+        $this->assertSame(0, $this->workerPool->count());
 
-        $this->activeWorkerSet->add($this->makeWorker(1));
-        $this->assertSame(1, $this->activeWorkerSet->count());
+        $this->workerPool->add($this->makeWorker(1));
+        $this->assertSame(1, $this->workerPool->count());
 
-        $this->activeWorkerSet->add($this->makeWorker(2));
-        $this->assertSame(2, $this->activeWorkerSet->count());
+        $this->workerPool->add($this->makeWorker(2));
+        $this->assertSame(2, $this->workerPool->count());
     }
 
     /**
@@ -85,8 +85,8 @@ class ActiveWorkerSetTest extends TestCase
             ->method('terminate')
             ->with(SIGTERM);
 
-        $this->activeWorkerSet->add($worker1);
-        $this->activeWorkerSet->add($worker2);
-        $this->activeWorkerSet->terminate(SIGTERM);
+        $this->workerPool->add($worker1);
+        $this->workerPool->add($worker2);
+        $this->workerPool->terminate(SIGTERM);
     }
 }

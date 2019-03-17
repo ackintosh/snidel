@@ -25,9 +25,9 @@ class WorkerTest extends TestCase
      */
     public function terminate()
     {
-        $container = $this->makeForkContainer();
-        $container->master = new Process(getmypid());
-        $worker = $container->forkWorker();
+        $coordinator = $this->makeForkCoordinator();
+        $coordinator->master = new Process(getmypid());
+        $worker = $coordinator->forkWorker();
         $worker->terminate(SIGTERM);
 
         // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.

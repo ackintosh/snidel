@@ -6,7 +6,7 @@ use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Queue as ResultQueue;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\Task\Task;
-use Ackintosh\Snidel\Fork\Container;
+use Ackintosh\Snidel\Fork\Coordinator;
 
 /**
  * @codeCoverageIgnore
@@ -42,11 +42,11 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @return \Ackintosh\Snidel\Fork\Container
+     * @return \Ackintosh\Snidel\Fork\Coordinator
      */
-    protected function makeForkContainer()
+    protected function makeForkCoordinator()
     {
-        return \ClassProxy::on(new Container(
+        return \ClassProxy::on(new Coordinator(
             new Config(),
             new Log(getmypid(), null)
         ));
