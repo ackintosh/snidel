@@ -4,7 +4,7 @@ declare(ticks=1);
 namespace Ackintosh;
 
 use Ackintosh\Snidel\Config;
-use Ackintosh\Snidel\Fork\Container;
+use Ackintosh\Snidel\Fork\Coordinator;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Task\Task;
@@ -14,7 +14,7 @@ class Snidel
     /** @var \Ackintosh\Snidel\Config */
     private $config;
 
-    /** @var \Ackintosh\Snidel\Fork\Container */
+    /** @var \Ackintosh\Snidel\Fork\Coordinator */
     private $container;
 
     /** @var \Ackintosh\Snidel\Log */
@@ -34,7 +34,7 @@ class Snidel
     {
         $this->config = new Config($parameter);
         $this->log = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
-        $this->container = new Container($this->config, $this->log);
+        $this->container = new Coordinator($this->config, $this->log);
         $this->container->forkMaster();
         $this->registerSignalHandler($this->container, $this->log);
         $this->log->info('parent pid: ' . $this->config->get('ownerPid'));
@@ -100,7 +100,7 @@ class Snidel
     }
 
     /**
-     * @param Container $container
+     * @param Coordinator $container
      * @param Log $log
      */
     private function registerSignalHandler($container, $log)

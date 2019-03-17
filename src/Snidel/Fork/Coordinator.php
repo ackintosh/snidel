@@ -10,7 +10,7 @@ use Ackintosh\Snidel\Traits\Queueing;
 use Ackintosh\Snidel\Worker;
 use Bernard\Router\SimpleRouter;
 
-class Container
+class Coordinator
 {
     use Queueing;
 
