@@ -1,10 +1,10 @@
 <?php
+declare(ticks=1);
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Traits\Queueing;
-use Bernard\Router\SimpleRouter;
 
 class Worker
 {
@@ -25,26 +25,39 @@ class Worker
     /** @var \Bernard\QueueFactory\PersistentFactory */
     private $factory;
 
-    /** @var \Bernard\Consumer */
-    private $consumer;
-
     /** @var \Bernard\Producer */
     private $producer;
+
+    /** @var \Bernard\Queue  */
+    private $taskQueue;
+
+    /** @var int */
+    private $pollingDuration;
 
     /**
      * @param \Ackintosh\Snidel\Fork\Process $process
      * @param \Bernard\Driver $driver
+     * @param int $pollingDuration
      */
-    public function __construct($process, $driver)
+    public function __construct($process, $driver, $pollingDuration)
     {
         $this->pcntl = new Pcntl();
         $this->process = $process;
 
         $this->factory = $this->createFactory($driver);
-        $router = new SimpleRouter();
-        $router->add('Task', $this);
-        $this->consumer = $this->createConsumer($router);
         $this->producer = $this->createProducer($this->factory);
+
+        /*
+         * Flat-file driver may causes E_WARNING (mkdir(): File exists) in race condition.
+         * Suppress the warning as it isn't matter and we should progress this task.
+         */
+        if ($driver instanceof \Bernard\Driver\FlatFileDriver) {
+            $this->taskQueue = @$this->factory->create('task');
+        } else {
+            $this->taskQueue = $this->factory->create('task');
+        }
+
+        $this->pollingDuration = $pollingDuration;
     }
 
     /**
@@ -62,7 +75,15 @@ class Worker
      */
     public function run()
     {
-        $this->consumer->consume($this->factory->create('task'));
+        while (true) {
+            if ($envelope = $this->taskQueue->dequeue($this->pollingDuration)) {
+                $this->task($envelope->getMessage());
+            }
+            // We need to insert some statements here as condition expressions are not tickable.
+            // Worker process can't receive signals sent from Master if there's no statements here.
+            // @see http://jp2.php.net/manual/en/control-structures.declare.php#control-structures.declare.ticks
+            usleep(1);
+        }
     }
 
     /**
