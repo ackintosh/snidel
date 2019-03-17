@@ -2,7 +2,7 @@
 declare(ticks=1);
 namespace Ackintosh\Snidel\Fork;
 
-use Ackintosh\Snidel\ActiveWorkerSet;
+use Ackintosh\Snidel\WorkerPool;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
@@ -132,7 +132,7 @@ class Coordinator
             // @codeCoverageIgnoreStart
             // covered by SnidelTest via master process
             // master
-            $activeWorkerSet = new ActiveWorkerSet();
+            $activeWorkerSet = new WorkerPool();
             $this->log->info('pid: ' . $this->master->getPid());
 
             foreach ($this->signals as $sig) {

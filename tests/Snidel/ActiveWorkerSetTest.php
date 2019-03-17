@@ -1,16 +1,16 @@
 <?php
-use Ackintosh\Snidel\ActiveWorkerSet;
+use Ackintosh\Snidel\WorkerPool;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\TestCase;
 
 class ActiveWorkerSetTest extends TestCase
 {
-    /** @var \Ackintosh\Snidel\ActiveWorkerSet */
+    /** @var \Ackintosh\Snidel\WorkerPool */
     private $activeWorkerSet;
 
     public function setUp()
     {
-        $this->activeWorkerSet = new ActiveWorkerSet();
+        $this->activeWorkerSet = new WorkerPool();
     }
 
     /**
@@ -18,7 +18,7 @@ class ActiveWorkerSetTest extends TestCase
      */
     public function add()
     {
-        $ref = new \ReflectionProperty('\Ackintosh\Snidel\ActiveWorkerSet', 'workers');
+        $ref = new \ReflectionProperty('\Ackintosh\Snidel\WorkerPool', 'workers');
         $ref->setAccessible(true);
         $workers = $ref->getValue($this->activeWorkerSet);
 
@@ -42,7 +42,7 @@ class ActiveWorkerSetTest extends TestCase
         $this->activeWorkerSet->add($worker2);
         $this->activeWorkerSet->delete($worker1->getPid());
 
-        $ref = new \ReflectionProperty('\Ackintosh\Snidel\ActiveWorkerSet', 'workers');
+        $ref = new \ReflectionProperty('\Ackintosh\Snidel\WorkerPool', 'workers');
         $ref->setAccessible(true);
         $workers = $ref->getValue($this->activeWorkerSet);
 

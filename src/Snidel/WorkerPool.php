@@ -1,7 +1,7 @@
 <?php
 namespace Ackintosh\Snidel;
 
-class ActiveWorkerSet
+class WorkerPool
 {
     /** @var \Ackintosh\Snidel\Worker[] */
     private $workers = [];
