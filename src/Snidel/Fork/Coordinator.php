@@ -132,19 +132,19 @@ class Coordinator
             // @codeCoverageIgnoreStart
             // covered by SnidelTest via master process
             // master
-            $activeWorkerSet = new WorkerPool();
+            $workerPool = new WorkerPool();
             $this->log->info('pid: ' . $this->master->getPid());
 
             foreach ($this->signals as $sig) {
-                $this->pcntl->signal($sig, function ($sig) use ($activeWorkerSet) {
+                $this->pcntl->signal($sig, function ($sig) use ($workerPool) {
                     $this->receivedSignal = $sig;
                     $this->log->info('received signal: ' . $sig);
 
-                    if ($activeWorkerSet->count() === 0) {
+                    if ($workerPool->count() === 0) {
                         $this->log->info('no worker is active.');
                     } else {
                         $this->log->info('------> sending signal to workers. signal: ' . $sig);
-                        $activeWorkerSet->terminate($sig);
+                        $workerPool->terminate($sig);
                         $this->log->info('<------ sent signal');
                     }
                     exit;
@@ -153,7 +153,7 @@ class Coordinator
 
             $concurrency = (int)$this->config->get('concurrency');
             for ($i = 0; $i < $concurrency; $i++) {
-                $activeWorkerSet->add($this->forkWorker());
+                $workerPool->add($this->forkWorker());
             }
             $status = null;
             while (($workerPid = $this->pcntl->waitpid(-1, $status, WNOHANG)) !== -1) {
@@ -161,8 +161,8 @@ class Coordinator
                     usleep(100000);
                     continue;
                 }
-                $activeWorkerSet->delete($workerPid);
-                $activeWorkerSet->add($this->forkWorker());
+                $workerPool->delete($workerPid);
+                $workerPool->add($this->forkWorker());
                 $status = null;
             }
             exit;
