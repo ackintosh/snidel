@@ -44,7 +44,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     /**
      * @return \Ackintosh\Snidel\Fork\Coordinator
      */
-    protected function makeForkContainer()
+    protected function makeForkCoordinator()
     {
         return \ClassProxy::on(new Coordinator(
             new Config(),

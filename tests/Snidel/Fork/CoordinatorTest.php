@@ -2,7 +2,7 @@
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\TestCase;
 
-class ContainerTest extends TestCase
+class CoordinatorTest extends TestCase
 {
     /**
      * @test
@@ -18,9 +18,9 @@ class ContainerTest extends TestCase
             ->method('fork')
             ->willThrowException(new \RuntimeException());
 
-        $container = $this->makeForkContainer();
-        $container->pcntl = $pcntl;
-        $container->forkWorker();
+        $coordinator = $this->makeForkCoordinator();
+        $coordinator->pcntl = $pcntl;
+        $coordinator->forkWorker();
     }
 
     /**
@@ -37,9 +37,9 @@ class ContainerTest extends TestCase
             ->method('fork')
             ->willThrowException(new \RuntimeException());
 
-        $container = $this->makeForkContainer();
-        $container->pcntl = $pcntl;
-        $container->forkMaster();
+        $coordinator = $this->makeForkCoordinator();
+        $coordinator->pcntl = $pcntl;
+        $coordinator->forkMaster();
     }
 
     /**
@@ -47,9 +47,9 @@ class ContainerTest extends TestCase
      */
     public function sendSignalToMaster()
     {
-        $container = $this->makeForkContainer();
-        $master = $container->forkMaster();
-        $container->sendSignalToMaster(SIGTERM);
+        $coordinator = $this->makeForkCoordinator();
+        $master = $coordinator->forkMaster();
+        $coordinator->sendSignalToMaster(SIGTERM);
 
         // pcntl_wait with WUNTRACED returns `-1` if process has already terminated.
         $status = null;

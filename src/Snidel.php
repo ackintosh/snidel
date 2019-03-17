@@ -15,7 +15,7 @@ class Snidel
     private $config;
 
     /** @var \Ackintosh\Snidel\Fork\Coordinator */
-    private $container;
+    private $coordinator;
 
     /** @var \Ackintosh\Snidel\Log */
     private $log;
@@ -34,9 +34,9 @@ class Snidel
     {
         $this->config = new Config($parameter);
         $this->log = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
-        $this->container = new Coordinator($this->config, $this->log);
-        $this->container->forkMaster();
-        $this->registerSignalHandler($this->container, $this->log);
+        $this->coordinator = new Coordinator($this->config, $this->log);
+        $this->coordinator->forkMaster();
+        $this->registerSignalHandler($this->coordinator, $this->log);
         $this->log->info('parent pid: ' . $this->config->get('ownerPid'));
     }
 
@@ -52,13 +52,13 @@ class Snidel
     public function process($callable, $args = [], $tag = null)
     {
         try {
-            $this->container->enqueue(new Task($callable, $args, $tag));
+            $this->coordinator->enqueue(new Task($callable, $args, $tag));
         } catch (\RuntimeException $e) {
             $this->log->error('failed to enqueue the task: ' . $e->getMessage());
             throw $e;
         }
 
-        $this->log->info('queued task #' . $this->container->queuedCount());
+        $this->log->info('queued task #' . $this->coordinator->queuedCount());
     }
 
     /**
@@ -68,7 +68,7 @@ class Snidel
      */
     public function wait()
     {
-        $this->container->wait();
+        $this->coordinator->wait();
     }
 
     /**
@@ -78,7 +78,7 @@ class Snidel
      */
     public function results()
     {
-        foreach($this->container->results() as $r) {
+        foreach($this->coordinator->results() as $r) {
             yield $r;
         }
     }
@@ -88,7 +88,7 @@ class Snidel
      */
     public function hasError()
     {
-        return $this->container->hasError();
+        return $this->coordinator->hasError();
     }
 
     /**
@@ -96,23 +96,23 @@ class Snidel
      */
     public function getError()
     {
-        return $this->container->getError();
+        return $this->coordinator->getError();
     }
 
     /**
-     * @param Coordinator $container
+     * @param Coordinator $coordinator
      * @param Log $log
      */
-    private function registerSignalHandler($container, $log)
+    private function registerSignalHandler($coordinator, $log)
     {
         $pcntl = new Pcntl();
         foreach ($this->signals as $sig) {
             $pcntl->signal(
                 $sig,
-                function ($sig) use ($log, $container) {
+                function ($sig) use ($log, $coordinator) {
                     $log->info('received signal. signo: ' . $sig);
                     $log->info('--> sending a signal " to children.');
-                    $container->sendSignalToMaster($sig);
+                    $coordinator->sendSignalToMaster($sig);
                     $log->info('<-- signal handling has been completed successfully.');
                     exit;
                 },
@@ -125,12 +125,12 @@ class Snidel
     {
         if ($this->config->get('ownerPid') === getmypid()) {
             $this->wait();
-            if ($this->container->existsMaster()) {
+            if ($this->coordinator->existsMaster()) {
                 $this->log->info('shutdown master process.');
-                $this->container->sendSignalToMaster();
+                $this->coordinator->sendSignalToMaster();
             }
 
-            unset($this->container);
+            unset($this->coordinator);
         }
     }
 }
