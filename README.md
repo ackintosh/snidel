@@ -122,7 +122,7 @@ $snidel->process([$instance, 'method']);
 ### Tagging the task
 
 ```php
-$function = function ($arg) {
+$f = function ($arg) {
     return $arg;
 };
 
