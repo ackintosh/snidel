@@ -30,9 +30,6 @@ class Task extends AbstractMessage implements TaskInterface
         return 'Task';
     }
 
-    /**
-     * @return  callable
-     */
     public function getCallable(): callable
     {
         return $this->callable;
@@ -43,17 +40,11 @@ class Task extends AbstractMessage implements TaskInterface
         return $this->args;
     }
 
-    /**
-     * @return  string|null
-     */
     public function getTag(): ?string
     {
         return $this->tag;
     }
 
-    /**
-     * @return  \Ackintosh\Snidel\Result\Result
-     */
     public function execute(): Result
     {
         ob_start();
