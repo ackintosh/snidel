@@ -227,6 +227,12 @@ new Snidel([
 
 For details on the driver, please see [here](http://bernard.readthedocs.io/drivers.html).
 
+## Articles
+
+Here are articles that introducing Snidel. Thank you!
+
+- [PHP-Дайджест № 134 (24 июня – 8 июля 2018) / Блог компании Zfort Group / Хабр https://habr.com/ru/company/zfort/blog/416543/]
+
 ## Requirements
 
 - [PCNTL functions](http://php.net/manual/en/ref.pcntl.php)
