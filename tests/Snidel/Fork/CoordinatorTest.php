@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\TestCase;
 

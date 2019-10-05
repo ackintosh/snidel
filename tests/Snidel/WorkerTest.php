@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\TestCase;
 use Ackintosh\Snidel\Worker;

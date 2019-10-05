@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 use Ackintosh\Snidel\Task\Task;
 
 class TaskTest extends \PHPUnit_Framework_TestCase

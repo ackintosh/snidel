@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel;
 
 class ErrorTest extends \PHPUnit_Framework_TestCase

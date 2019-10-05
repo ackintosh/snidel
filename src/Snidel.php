@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 declare(ticks=1);
 
 namespace Ackintosh;
@@ -44,20 +45,12 @@ class Snidel
     /**
      * this method uses master / worker model.
      *
-     * @param   callable    $callable
-     * @param   mixed       $args
-     * @param   string      $tag
      * @throws  \RuntimeException
      */
-    public function process(callable $callable, $args = [], ?string $tag = null): void
+    public function process(callable $callable, array $args = [], ?string $tag = null): void
     {
         try {
-            $this->coordinator->enqueue(
-                new Task(
-                    $callable,
-                    is_array($args) ? $args : [$args],
-                    $tag)
-            );
+            $this->coordinator->enqueue(new Task($callable, $args, $tag));
         } catch (\RuntimeException $e) {
             $this->log->error('failed to enqueue the task: ' . $e->getMessage());
             throw $e;
