@@ -1,18 +1,20 @@
 <?php
 namespace Ackintosh\Snidel\Result;
 
-class Result
+use Bernard\Message\AbstractMessage;
+
+class Result extends AbstractMessage
 {
-    /** @var mix */
+    /** @var mixed */
     private $return;
 
     /** @var string */
     private $output;
 
-    /** @var Ackintosh\Snidel\Fork\Fork */
-    private $fork;
+    /** @var \Ackintosh\Snidel\Fork\Process */
+    private $process;
 
-    /** @var Ackintosh\Snidel\Task\Task */
+    /** @var \Ackintosh\Snidel\Task\Task */
     private $task;
 
     /** @var bool */
@@ -22,9 +24,17 @@ class Result
     private $error;
 
     /**
+     * {@inheritdoc}
+     */
+    public function getName()
+    {
+        return 'Result';
+    }
+
+    /**
      * set return
      *
-     * @param   mix     $return
+     * @param   mixed     $return
      * @return  void
      */
     public function setReturn($return)
@@ -35,7 +45,7 @@ class Result
     /**
      * return return value
      *
-     * @return  mix
+     * @return  mixed
      */
     public function getReturn()
     {
@@ -64,24 +74,24 @@ class Result
     }
 
     /**
-     * @param   Ackintosh\Snidel\Fork\Fork
+     * @param   \Ackintosh\Snidel\Fork\Process
      * @return  void
      */
-    public function setFork($fork)
+    public function setProcess($fork)
     {
-        $this->fork = $fork;
+        $this->process = $fork;
     }
 
     /**
-     * @return  Ackintosh\Snidel\Fork\Fork
+     * @return  \Ackintosh\Snidel\Fork\Process
      */
-    public function getFork()
+    public function getProcess()
     {
-        return $this->fork;
+        return $this->process;
     }
 
     /**
-     * @param   Ackintosh\Snidel\Task\Task
+     * @param   \Ackintosh\Snidel\Task\Task
      * @return  void
      */
     public function setTask($task)
@@ -90,7 +100,7 @@ class Result
     }
 
     /**
-     * @return  Ackintosh\Snidel\Task\Task
+     * @return  \Ackintosh\Snidel\Task\Task
      */
     public function getTask()
     {

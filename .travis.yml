@@ -1,18 +1,23 @@
 language: php
 
 php:
-  - 5.3
-  - 5.4
-  - 5.5
-  - 5.6
-  - 7.0
+  - 7.1
+  - 7.2
+  - 7.3
   - nightly
+
+env:
+  matrix:
+    - COMPOSER_OPTS=""
+    - COMPOSER_OPTS="--prefer-lowest --prefer-stable"
 
 matrix:
   allow_failures:
     - php: nightly
 
 before_script:
+  - composer self-update
+  - composer update $COMPOSER_OPTS
   - composer install --dev
 
 script:

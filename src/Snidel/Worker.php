@@ -1,59 +1,63 @@
 <?php
+declare(ticks=1);
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Result\Result;
-use Ackintosh\Snidel\Result\QueueInterface as ResultQueueInterface;
-use Ackintosh\Snidel\Task\QueueInterface as TaskQueueInterface;
 use Ackintosh\Snidel\Task\Task;
+use Ackintosh\Snidel\Traits\Queueing;
 
 class Worker
 {
+    use Queueing;
+
     /** @var \Ackintosh\Snidel\Task\Task */
-    private $task;
+    private $latestTask;
 
-    /** @var \Ackintosh\Snidel\Fork\Fork */
-    private $fork;
-
-    /** @var \Ackintosh\Snidel\Task\QueueInterface */
-    private $taskQueue;
-
-    /** @var \Ackintosh\Snidel\Result\QueueInterface */
-    private $resultQueue;
+    /** @var \Ackintosh\Snidel\Fork\Process */
+    private $process;
 
     /** @var \Ackintosh\Snidel\Pcntl */
     private $pcntl;
 
     /** @var bool */
-    private $isReceivedTask = false;
+    private $isInProgress = false;
 
-    /** @var bool */
-    private $isEnqueuedResult = false;
+    /** @var \Bernard\QueueFactory\PersistentFactory */
+    private $factory;
 
-    /**
-     * @param   \Ackintosh\Snidel\Fork\Fork $fork
-     */
-    public function __construct($fork)
-    {
-        $this->pcntl    = new Pcntl();
-        $this->fork     = $fork;
-    }
+    /** @var \Bernard\Producer */
+    private $producer;
 
-    /**
-     * @param   \Ackintosh\Snidel\Task\QueueInterface
-     * @return  void
-     */
-    public function setTaskQueue(TaskQueueInterface $queue)
-    {
-        $this->taskQueue = $queue;
-    }
+    /** @var \Bernard\Queue  */
+    private $taskQueue;
+
+    /** @var int */
+    private $pollingDuration;
 
     /**
-     * @param   \Ackintosh\Snidel\Result\QueueInterface
-     * @return  void
+     * @param \Ackintosh\Snidel\Fork\Process $process
+     * @param \Bernard\Driver $driver
+     * @param int $pollingDuration
      */
-    public function setResultQueue(ResultQueueInterface $queue)
+    public function __construct($process, $driver, $pollingDuration)
     {
-        $this->resultQueue = $queue;
+        $this->pcntl = new Pcntl();
+        $this->process = $process;
+
+        $this->factory = $this->createFactory($driver);
+        $this->producer = $this->createProducer($this->factory);
+
+        /*
+         * Flat-file driver may causes E_WARNING (mkdir(): File exists) in race condition.
+         * Suppress the warning as it isn't matter and we should progress this task.
+         */
+        if ($driver instanceof \Bernard\Driver\FlatFileDriver) {
+            $this->taskQueue = @$this->factory->create('task');
+        } else {
+            $this->taskQueue = $this->factory->create('task');
+        }
+
+        $this->pollingDuration = $pollingDuration;
     }
 
     /**
@@ -61,46 +65,57 @@ class Worker
      */
     public function getPid()
     {
-        return $this->fork->getPid();
+        return $this->process->getPid();
     }
 
     /**
      * @return  void
      * @throws  \RuntimeException
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function run()
     {
-        try {
-            $task = $this->taskQueue->dequeue();
-            $this->isReceivedTask = true;
-            $result = $task->execute();
-        } catch (\RuntimeException $e) {
-            throw $e;
+        while (true) {
+            if ($envelope = $this->taskQueue->dequeue($this->pollingDuration)) {
+                $this->task($envelope->getMessage());
+            }
+            // We need to insert some statements here as condition expressions are not tickable.
+            // Worker process can't receive signals sent from Master if there's no statements here.
+            // @see http://jp2.php.net/manual/en/control-structures.declare.php#control-structures.declare.ticks
+            usleep(1);
         }
+    }
 
-        $result->setFork($this->fork);
+    /**
+     * @param Task $task
+     * @return void
+     * @codeCoverageIgnore covered by SnidelTest via worker process
+     */
+    public function task(Task $task)
+    {
+        $this->isInProgress = true;
+        $this->latestTask = $task;
+        $result = $task->execute();
+        $result->setProcess($this->process);
 
-        try {
-            $this->resultQueue->enqueue($result);
-            $this->isEnqueuedResult = true;
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
+        $this->producer->produce($result);
+        $this->isInProgress = false;
     }
 
     /**
      * @return  void
      * @throws  \RuntimeException
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function error()
     {
         $result = new Result();
         $result->setError(error_get_last());
-        $result->setTask(new Task('echo', array(), null));
-        $result->setFork($this->fork);
+        $result->setTask($this->latestTask);
+        $result->setProcess($this->process);
 
         try {
-            $this->resultQueue->enqueue($result);
+            $this->producer->produce($result);
         } catch (\RuntimeException $e) {
             throw $e;
         }
@@ -109,19 +124,28 @@ class Worker
     /**
      * @param   int     $sig
      * @return  void
+     * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function terminate($sig)
     {
-        posix_kill($this->fork->getPid(), $sig);
+        posix_kill($this->process->getPid(), $sig);
         $status = null;
-        $this->pcntl->waitpid($this->fork->getPid(), $status);
+        $this->pcntl->waitpid($this->process->getPid(), $status);
     }
 
     /**
      * @return bool
      */
-    public function isFailedToEnqueueResult()
+    public function hasTask()
     {
-        return $this->isReceivedTask && !$this->isEnqueuedResult;
+        return $this->latestTask !== null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInProgress()
+    {
+        return $this->isInProgress;
     }
 }

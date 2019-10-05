@@ -1,30 +1,36 @@
 <?php
 namespace Ackintosh\Snidel;
 
+use Bernard\Driver\FlatFileDriver;
+
 class Config
 {
     /** @var array */
     private $params;
 
     /**
-     * @param   array   $params
+     * @param array $params
      */
-    public function __construct($params = array())
+    public function __construct($params = [])
     {
-        $default = array(
+        $default = [
             'concurrency'   => 5,
-            'taskQueue'     => array(
-                'className'         => '\Ackintosh\Snidel\Task\Queue',
-                'constructorArgs'   => null,
-            ),
-            'resultQueue'   => array(
-                'className'         => '\Ackintosh\Snidel\Result\Queue',
-                'constructorArgs'   => null,
-            ),
-        );
+            // number of seconds to keep polling for results.
+            'pollingDuration' => 1,
+            'logger'        => null,
+            'driver' => null,
+            // a polling duration(in seconds) of queueing
+            'pollingDuration' => 1,
+        ];
 
         $this->params = array_merge($default, $params);
         $this->params['ownerPid'] = getmypid();
+        $this->params['id'] = spl_object_hash($this);
+        if (!$this->params['driver']) {
+            $this->params['driver'] = new FlatFileDriver(
+                sys_get_temp_dir() . DIRECTORY_SEPARATOR . $this->params['id']
+            );
+        }
     }
 
     /**

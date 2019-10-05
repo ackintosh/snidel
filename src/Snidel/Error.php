@@ -4,7 +4,7 @@ namespace Ackintosh\Snidel;
 class Error implements \ArrayAccess
 {
     /** @var array */
-    private $errors = array();
+    private $errors = [];
 
     /**
      * @param   mixed   $offset

@@ -1,15 +1,12 @@
 <?php
 namespace Ackintosh\Snidel;
 
-use Ackintosh\Snidel\Config;
-use Ackintosh\Snidel\Log;
-use Ackintosh\Snidel\Worker;
-use Ackintosh\Snidel\Fork\Fork;
+use Ackintosh\Snidel\Fork\Process;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Result\Queue as ResultQueue;
 use Ackintosh\Snidel\Task\Queue as TaskQueue;
 use Ackintosh\Snidel\Task\Task;
-use Ackintosh\Snidel\Fork\Container;
+use Ackintosh\Snidel\Fork\Coordinator;
 
 /**
  * @codeCoverageIgnore
@@ -17,11 +14,11 @@ use Ackintosh\Snidel\Fork\Container;
 abstract class TestCase extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @return \Ackintosh\Snidel\Fork\Fork
+     * @return \Ackintosh\Snidel\Fork\Process
      */
-    protected function makeFork()
+    protected function makeProcess($pid = null)
     {
-        return new Fork(getmypid());
+        return new Process($pid ? $pid : getmypid());
     }
 
     /**
@@ -38,37 +35,20 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     protected function makeResult()
     {
         $result = new Result();
-        $result->setFork($this->makeFork());
+        $result->setProcess($this->makeProcess());
         $result->setTask($this->makeTask());
 
         return $result;
     }
 
     /**
-     * @return \Ackintosh\Snidel\Result\Queue
+     * @return \Ackintosh\Snidel\Fork\Coordinator
      */
-    protected function makeResultQueue()
+    protected function makeForkCoordinator()
     {
-        return new ResultQueue($this->makeDefaultConfig());
-    }
-
-    /**
-     * @return \Ackintosh\Snidel\Task\Queue
-     */
-    protected function makeTaskQueue()
-    {
-        return new TaskQueue($this->makeDefaultConfig());
-    }
-
-    /**
-     * @return \Ackintosh\Snidel\Fork\Container
-     */
-    protected function makeForkContainer()
-    {
-        return \ClassProxy::on(new Container(
-            getmypid(),
-            new Log(getmypid()),
-            $this->makeDefaultConfig()
+        return \ClassProxy::on(new Coordinator(
+            new Config(),
+            new Log(getmypid(), null)
         ));
     }
 
@@ -79,11 +59,10 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
     {
         $pid = $pid ?: getmypid();
 
-        return new Worker(new Fork($pid));
-    }
-
-    protected function makeDefaultConfig()
-    {
-        return new Config(array('concurrency' => 5));
+        return new Worker(
+            new Process($pid),
+            (new Config())->get('driver'),
+            (new Config())->get('pollingDuration')
+        );
     }
 }
