@@ -5,7 +5,7 @@ namespace Ackintosh\Snidel\Task;
 
 interface TaskInterface
 {
-    public function getCallable();
-    public function getArgs();
-    public function getTag();
+    public function getCallable(): callable;
+    public function getArgs(): array;
+    public function getTag(): ?string;
 }

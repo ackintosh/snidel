@@ -12,7 +12,7 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, $format = null)
+    public function supportsNormalization($data, $format = null): bool
     {
         return $data instanceof Task;
     }
@@ -20,7 +20,7 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, $type, $format = null)
+    public function supportsDenormalization($data, $type, $format = null): bool
     {
         return $type === 'Ackintosh\Snidel\Task\Task';
     }
@@ -58,9 +58,8 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
 
     /**
      * @param   mixed   $callable
-     * @return  bool
      */
-    private static function isClosure($callable)
+    private static function isClosure($callable): bool
     {
         return is_object($callable) && is_callable($callable);
     }

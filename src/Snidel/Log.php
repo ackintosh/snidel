@@ -15,14 +15,10 @@ class Log
     /** @var int */
     private $masterPid;
 
-    /** @var  \Psr\Log\LoggerInterface */
+    /** @var  \Psr\Log\LoggerInterface|null */
     private $logger;
 
-    /**
-     * @param   int                     $ownerPid
-     * @param   LoggerInterface | null  $logger
-     */
-    public function __construct($ownerPid, $logger)
+    public function __construct(int $ownerPid, ?LoggerInterface $logger)
     {
         $this->ownerPid = $ownerPid;
         $this->logger = $logger;
@@ -39,10 +35,8 @@ class Log
 
     /**
      * creates context
-     *
-     * @return array
      */
-    private function context()
+    private function context(): array
     {
         $pid  = getmypid();
         switch ($pid) {
@@ -65,11 +59,8 @@ class Log
 
     /**
      * info
-     *
-     * @param   string  $message
-     * @return  void
      */
-    public function info($message)
+    public function info(string $message): void
     {
         if ($this->logger === null) {
             return;
@@ -80,11 +71,8 @@ class Log
 
     /**
      * error
-     *
-     * @param   string  $message
-     * @return  void
      */
-    public function error($message)
+    public function error(string $message): void
     {
         if ($this->logger === null) {
             return;

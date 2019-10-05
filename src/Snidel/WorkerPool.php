@@ -8,37 +8,22 @@ class WorkerPool
     /** @var \Ackintosh\Snidel\Worker[] */
     private $workers = [];
 
-    /**
-     * @param   \Ackintosh\Snidel\Worker
-     * @return  void
-     */
-    public function add($worker)
+    public function add(Worker $worker): void
     {
         $this->workers[$worker->getPid()] = $worker;
     }
 
-    /**
-     * @param   int     $pid
-     * @return  void
-     */
-    public function delete($pid)
+    public function delete(int $pid): void
     {
         unset($this->workers[$pid]);
     }
 
-    /**
-     * @return  int
-     */
-    public function count()
+    public function count(): int
     {
         return count($this->workers);
     }
 
-    /**
-     * @param   int     $sig
-     * @return  void
-     */
-    public function terminate($sig)
+    public function terminate(int $sig): void
     {
         foreach ($this->workers as $worker) {
             $worker->terminate($sig);

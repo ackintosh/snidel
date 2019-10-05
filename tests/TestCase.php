@@ -57,12 +57,12 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
      */
     protected function makeWorker($pid = null)
     {
-        $pid = $pid ?: getmypid();
+        $c = new Config;
 
         return new Worker(
-            new Process($pid),
-            (new Config())->get('driver'),
-            (new Config())->get('pollingDuration')
+            new Process($pid ?: getmypid()),
+            $c->get('driver'),
+            $c->get('pollingDuration')
         );
     }
 }

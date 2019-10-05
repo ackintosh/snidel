@@ -16,7 +16,7 @@ class Normalizer extends AbstractAggregateNormalizerAware implements NormalizerI
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, $format = null)
+    public function supportsNormalization($data, $format = null): bool
     {
         return $data instanceof Result;
     }
@@ -24,7 +24,7 @@ class Normalizer extends AbstractAggregateNormalizerAware implements NormalizerI
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, $type, $format = null)
+    public function supportsDenormalization($data, $type, $format = null): bool
     {
         return $type === 'Ackintosh\Snidel\Result\Result';
     }

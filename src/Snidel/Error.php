@@ -12,7 +12,7 @@ class Error implements \ArrayAccess
      * @param   mixed   $offset
      * @return  bool
      */
-    public function offsetExists($offset)
+    public function offsetExists($offset): bool
     {
         if (isset($this->errors[$offset]) && $this->errors[$offset] !== '') {
             return true;
@@ -38,7 +38,7 @@ class Error implements \ArrayAccess
      * @param   mixed   $offset
      * @return  void
      */
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         $this->errors[$offset] = $value;
     }
@@ -47,7 +47,7 @@ class Error implements \ArrayAccess
      * @param   mixed   $offset
      * @return  void
      */
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         unset($this->errors[$offset]);
     }
@@ -55,7 +55,7 @@ class Error implements \ArrayAccess
     /**
      * @return  bool
      */
-    public function exists()
+    public function exists(): bool
     {
         return count($this->errors) > 0;
     }
