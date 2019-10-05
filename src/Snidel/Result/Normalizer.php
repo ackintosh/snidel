@@ -59,8 +59,18 @@ class Normalizer extends AbstractAggregateNormalizerAware implements NormalizerI
             ['allowed_classes' => true]
         );
 
-        $unserialized['result']->setTask($this->aggregate->denormalize($unserialized['serializedTask'], 'Ackintosh\Snidel\Task\Task'));
-        $unserialized['result']->setProcess(unserialize($unserialized['serializedProcess'], ['allowed_classes' => [Process::class]]));
+        $unserialized['result']->setTask(
+            $this->aggregate->denormalize(
+                $unserialized['serializedTask'],
+                'Ackintosh\Snidel\Task\Task'
+            )
+        );
+        $unserialized['result']->setProcess(
+            unserialize(
+                $unserialized['serializedProcess'],
+                ['allowed_classes' => [Process::class]]
+            )
+        );
 
         return $unserialized['result'];
     }
