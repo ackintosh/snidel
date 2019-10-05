@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 use Ackintosh\Snidel\Task\Task;
 
 class TaskTest extends \PHPUnit_Framework_TestCase
@@ -8,9 +10,13 @@ class TaskTest extends \PHPUnit_Framework_TestCase
      */
     public function execute()
     {
-        $task = new Task(function ($arg) {
-            return 'foo' . $arg;
-        }, 'bar', null);
+        $task = new Task(
+            function ($arg) {
+                return 'foo' . $arg;
+            },
+            ['bar'],
+            null
+        );
 
         $this->assertInstanceOf('\Ackintosh\Snidel\Result\Result', $task->execute());
     }

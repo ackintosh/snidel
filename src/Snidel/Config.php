@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel;
 
 use Bernard\Driver\FlatFileDriver;
@@ -8,10 +10,7 @@ class Config
     /** @var array */
     private $params;
 
-    /**
-     * @param array $params
-     */
-    public function __construct($params = [])
+    public function __construct(array $params = [])
     {
         $default = [
             'concurrency'   => 5,
@@ -34,10 +33,9 @@ class Config
     }
 
     /**
-     * @param   string  $name
      * @return  mixed
      */
-    public function get($name)
+    public function get(string $name)
     {
         return $this->params[$name];
     }

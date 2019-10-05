@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel\Task;
 
 use Opis\Closure\SerializableClosure;
@@ -10,7 +12,7 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsNormalization($data, $format = null)
+    public function supportsNormalization($data, $format = null): bool
     {
         return $data instanceof Task;
     }
@@ -18,7 +20,7 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
     /**
      * {@inheritdoc}
      */
-    public function supportsDenormalization($data, $type, $format = null)
+    public function supportsDenormalization($data, $type, $format = null): bool
     {
         return $type === 'Ackintosh\Snidel\Task\Task';
     }
@@ -42,7 +44,12 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        $task = unserialize($data);
+        $task = unserialize(
+            $data,
+            // Snidel is for general-purpose so we need to accept any classes.
+            ['allowed_classes' => true]
+        );
+
         if (self::isClosure($callable = $task->getCallable())) {
             $task = new Task(
                 $callable->getClosure(),
@@ -56,9 +63,8 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
 
     /**
      * @param   mixed   $callable
-     * @return  bool
      */
-    private static function isClosure($callable)
+    private static function isClosure($callable): bool
     {
         return is_object($callable) && is_callable($callable);
     }

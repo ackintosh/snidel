@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel;
@@ -37,19 +39,6 @@ class SnidelTest extends TestCase
     /**
      * @test
      */
-    public function passTheValueOtherThanArray()
-    {
-        $snidel = new Snidel();
-        $snidel->process('receivesArgumentsAndReturnsIt', 'foo');
-
-        foreach ($snidel->results() as $r) {
-            $this->assertSame('foo', $r->getReturn());
-        }
-    }
-
-    /**
-     * @test
-     */
     public function passMultipleArguments()
     {
         $snidel = new Snidel();
@@ -68,7 +57,7 @@ class SnidelTest extends TestCase
         $snidel = new Snidel([
             'concurrency' => 3,
             // in order to minify the delay time due to the issue of bernard's polling, specifying a small number.
-            'pollingDuration' => 0.5,
+            'pollingDuration' => 1,
         ]);
 
         $start = time();
@@ -91,7 +80,7 @@ class SnidelTest extends TestCase
         $test = new \TestClass();
 
         $snidel->process([$test, 'returnsFoo']);
-        $snidel->process([$test, 'receivesArgumentsAndReturnsIt'], 'bar');
+        $snidel->process([$test, 'receivesArgumentsAndReturnsIt'], ['bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);
@@ -108,7 +97,7 @@ class SnidelTest extends TestCase
             return $arg;
         };
         $snidel->process($func);
-        $snidel->process($func, 'bar');
+        $snidel->process($func, ['bar']);
 
         foreach ($snidel->results() as $r) {
             $this->assertContains($r->getReturn(), ['foo', 'bar']);

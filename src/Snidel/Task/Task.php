@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel\Task;
 
 use Ackintosh\Snidel\Result\Result;
@@ -15,12 +17,7 @@ class Task extends AbstractMessage implements TaskInterface
     /** @var string */
     private $tag;
 
-    /**
-     * @param   callable    $callable
-     * @param   array       $args
-     * @param   string      $tag
-     */
-    public function __construct($callable, $args, $tag)
+    public function __construct(callable $callable, array $args, ?string $tag)
     {
         $this->callable     = $callable;
         $this->args         = $args;
@@ -30,39 +27,27 @@ class Task extends AbstractMessage implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Task';
     }
 
-    /**
-     * @return  callable
-     */
-    public function getCallable()
+    public function getCallable(): callable
     {
         return $this->callable;
     }
 
-    /**
-     * @return  mixed
-     */
-    public function getArgs()
+    public function getArgs(): array
     {
         return $this->args;
     }
 
-    /**
-     * @return  string|null
-     */
-    public function getTag()
+    public function getTag(): ?string
     {
         return $this->tag;
     }
 
-    /**
-     * @return  \Ackintosh\Snidel\Result\Result
-     */
-    public function execute()
+    public function execute(): Result
     {
         ob_start();
         $result = new Result();
@@ -71,7 +56,7 @@ class Task extends AbstractMessage implements TaskInterface
             $result->setReturn(
                 call_user_func_array(
                     $this->getCallable(),
-                    (is_array($args = $this->getArgs())) ? $args : [$args]
+                    $this->getArgs()
                 )
             );
         } catch (\RuntimeException $e) {

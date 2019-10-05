@@ -1,6 +1,10 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel\Result;
 
+use Ackintosh\Snidel\Fork\Process;
+use Ackintosh\Snidel\Task\Task;
 use Bernard\Message\AbstractMessage;
 
 class Result extends AbstractMessage
@@ -11,10 +15,10 @@ class Result extends AbstractMessage
     /** @var string */
     private $output;
 
-    /** @var \Ackintosh\Snidel\Fork\Process */
+    /** @var \Ackintosh\Snidel\Fork\Process|null */
     private $process;
 
-    /** @var \Ackintosh\Snidel\Task\Task */
+    /** @var \Ackintosh\Snidel\Task\Task|null */
     private $task;
 
     /** @var bool */
@@ -26,7 +30,7 @@ class Result extends AbstractMessage
     /**
      * {@inheritdoc}
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Result';
     }
@@ -35,9 +39,8 @@ class Result extends AbstractMessage
      * set return
      *
      * @param   mixed     $return
-     * @return  void
      */
-    public function setReturn($return)
+    public function setReturn($return): void
     {
         $this->return = $return;
     }
@@ -54,81 +57,52 @@ class Result extends AbstractMessage
 
     /**
      * set output
-     *
-     * @param   string  $output
-     * @return  void
      */
-    public function setOutput($output)
+    public function setOutput(string $output): void
     {
         $this->output = $output;
     }
 
     /**
      * return output
-     *
-     * @return  string
      */
-    public function getOutput()
+    public function getOutput(): string
     {
         return $this->output;
     }
 
-    /**
-     * @param   \Ackintosh\Snidel\Fork\Process
-     * @return  void
-     */
-    public function setProcess($fork)
+    public function setProcess(?Process $process): void
     {
-        $this->process = $fork;
+        $this->process = $process;
     }
 
-    /**
-     * @return  \Ackintosh\Snidel\Fork\Process
-     */
-    public function getProcess()
+    public function getProcess(): ?Process
     {
         return $this->process;
     }
 
-    /**
-     * @param   \Ackintosh\Snidel\Task\Task
-     * @return  void
-     */
-    public function setTask($task)
+    public function setTask(?Task $task): void
     {
         $this->task = $task;
     }
 
-    /**
-     * @return  \Ackintosh\Snidel\Task\Task
-     */
-    public function getTask()
+    public function getTask(): ?Task
     {
         return $this->task;
     }
 
-    /**
-     * @param   array | null
-     * @return  void
-     */
-    public function setError($error)
+    public function setError(?array $error): void
     {
         $this->failure  = true;
         $this->error    = $error;
     }
 
-    /**
-     * @return  array | null
-     */
-    public function getError()
+    public function getError(): ?array
     {
         return $this->error;
     }
 
-    /**
-     * @return  bool
-     */
-    public function isFailure()
+    public function isFailure(): bool
     {
         return $this->failure;
     }

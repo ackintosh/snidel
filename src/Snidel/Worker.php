@@ -1,10 +1,14 @@
 <?php
+declare(strict_types=1);
 declare(ticks=1);
+
 namespace Ackintosh\Snidel;
 
+use Ackintosh\Snidel\Fork\Process;
 use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Traits\Queueing;
+use Bernard\Driver;
 
 class Worker
 {
@@ -34,12 +38,7 @@ class Worker
     /** @var int */
     private $pollingDuration;
 
-    /**
-     * @param \Ackintosh\Snidel\Fork\Process $process
-     * @param \Bernard\Driver $driver
-     * @param int $pollingDuration
-     */
-    public function __construct($process, $driver, $pollingDuration)
+    public function __construct(Process $process, Driver $driver, int $pollingDuration)
     {
         $this->pcntl = new Pcntl();
         $this->process = $process;
@@ -60,20 +59,16 @@ class Worker
         $this->pollingDuration = $pollingDuration;
     }
 
-    /**
-     * @return  int
-     */
-    public function getPid()
+    public function getPid(): int
     {
         return $this->process->getPid();
     }
 
     /**
-     * @return  void
      * @throws  \RuntimeException
      * @codeCoverageIgnore covered by SnidelTest via worker process
      */
-    public function run()
+    public function run(): void
     {
         while (true) {
             if ($envelope = $this->taskQueue->dequeue($this->pollingDuration)) {
@@ -87,11 +82,9 @@ class Worker
     }
 
     /**
-     * @param Task $task
-     * @return void
      * @codeCoverageIgnore covered by SnidelTest via worker process
      */
-    public function task(Task $task)
+    public function task(Task $task): void
     {
         $this->isInProgress = true;
         $this->latestTask = $task;
@@ -103,11 +96,10 @@ class Worker
     }
 
     /**
-     * @return  void
      * @throws  \RuntimeException
      * @codeCoverageIgnore covered by SnidelTest via worker process
      */
-    public function error()
+    public function error(): void
     {
         $result = new Result();
         $result->setError(error_get_last());
@@ -122,29 +114,21 @@ class Worker
     }
 
     /**
-     * @param   int     $sig
-     * @return  void
      * @codeCoverageIgnore covered by SnidelTest via worker process
      */
-    public function terminate($sig)
+    public function terminate(int $sig): void
     {
         posix_kill($this->process->getPid(), $sig);
         $status = null;
         $this->pcntl->waitpid($this->process->getPid(), $status);
     }
 
-    /**
-     * @return bool
-     */
-    public function hasTask()
+    public function hasTask(): bool
     {
         return $this->latestTask !== null;
     }
 
-    /**
-     * @return bool
-     */
-    public function isInProgress()
+    public function isInProgress(): bool
     {
         return $this->isInProgress;
     }

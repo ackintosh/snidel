@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel\Fork;
 
 class Process
@@ -12,38 +14,31 @@ class Process
     /**
      * @param   int     $pid
      */
-    public function __construct($pid)
+    public function __construct(int $pid)
     {
         $this->pid = $pid;
     }
 
     /**
      * set exit status
-     *
-     * @param   int     $status
-     * @return  void
      */
-    public function setStatus($status)
+    public function setStatus(int $status): void
     {
         $this->status = $status;
     }
 
     /**
      * return pid
-     *
-     * @return  int
      */
-    public function getPid()
+    public function getPid(): int
     {
         return $this->pid;
     }
 
     /**
      * return exit status
-     *
-     * @return int
      */
-    public function getStatus()
+    public function getStatus(): int
     {
         return $this->status;
     }

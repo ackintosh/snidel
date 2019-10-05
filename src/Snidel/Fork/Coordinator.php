@@ -1,7 +1,10 @@
 <?php
+declare(strict_types=1);
 declare(ticks=1);
 namespace Ackintosh\Snidel\Fork;
 
+use Ackintosh\Snidel\Log;
+use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\WorkerPool;
 use Ackintosh\Snidel\Config;
 use Ackintosh\Snidel\Error;
@@ -55,10 +58,7 @@ class Coordinator
     /** @var \Bernard\Queue  */
     private $resultQueue;
 
-    /**
-     * @param   int     $ownerPid
-     */
-    public function __construct(Config $config, $log)
+    public function __construct(Config $config, Log $log)
     {
         $this->log = $log;
         $this->config = $config;
@@ -73,11 +73,9 @@ class Coordinator
     }
 
     /**
-     * @param   \Ackintosh\Snidel\Task
-     * @return  void
      * @throws  \RuntimeException
      */
-    public function enqueue($task)
+    public function enqueue(Task $task): void
     {
         try {
             $this->producer->produce($task);
@@ -88,18 +86,12 @@ class Coordinator
         }
     }
 
-    /**
-     * @return  int
-     */
-    public function queuedCount()
+    public function queuedCount(): int
     {
         return $this->queuedCount;
     }
 
-    /**
-     * @return  int
-     */
-    public function dequeuedCount()
+    public function dequeuedCount(): int
     {
         return $this->dequeuedCount;
     }
@@ -107,10 +99,9 @@ class Coordinator
     /**
      * fork master process
      *
-     * @return Process $master
      * @throws \RuntimeException
      */
-    public function forkMaster()
+    public function forkMaster(): Process
     {
         try {
             $this->master = $this->pcntl->fork();
@@ -173,10 +164,9 @@ class Coordinator
     /**
      * fork worker process
      *
-     * @return  \Ackintosh\Snidel\Worker
      * @throws  \RuntimeException
      */
-    private function forkWorker()
+    private function forkWorker(): Worker
     {
         try {
             $process = $this->pcntl->fork();
@@ -226,20 +216,15 @@ class Coordinator
         }
     }
 
-    /**
-     * @return  bool
-     */
-    public function existsMaster()
+    public function existsMaster(): bool
     {
         return $this->master !== null;
     }
 
     /**
      * send signal to master process
-     *
-     * @return  void
      */
-    public function sendSignalToMaster($sig = SIGTERM)
+    public function sendSignalToMaster($sig = SIGTERM): void
     {
         $this->log->info('----> sending signal to master. signal: ' . $sig);
         posix_kill($this->master->getPid(), $sig);
@@ -252,18 +237,12 @@ class Coordinator
         $this->master = null;
     }
 
-    /**
-     * @return void
-     */
-    public function wait()
+    public function wait(): void
     {
         foreach ($this->results() as $_) {}
     }
 
-    /**
-     * @return \Generator
-     */
-    public function results()
+    public function results(): \Generator
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             for (;;) {
@@ -282,18 +261,12 @@ class Coordinator
         }
     }
 
-    /**
-     * @return  bool
-     */
-    public function hasError()
+    public function hasError(): bool
     {
         return $this->error->exists();
     }
 
-    /**
-     * @return  \Ackintosh\Snidel\Error
-     */
-    public function getError()
+    public function getError(): Error
     {
         return $this->error;
     }

@@ -64,15 +64,15 @@ use Ackintosh\Snidel;
 
 $f = function ($s) {
     sleep(3);
-    echo 'echo: ' . $s
+    echo 'echo: ' . $s;
     return 'return: ' . $s;
 };
 
 $s = time();
 $snidel = new Snidel();
-$snidel->process($f, 'foo');
-$snidel->process($f, 'bar');
-$snidel->process($f, 'baz');
+$snidel->process($f, ['foo']);
+$snidel->process($f, ['bar']);
+$snidel->process($f, ['baz']);
 
 // `Snidel::results()` returns `\Generator`
 foreach ($snidel->results() as $r) {

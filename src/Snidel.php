@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
 declare(ticks=1);
 
 namespace Ackintosh;
 
 use Ackintosh\Snidel\Config;
+use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Fork\Coordinator;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;
@@ -30,7 +32,7 @@ class Snidel
      * @param   array $parameter
      * @throws \RuntimeException
      */
-    public function __construct($parameter = [])
+    public function __construct(array $parameter = [])
     {
         $this->config = new Config($parameter);
         $this->log = new Log($this->config->get('ownerPid'), $this->config->get('logger'));
@@ -43,13 +45,9 @@ class Snidel
     /**
      * this method uses master / worker model.
      *
-     * @param   callable    $callable
-     * @param   mixed       $args
-     * @param   string      $tag
-     * @return  void
      * @throws  \RuntimeException
      */
-    public function process($callable, $args = [], $tag = null)
+    public function process(callable $callable, array $args = [], ?string $tag = null): void
     {
         try {
             $this->coordinator->enqueue(new Task($callable, $args, $tag));
@@ -63,38 +61,28 @@ class Snidel
 
     /**
      * waits until all tasks that queued by Snidel::fork() are completed
-     *
-     * @return  void
      */
-    public function wait()
+    public function wait(): void
     {
         $this->coordinator->wait();
     }
 
     /**
      * returns generator which returns a result
-     *
-     * @return \Generator
      */
-    public function results()
+    public function results(): \Generator
     {
         foreach($this->coordinator->results() as $r) {
             yield $r;
         }
     }
 
-    /**
-     * @return  bool
-     */
-    public function hasError()
+    public function hasError(): bool
     {
         return $this->coordinator->hasError();
     }
 
-    /**
-     * @return  \Ackintosh\Snidel\Error
-     */
-    public function getError()
+    public function getError(): Error
     {
         return $this->coordinator->getError();
     }
@@ -103,7 +91,7 @@ class Snidel
      * @param Coordinator $coordinator
      * @param Log $log
      */
-    private function registerSignalHandler($coordinator, $log)
+    private function registerSignalHandler(Coordinator$coordinator, Log $log): void
     {
         $pcntl = new Pcntl();
         foreach ($this->signals as $sig) {

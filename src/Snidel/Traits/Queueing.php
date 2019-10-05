@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel\Traits;
 
 use Ackintosh\Snidel\Result\Normalizer as ResultNormalizer;
@@ -16,11 +18,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
 
 trait Queueing
 {
-    /**
-     * @param Driver $driver
-     * @return PersistentFactory
-     */
-    private function createFactory(Driver $driver)
+    private function createFactory(Driver $driver): PersistentFactory
     {
         $aggregateNormalizer = new AggregateNormalizer([
             new EnvelopeNormalizer(),
@@ -31,20 +29,12 @@ trait Queueing
         return new PersistentFactory($driver, new Serializer($aggregateNormalizer));
     }
 
-    /**
-     * @param Router $router
-     * @return Consumer
-     */
-    private function createConsumer(Router $router)
+    private function createConsumer(Router $router): Consumer
     {
         return new Consumer($router, new EventDispatcher());
     }
 
-    /**
-     * @param QueueFactory $factory
-     * @return Producer
-     */
-    private function createProducer(QueueFactory $factory)
+    private function createProducer(QueueFactory $factory): Producer
     {
         return new Producer($factory, new EventDispatcher());
     }

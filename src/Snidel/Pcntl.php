@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Ackintosh\Snidel;
 
 use Ackintosh\Snidel\Fork\Process;
@@ -7,10 +9,9 @@ class Pcntl
 {
     /**
      * @see pcntl_fork
-     * @return Process
      * @throws \RuntimeException
      */
-    public function fork()
+    public function fork(): Process
     {
         $pid = pcntl_fork();
         if ($pid === -1) {
@@ -24,7 +25,7 @@ class Pcntl
     /**
      * @see pcntl_signal
      */
-    public function signal($signo, $handler, $restart_syscall = true)
+    public function signal(int $signo, callable $handler, bool $restart_syscall = true): bool
     {
         return pcntl_signal($signo, $handler, $restart_syscall);
     }
@@ -32,7 +33,7 @@ class Pcntl
     /**
      * @see pcntl_waitpid
      */
-    public function waitpid($pid, &$status, $options = 0)
+    public function waitpid(int $pid, ?int &$status, int $options = 0): int
     {
         return pcntl_waitpid($pid, $status, $options);
     }
