@@ -52,7 +52,12 @@ class Snidel
     public function process(callable $callable, $args = [], ?string $tag = null): void
     {
         try {
-            $this->coordinator->enqueue(new Task($callable, $args, $tag));
+            $this->coordinator->enqueue(
+                new Task(
+                    $callable,
+                    is_array($args) ? $args : [$args],
+                    $tag)
+            );
         } catch (\RuntimeException $e) {
             $this->log->error('failed to enqueue the task: ' . $e->getMessage());
             throw $e;

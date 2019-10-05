@@ -15,12 +15,7 @@ class Task extends AbstractMessage implements TaskInterface
     /** @var string */
     private $tag;
 
-    /**
-     * @param   callable    $callable
-     * @param   mixed       $args
-     * @param   string      $tag
-     */
-    public function __construct(callable $callable, $args, ?string $tag)
+    public function __construct(callable $callable, array $args, ?string $tag)
     {
         $this->callable     = $callable;
         $this->args         = $args;
@@ -43,10 +38,7 @@ class Task extends AbstractMessage implements TaskInterface
         return $this->callable;
     }
 
-    /**
-     * @return  mixed
-     */
-    public function getArgs()
+    public function getArgs(): array
     {
         return $this->args;
     }
@@ -71,7 +63,7 @@ class Task extends AbstractMessage implements TaskInterface
             $result->setReturn(
                 call_user_func_array(
                     $this->getCallable(),
-                    (is_array($args = $this->getArgs())) ? $args : [$args]
+                    $this->getArgs()
                 )
             );
         } catch (\RuntimeException $e) {
