@@ -17,10 +17,10 @@ class Task extends AbstractMessage implements TaskInterface
 
     /**
      * @param   callable    $callable
-     * @param   array       $args
+     * @param   mixed       $args
      * @param   string      $tag
      */
-    public function __construct($callable, $args, $tag)
+    public function __construct(callable $callable, $args, ?string $tag)
     {
         $this->callable     = $callable;
         $this->args         = $args;
@@ -30,7 +30,7 @@ class Task extends AbstractMessage implements TaskInterface
     /**
      * {@inheritdoc}
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Task';
     }
@@ -38,7 +38,7 @@ class Task extends AbstractMessage implements TaskInterface
     /**
      * @return  callable
      */
-    public function getCallable()
+    public function getCallable(): callable
     {
         return $this->callable;
     }
@@ -54,7 +54,7 @@ class Task extends AbstractMessage implements TaskInterface
     /**
      * @return  string|null
      */
-    public function getTag()
+    public function getTag(): ?string
     {
         return $this->tag;
     }
@@ -62,7 +62,7 @@ class Task extends AbstractMessage implements TaskInterface
     /**
      * @return  \Ackintosh\Snidel\Result\Result
      */
-    public function execute()
+    public function execute(): Result
     {
         ob_start();
         $result = new Result();
