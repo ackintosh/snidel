@@ -44,7 +44,12 @@ class Normalizer implements NormalizerInterface, DenormalizerInterface
      */
     public function denormalize($data, $class, $format = null, array $context = array())
     {
-        $task = unserialize($data);
+        $task = unserialize(
+            $data,
+            // Snidel is for general-purpose so we need to accept any classes.
+            ['allowed_classes' => true]
+        );
+
         if (self::isClosure($callable = $task->getCallable())) {
             $task = new Task(
                 $callable->getClosure(),
