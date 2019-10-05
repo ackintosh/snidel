@@ -76,7 +76,7 @@ class Result extends AbstractMessage
         $this->process = $process;
     }
 
-    public function getProcess(): Process
+    public function getProcess(): ?Process
     {
         return $this->process;
     }
@@ -86,7 +86,7 @@ class Result extends AbstractMessage
         $this->task = $task;
     }
 
-    public function getTask(): Task
+    public function getTask(): ?Task
     {
         return $this->task;
     }
