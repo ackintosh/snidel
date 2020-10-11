@@ -5,7 +5,7 @@ namespace Ackintosh\Snidel;
 
 class WorkerPool
 {
-    /** @var \Ackintosh\Snidel\Worker[] */
+    /** @var Worker[] */
     private $workers = [];
 
     public function add(Worker $worker): void
