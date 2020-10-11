@@ -28,7 +28,7 @@ class Log
      * @param int $pid
      * @return void
      */
-    public function setMasterPid($pid)
+    public function setMasterPid(int $pid)
     {
         $this->masterPid = $pid;
     }

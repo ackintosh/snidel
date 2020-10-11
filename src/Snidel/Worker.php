@@ -9,24 +9,26 @@ use Ackintosh\Snidel\Result\Result;
 use Ackintosh\Snidel\Task\Task;
 use Ackintosh\Snidel\Traits\Queueing;
 use Bernard\Driver;
+use Bernard\QueueFactory\PersistentFactory;
+use RuntimeException;
 
 class Worker
 {
     use Queueing;
 
-    /** @var \Ackintosh\Snidel\Task\Task */
+    /** @var Task */
     private $latestTask;
 
-    /** @var \Ackintosh\Snidel\Fork\Process */
+    /** @var Process */
     private $process;
 
-    /** @var \Ackintosh\Snidel\Pcntl */
+    /** @var Pcntl */
     private $pcntl;
 
     /** @var bool */
     private $isInProgress = false;
 
-    /** @var \Bernard\QueueFactory\PersistentFactory */
+    /** @var PersistentFactory */
     private $factory;
 
     /** @var \Bernard\Producer */
@@ -65,7 +67,7 @@ class Worker
     }
 
     /**
-     * @throws  \RuntimeException
+     * @throws  RuntimeException
      * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function run(): void
@@ -96,7 +98,7 @@ class Worker
     }
 
     /**
-     * @throws  \RuntimeException
+     * @throws  RuntimeException
      * @codeCoverageIgnore covered by SnidelTest via worker process
      */
     public function error(): void
@@ -108,7 +110,7 @@ class Worker
 
         try {
             $this->producer->produce($result);
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             throw $e;
         }
     }
