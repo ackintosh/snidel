@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  phpunit:
+    name: Tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version:
+          - "7.1"
+          - "7.2"
+          - "7.3"
+          - "7.4"
+    steps:
+      - uses: actions/checkout@v2
+
+      # https://github.com/shivammathur/setup-php
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer
+          coverage: xdebug
+        env:
+          fail-fast: true
+
+      - name: Update dependencies with composer
+        run: composer update
+
+      - name: Run tests with PHPUnit
+        run: vendor/bin/phpunit
