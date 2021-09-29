@@ -79,7 +79,7 @@ class Worker
             // We need to insert some statements here as condition expressions are not tickable.
             // Worker process can't receive signals sent from Master if there's no statements here.
             // @see http://jp2.php.net/manual/en/control-structures.declare.php#control-structures.declare.ticks
-            time_nanosleep(1, 0);
+            time_nanosleep(0, 1);
         }
     }
 
