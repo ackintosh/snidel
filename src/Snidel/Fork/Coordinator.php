@@ -149,7 +149,7 @@ class Coordinator
             $status = null;
             while (($workerPid = $this->pcntl->waitpid(-1, $status, WNOHANG)) !== -1) {
                 if ($workerPid === true || $workerPid === 0) {
-                    usleep(100000);
+                    time_nanosleep(0, 100000000);
                     continue;
                 }
                 $workerPool->delete($workerPid);
