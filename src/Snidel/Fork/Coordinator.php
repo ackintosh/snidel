@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-declare(ticks=1);
 namespace Ackintosh\Snidel\Fork;
 
 use Ackintosh\Snidel\Log;
@@ -148,8 +147,8 @@ class Coordinator
             }
             $status = null;
             while (($workerPid = $this->pcntl->waitpid(-1, $status, WNOHANG)) !== -1) {
+                pcntl_signal_dispatch();
                 if ($workerPid === true || $workerPid === 0) {
-                    time_nanosleep(0, 100000000);
                     continue;
                 }
                 $workerPool->delete($workerPid);
@@ -246,6 +245,7 @@ class Coordinator
     {
         for (; $this->queuedCount() > $this->dequeuedCount();) {
             for (;;) {
+                pcntl_signal_dispatch();
                 if ($envelope = $this->resultQueue->dequeue($this->config->get('pollingDuration'))) {
                     $this->dequeuedCount++;
                     break;

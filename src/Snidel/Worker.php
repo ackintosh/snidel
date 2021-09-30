@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-declare(ticks=1);
 
 namespace Ackintosh\Snidel;
 
@@ -73,13 +72,10 @@ class Worker
     public function run(): void
     {
         while (true) {
+            pcntl_signal_dispatch();
             if ($envelope = $this->taskQueue->dequeue($this->pollingDuration)) {
                 $this->task($envelope->getMessage());
             }
-            // We need to insert some statements here as condition expressions are not tickable.
-            // Worker process can't receive signals sent from Master if there's no statements here.
-            // @see http://jp2.php.net/manual/en/control-structures.declare.php#control-structures.declare.ticks
-            time_nanosleep(0, 1);
         }
     }
 
