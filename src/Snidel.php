@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-declare(ticks=1);
 
 namespace Ackintosh;
 
@@ -73,6 +72,7 @@ class Snidel
     public function results(): \Generator
     {
         foreach($this->coordinator->results() as $r) {
+            pcntl_signal_dispatch();
             yield $r;
         }
     }
