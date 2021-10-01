@@ -81,13 +81,8 @@ class Coordinator
      */
     public function enqueue(Task $task): void
     {
-        try {
-            $this->producer->produce($task);
-            $this->queuedCount++;
-
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
+        $this->producer->produce($task);
+        $this->queuedCount++;
     }
 
     public function queuedCount(): int
