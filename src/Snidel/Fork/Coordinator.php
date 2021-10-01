@@ -10,7 +10,12 @@ use Ackintosh\Snidel\Error;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Traits\Queueing;
 use Ackintosh\Snidel\Worker;
+use Bernard\Consumer;
+use Bernard\Producer;
+use Bernard\Queue;
+use Bernard\QueueFactory\PersistentFactory;
 use Bernard\Router\SimpleRouter;
+use RuntimeException;
 
 class Coordinator
 {
@@ -19,13 +24,13 @@ class Coordinator
     /** @var Process */
     private $master;
 
-    /** @var \Ackintosh\Snidel\Pcntl */
+    /** @var Pcntl */
     private $pcntl;
 
-    /** @var \Ackintosh\Snidel\Error */
+    /** @var Error */
     private $error;
 
-    /** @var \Ackintosh\Snidel\Log */
+    /** @var Log */
     private $log;
 
     /** @var array */
@@ -34,7 +39,7 @@ class Coordinator
         SIGINT,
     ];
 
-    /** @var \Ackintosh\Snidel\Config */
+    /** @var Config */
     private $config;
 
     /** @var  int */
@@ -45,16 +50,16 @@ class Coordinator
     /** @var int */
     private $dequeuedCount = 0;
 
-    /** @var \Bernard\QueueFactory\PersistentFactory */
+    /** @var PersistentFactory */
     private $factory;
 
-    /** @var \Bernard\Producer */
+    /** @var Producer */
     private $producer;
 
-    /** @var \Bernard\Consumer */
+    /** @var Consumer */
     private $consumer;
 
-    /** @var \Bernard\Queue  */
+    /** @var Queue  */
     private $resultQueue;
 
     public function __construct(Config $config, Log $log)
@@ -72,17 +77,12 @@ class Coordinator
     }
 
     /**
-     * @throws  \RuntimeException
+     * @throws  RuntimeException
      */
     public function enqueue(Task $task): void
     {
-        try {
-            $this->producer->produce($task);
-            $this->queuedCount++;
-
-        } catch (\RuntimeException $e) {
-            throw $e;
-        }
+        $this->producer->produce($task);
+        $this->queuedCount++;
     }
 
     public function queuedCount(): int
@@ -98,16 +98,16 @@ class Coordinator
     /**
      * fork master process
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function forkMaster(): Process
     {
         try {
             $this->master = $this->pcntl->fork();
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $message = 'failed to fork master: ' . $e->getMessage();
             $this->log->error($message);
-            throw new \RuntimeException($message);
+            throw new RuntimeException($message);
         }
 
         $this->log->setMasterPid($this->master->getPid());
@@ -163,16 +163,16 @@ class Coordinator
     /**
      * fork worker process
      *
-     * @throws  \RuntimeException
+     * @throws  RuntimeException
      */
     private function forkWorker(): Worker
     {
         try {
             $process = $this->pcntl->fork();
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $message = 'failed to fork worker: ' . $e->getMessage();
             $this->log->error($message);
-            throw new \RuntimeException($message);
+            throw new RuntimeException($message);
         }
 
         $worker = new Worker($process, $this->config->get('driver'), $this->config->get('pollingDuration'));
@@ -203,7 +203,7 @@ class Coordinator
             $this->log->info('----> started the function.');
             try {
                 $worker->run();
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 $this->log->error($e->getMessage());
                 exit;
             }
