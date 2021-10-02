@@ -9,16 +9,17 @@ use Ackintosh\Snidel\Fork\Coordinator;
 use Ackintosh\Snidel\Log;
 use Ackintosh\Snidel\Pcntl;
 use Ackintosh\Snidel\Task\Task;
+use RuntimeException;
 
 class Snidel
 {
-    /** @var \Ackintosh\Snidel\Config */
+    /** @var Config */
     private $config;
 
-    /** @var \Ackintosh\Snidel\Fork\Coordinator */
+    /** @var Coordinator */
     private $coordinator;
 
-    /** @var \Ackintosh\Snidel\Log */
+    /** @var Log */
     private $log;
 
     /** @var array */
@@ -29,7 +30,7 @@ class Snidel
 
     /**
      * @param   array $parameter
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function __construct(array $parameter = [])
     {
@@ -44,13 +45,13 @@ class Snidel
     /**
      * this method uses master / worker model.
      *
-     * @throws  \RuntimeException
+     * @throws  RuntimeException
      */
     public function process(callable $callable, array $args = [], ?string $tag = null): void
     {
         try {
             $this->coordinator->enqueue(new Task($callable, $args, $tag));
-        } catch (\RuntimeException $e) {
+        } catch (RuntimeException $e) {
             $this->log->error('failed to enqueue the task: ' . $e->getMessage());
             throw $e;
         }
